@@ -1,15 +1,29 @@
 import { Link, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useMortgage } from "@/context/MortgageContext";
+import { useMortgage, LOAN_TERM_RATES } from "@/context/MortgageContext";
 import { Slider } from "@/components/ui/slider";
-import { MessageCircle, FileText, Info, Save } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MessageCircle, FileText, Info, Save, Home, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Results() {
   const [, setLocation] = useLocation();
   const { estimateResult, answers, selectedMortgageType, scenarioAdjustments, setScenarioAdjustments, calculateEstimate } = useMortgage();
   const [adjustedEstimate, setAdjustedEstimate] = useState(estimateResult);
+  const [showZillow, setShowZillow] = useState(false);
+  const [zillowLocation, setZillowLocation] = useState("");
+
+  const isBuy = selectedMortgageType === "buy";
+
+  const openZillow = () => {
+    if (!zillowLocation.trim()) return;
+    const loc = zillowLocation.trim().replace(/\s+/g, "-").toLowerCase();
+    const low = Math.round((estimateResult?.low ?? 0) / 10000) * 10000;
+    const high = Math.round((estimateResult?.high ?? 0) / 10000) * 10000;
+    const url = `https://www.zillow.com/homes/for_sale/${encodeURIComponent(loc)}/${low}-${high}_price/`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   useEffect(() => {
     if (!estimateResult) {
@@ -183,6 +197,79 @@ export default function Results() {
           </Link>
         </Button>
       </section>
+
+      {/* Buy-only: Monthly Payment Comparison by Loan Term */}
+      {isBuy && answers.homeValue > 0 && (
+        <section className="max-w-4xl mx-auto px-4 py-16">
+          <h2 className="font-serif text-3xl font-semibold mb-2">What would your monthly payment be?</h2>
+          <p className="text-muted-foreground mb-8">
+            Based on your target home price of {formatCurrency(answers.homeValue)} with a {formatCurrency(answers.downPayment)} down payment.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {Object.entries(LOAN_TERM_RATES).map(([key, info]) => {
+              const loanAmount = Math.max(0, answers.homeValue - answers.downPayment);
+              const mr = info.rate / 100 / 12;
+              const n = key.startsWith("15") ? 180 : 360;
+              const payment = loanAmount > 0 && mr > 0
+                ? loanAmount * mr * Math.pow(1 + mr, n) / (Math.pow(1 + mr, n) - 1)
+                : 0;
+              const isPopular = key === "30-fixed";
+              return (
+                <div key={key} className={`relative bg-card border rounded-2xl p-6 ${isPopular ? "border-primary ring-1 ring-primary" : "border-border"}`}>
+                  {isPopular && (
+                    <span className="absolute -top-3 left-4 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">Most Popular</span>
+                  )}
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="font-semibold text-foreground text-lg">{info.label}</p>
+                    <span className="text-sm bg-secondary text-muted-foreground px-2.5 py-1 rounded-full font-medium">{info.rate}% APR</span>
+                  </div>
+                  <p className="text-4xl font-bold text-primary">
+                    {formatCurrency(Math.round(payment))}
+                    <span className="text-base font-normal text-muted-foreground">/mo</span>
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-3">{info.description}</p>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground mt-4">* Payment estimates include principal and interest only. Taxes, insurance, and HOA fees are not included.</p>
+        </section>
+      )}
+
+      {/* Buy-only: Can't buy a home? Zillow */}
+      {isBuy && (
+        <section className="max-w-4xl mx-auto px-4 pb-16">
+          <div className="bg-secondary/40 border border-border rounded-3xl p-8">
+            <div className="flex items-center gap-3 mb-2">
+              <Home className="w-5 h-5 text-primary" />
+              <p className="font-semibold text-foreground text-lg">Can't buy a home right now?</p>
+            </div>
+            <p className="text-muted-foreground text-sm mb-6">
+              Browse homes for sale near you in your estimated price range ({formatCurrency(adjustedEstimate?.low ?? 0)} – {formatCurrency(adjustedEstimate?.high ?? 0)}) and start planning your next move.
+            </p>
+            {!showZillow ? (
+              <Button variant="outline" onClick={() => setShowZillow(true)} className="border-primary text-primary hover:bg-primary/5">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Browse Homes on Zillow
+              </Button>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Input
+                  placeholder="Enter city, state or ZIP (e.g. Austin, TX)"
+                  value={zillowLocation}
+                  onChange={(e) => setZillowLocation(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && openZillow()}
+                  className="flex-1 max-w-sm"
+                />
+                <Button onClick={openZillow} disabled={!zillowLocation.trim()}>
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Search Zillow
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -98,7 +98,7 @@ export default function Landing() {
             transition={{ duration: 0.6, delay: 0.15 }}
             className="mt-8 text-xl md:text-2xl text-muted-foreground max-w-2xl leading-relaxed font-light"
           >
-            {QUESTION_COUNT} questions. Instant estimates. Zero forms.
+            Under 10 questions. Instant estimates. Zero forms.
             <br className="hidden md:block" /> Know your options before you talk to anyone.
           </motion.p>
 
@@ -147,7 +147,7 @@ export default function Landing() {
             className="mt-16 flex flex-wrap justify-center gap-4"
           >
             {[
-              { value: String(QUESTION_COUNT), label: "Questions" },
+              { value: "< 10", label: "Questions" },
               { value: "2 min", label: "To your estimate" },
               { value: "100%", label: "Free & private" },
               { value: "No", label: "Credit check" },
@@ -187,7 +187,7 @@ export default function Landing() {
 
           <div className="grid md:grid-cols-3 gap-px bg-border rounded-3xl overflow-hidden shadow-sm border border-border">
             {[
-              { step: "01", title: "Share your basics", desc: `${QUESTION_COUNT} quick questions about your financial picture. No credit check. No sensitive data.` },
+              { step: "01", title: "Share your basics", desc: `Under 10 quick questions about your financial picture. No credit check. No sensitive data.` },
               { step: "02", title: "See your numbers", desc: "Get an instant estimate and interactive scenarios that show exactly what changes your options." },
               { step: "03", title: "Talk when you're ready", desc: "Your summary and a client code are waiting. Hand them to any loan officer — or call ours." },
             ].map((item, i) => (

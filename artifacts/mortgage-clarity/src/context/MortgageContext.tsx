@@ -218,15 +218,10 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
     const debtRed = monthlyDebt * 12 * 2;
 
     if (selectedMortgageType === "buy") {
-      const termInfo = LOAN_TERM_RATES[answers.loanTerm] ?? LOAN_TERM_RATES["30-fixed"];
-      const annualRate = termInfo.rate / 100;
-      const months = answers.loanTerm.startsWith("15") ? 180 : 360;
-      const loanAmount = Math.max(0, homeValue - downPayment);
-      const mr = annualRate / 12;
-      const payment = loanAmount > 0 && mr > 0
-        ? loanAmount * mr * Math.pow(1 + mr, months) / (Math.pow(1 + mr, months) - 1)
-        : 0;
-      setEstimateResult({ low: Math.round(payment * 0.95), high: Math.round(payment * 1.05), type: `Est. Monthly Payment (${termInfo.label} @ ${termInfo.rate}%)` });
+      const base = income * 3.5;
+      const low = Math.max(50000, (base - debtRed + downPayment * 2) * creditMultiplier * 0.9);
+      const high = Math.max(60000, (base - debtRed + downPayment * 2) * creditMultiplier * 1.1);
+      setEstimateResult({ low, high, type: "Estimated Affordability Range" });
     } else if (selectedMortgageType === "refinance") {
       const rateDiff = Math.max(0, (currentInterestRate - CURRENT_MARKET_RATE) / 100);
       const base = rateDiff * mortgageBalance / 12;

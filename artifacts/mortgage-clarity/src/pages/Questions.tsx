@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMortgage, CreditScoreRange, EmploymentType, LoanType, LoanTerm, RefiGoal, PropertyType, LoanPurpose, CURRENT_MARKET_RATE, LOAN_TERM_RATES } from "@/context/MortgageContext";
+import { useMortgage, CreditScoreRange, EmploymentType, LoanType, RefiGoal, PropertyType, LoanPurpose, CURRENT_MARKET_RATE } from "@/context/MortgageContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -67,7 +67,7 @@ export default function Questions() {
   const isReverse = selectedMortgageType === "reverse";
   const isCashout = selectedMortgageType === "cashout";
   const isRefi = selectedMortgageType === "refinance";
-  const totalSteps = (isRefi || isReverse) ? 9 : 8;
+  const totalSteps = isRefi || isReverse ? 9 : isCashout ? 8 : 7;
 
   const isStepComplete = (s: number): boolean => {
     switch (s) {
@@ -93,12 +93,11 @@ export default function Questions() {
         return answers.mortgageBalance > 0;
       case 6:
         if (isCashout) return answers.mortgageBalance > 0;
-        if (isBuy) return !!answers.loanTerm;
         if (isRefi) return answers.homeValue > 0;
         if (isReverse) return !!answers.propertyType;
-        return !!answers.employmentType;
+        return !!answers.employmentType; // buy ends here
       case 7:
-        if (isBuy || isCashout) return !!answers.employmentType;
+        if (isCashout) return !!answers.employmentType;
         if (isRefi) return !!answers.refiGoal;
         if (isReverse) return !!answers.loanPurpose;
         return true;
@@ -565,43 +564,7 @@ export default function Questions() {
         );
 
       case 6: {
-        // Buy: loan term selection; Cashout: mortgage balance; others: employment
-        if (isBuy) {
-          const termKeys = Object.keys(LOAN_TERM_RATES) as LoanTerm[];
-          return (
-            <div className="space-y-8">
-              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
-                Which loan term fits you best?
-              </h2>
-              <p className="text-muted-foreground">Rates shown reflect today's market averages.</p>
-              <div className="flex flex-col gap-3 py-4">
-                {termKeys.map((key) => {
-                  const info = LOAN_TERM_RATES[key];
-                  const selected = answers.loanTerm === key;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => updateAnswer("loanTerm", key)}
-                      className={`w-full p-4 rounded-xl border text-left transition-all ${
-                        selected
-                          ? "border-primary bg-primary/5 ring-1 ring-primary"
-                          : "border-border bg-card hover:border-primary/50"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <p className="text-lg font-semibold text-foreground">{info.label}</p>
-                        <span className={`text-sm font-bold px-3 py-1 rounded-full ${selected ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
-                          {info.rate}%
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">{info.description}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        }
+        // Cashout: mortgage balance; Refi: home value; Reverse: property type; Buy: employment (final)
         if (isCashout) {
           return (
             <div className="space-y-8">
@@ -726,7 +689,7 @@ export default function Questions() {
 
       case 7: {
         // Buy/Cashout: employment; Refi: refi goal; Reverse: loan purpose
-        if (isBuy || isCashout) {
+        if (isCashout) {
           const empOpts: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
             { value: "employed",      label: "Employed",      sub: "I receive a W-2 from an employer.",                   icon: <Briefcase className="w-6 h-6" /> },
             { value: "self-employed", label: "Self-Employed", sub: "I own a business, freelance, or receive 1099 income.", icon: <Building2 className="w-6 h-6" /> },
