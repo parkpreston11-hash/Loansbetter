@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 export type MortgageType = "buy" | "refinance" | "cashout" | "reverse" | null;
-export type CreditScoreRange = "Below 580" | "580–619" | "620–679" | "680–739" | "740 or above";
+export type CreditScoreRange = "500 or below" | "501–579" | "580–619" | "620–679" | "680–739" | "740 or above";
 
 export type EmploymentType = "employed" | "self-employed" | "";
 
@@ -66,7 +66,7 @@ const defaultAnswers: Answers = {
   fullName: "",
   income: 80000,
   monthlyDebt: 500,
-  creditScore: "680–739",
+  creditScore: "680–739" as CreditScoreRange,
   downPayment: 20000,
   homeValue: 400000,
   mortgageBalance: 200000,
@@ -184,7 +184,7 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
     const { income, monthlyDebt, creditScore, downPayment, mortgageBalance, homeValue, age } = answers;
 
     let creditMultiplier = 1.0;
-    if (creditScore === "Below 580") creditMultiplier = 0.7;
+    if (creditScore === "500 or below" || creditScore === "501–579") creditMultiplier = 0.7;
     else if (creditScore === "580–619") creditMultiplier = 0.8;
     else if (creditScore === "620–679") creditMultiplier = 0.9;
     else if (creditScore === "740 or above") creditMultiplier = 1.1;
@@ -201,15 +201,11 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
       const high = Math.max(0, mortgageBalance * 0.0075);
       setEstimateResult({ low, high, type: "Estimated Monthly Savings" });
     } else if (selectedMortgageType === "cashout") {
-      const homeValEst = mortgageBalance * 1.4;
-      const maxLoan = homeValEst * 0.8;
-      const accessible = Math.max(0, maxLoan - mortgageBalance);
-      setEstimateResult({ low: accessible * 0.9, high: accessible * 1.1, type: "Estimated Accessible Equity" });
+      const maxCashOut = Math.max(0, homeValue * 0.8 - mortgageBalance);
+      setEstimateResult({ low: maxCashOut, high: maxCashOut, type: "Maximum Cash-Out Amount" });
     } else if (selectedMortgageType === "reverse") {
-      const equityFactor = 0.4 + (age - 62) * 0.015;
-      const low = Math.max(0, homeValue * Math.min(equityFactor, 0.75) * 0.85);
-      const high = Math.max(0, homeValue * Math.min(equityFactor, 0.75) * 1.05);
-      setEstimateResult({ low, high, type: "Estimated Loan Proceeds" });
+      const maxCashOut = Math.max(0, homeValue * 0.5 - mortgageBalance);
+      setEstimateResult({ low: maxCashOut, high: maxCashOut, type: "Estimated Loan Proceeds" });
     }
   };
 

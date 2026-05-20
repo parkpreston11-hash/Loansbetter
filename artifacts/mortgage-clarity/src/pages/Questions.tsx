@@ -5,7 +5,7 @@ import { useMortgage, CreditScoreRange, EmploymentType } from "@/context/Mortgag
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ArrowRight, Briefcase, Building2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Briefcase, Building2, XCircle } from "lucide-react";
 import { QUESTION_COUNT } from "@/lib/constants";
 
 function CurrencyInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -61,8 +61,11 @@ export default function Questions() {
     return null;
   }
 
+  const [disqualReason, setDisqualReason] = useState<string | null>(null);
+
   const isBuy = selectedMortgageType === "buy";
   const isReverse = selectedMortgageType === "reverse";
+  const isCashout = selectedMortgageType === "cashout";
   const totalSteps = QUESTION_COUNT;
 
   const isStepComplete = (s: number): boolean => {
@@ -79,6 +82,7 @@ export default function Questions() {
         return !!answers.creditScore;
       case 4:
         if (isReverse) return true; // $0 balance is explicitly valid
+        if (isCashout) return answers.homeValue > 0;
         return answers.downPayment > 0;
       case 5:
         if (isBuy) return answers.homeValue > 0;
@@ -101,6 +105,39 @@ export default function Questions() {
       triggerShake();
       return;
     }
+
+    // Credit score gate (all loan types)
+    if (step === 3 && answers.creditScore === "500 or below") {
+      setDisqualReason(
+        "Unfortunately we're unable to assist with a credit score of 500 or below. Most loan programs require a minimum score of 501. Consider working with a credit counselor to improve your score, then come back — we'd love to help."
+      );
+      return;
+    }
+
+    // Cash-out equity gate: after mortgage balance is entered (step 5)
+    if (step === 5 && isCashout) {
+      const maxCashOut = answers.homeValue * 0.8 - answers.mortgageBalance;
+      if (maxCashOut < 25000) {
+        const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+        setDisqualReason(
+          `Based on your home value (${fmt.format(answers.homeValue)}) and mortgage balance (${fmt.format(answers.mortgageBalance)}), your maximum cash-out would be ${fmt.format(Math.max(0, maxCashOut))} — below our $25,000 minimum. Unfortunately we can't help with this scenario.`
+        );
+        return;
+      }
+    }
+
+    // Reverse mortgage equity gate: after mortgage balance is entered (step 4)
+    if (step === 4 && isReverse) {
+      const maxCashOut = answers.homeValue * 0.5 - answers.mortgageBalance;
+      if (maxCashOut < 25000) {
+        const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+        setDisqualReason(
+          `Based on your home value (${fmt.format(answers.homeValue)}) and mortgage balance (${fmt.format(answers.mortgageBalance)}), your estimated reverse mortgage proceeds would be ${fmt.format(Math.max(0, maxCashOut))} — below our $25,000 minimum. Unfortunately we can't help with this scenario.`
+        );
+        return;
+      }
+    }
+
     if (step < totalSteps - 1) {
       setDirection(1);
       setStep(s => s + 1);
@@ -246,7 +283,7 @@ export default function Questions() {
         );
 
       case 3: {
-        const ranges: CreditScoreRange[] = ["Below 580", "580–619", "620–679", "680–739", "740 or above"];
+        const ranges: CreditScoreRange[] = ["500 or below", "501–579", "580–619", "620–679", "680–739", "740 or above"];
         return (
           <div className="space-y-8">
             <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
@@ -259,11 +296,16 @@ export default function Questions() {
                   onClick={() => updateAnswer("creditScore", range)}
                   className={`w-full p-4 rounded-xl border text-left text-lg transition-all ${
                     answers.creditScore === range
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
+                      ? range === "500 or below"
+                        ? "border-destructive bg-destructive/5 ring-1 ring-destructive"
+                        : "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border bg-card hover:border-primary/50"
                   }`}
                 >
                   {range}
+                  {range === "500 or below" && (
+                    <span className="ml-2 text-sm text-destructive font-normal">(minimum not met)</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -293,6 +335,32 @@ export default function Questions() {
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>$0</span>
                   <span>$5M+</span>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        if (isCashout) {
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                What is your home currently worth?
+              </h2>
+              <p className="text-muted-foreground">Use your best estimate — a recent appraisal or online estimate works great.</p>
+              <div className="py-4 space-y-6">
+                <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.homeValue)}</div>
+                <CurrencyInput value={answers.homeValue} onChange={(v) => updateAnswer("homeValue", v)} />
+                <Slider
+                  value={[Math.min(answers.homeValue, 30000000)]}
+                  min={0}
+                  max={30000000}
+                  step={100000}
+                  onValueChange={(val) => updateAnswer("homeValue", val[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>$0</span>
+                  <span>$30M+</span>
                 </div>
               </div>
             </div>
@@ -450,6 +518,43 @@ export default function Questions() {
         return null;
     }
   };
+
+  if (disqualReason) {
+    return (
+      <div className="min-h-[calc(100dvh-5rem)] flex flex-col items-center justify-center bg-background px-4 py-16">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="max-w-lg w-full bg-card border border-border rounded-3xl p-10 flex flex-col items-center gap-6 text-center shadow-sm"
+        >
+          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+            <XCircle className="w-9 h-9 text-destructive" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="font-serif text-2xl font-semibold text-foreground">We're sorry — we can't help with this</h2>
+            <p className="text-muted-foreground leading-relaxed">{disqualReason}</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full pt-2">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-full"
+              onClick={() => { setDisqualReason(null); setDirection(-1); setStep(step); }}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Go Back
+            </Button>
+            <a
+              href="tel:7144944172"
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-full px-6 h-10 font-semibold text-sm hover:bg-primary/90 transition-all"
+            >
+              Call 714-494-4172
+            </a>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100dvh-5rem)] flex flex-col bg-background">
