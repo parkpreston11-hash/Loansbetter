@@ -19,10 +19,10 @@ export function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
-          <Link href="/start" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             How it works
           </Link>
-          <Link href="/start" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/questions" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Calculate
           </Link>
           <Link href="/start" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
@@ -47,10 +47,10 @@ export function Navbar() {
           </SheetTrigger>
           <SheetContent side="right">
             <div className="flex flex-col gap-6 mt-8">
-              <Link href="/start" className="text-lg font-medium text-foreground">
+              <Link href="/" className="text-lg font-medium text-foreground">
                 How it works
               </Link>
-              <Link href="/start" className="text-lg font-medium text-foreground">
+              <Link href="/questions" className="text-lg font-medium text-foreground">
                 Calculate
               </Link>
               <Link href="/start" className="text-lg font-medium text-foreground">
