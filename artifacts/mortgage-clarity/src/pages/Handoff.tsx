@@ -253,6 +253,7 @@ export default function Handoff() {
         <DocumentChecklist
           mortgageType={selectedMortgageType}
           creditScore={answers.creditScore}
+          employmentType={answers.employmentType}
           code={code}
         />
 

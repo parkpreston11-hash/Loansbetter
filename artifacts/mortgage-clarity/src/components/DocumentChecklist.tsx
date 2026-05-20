@@ -4,7 +4,6 @@ import {
   Upload, CheckCircle2, Clock, ChevronDown, ChevronUp,
   FileImage, X, Eye, Folder
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,14 +22,55 @@ interface UploadedFile {
   dataUrl: string;
 }
 
-interface DocState {
-  id: string;
-  file?: UploadedFile;
-}
+// ─── Document lists ───────────────────────────────────────────────────────────
 
-// ─── Document lists by mortgage type ─────────────────────────────────────────
+function getDocList(
+  mortgageType: string,
+  creditScore: string,
+  employmentType: string
+): DocItem[] {
+  const selfEmployed = employmentType === "self-employed";
 
-function getDocList(mortgageType: string, creditScore: string): DocItem[] {
+  const coreIncomeDocs: DocItem[] = [
+    {
+      id: "pay-stubs",
+      title: "Most Recent Pay Stubs",
+      desc: "Your most current pay stubs — typically the last 30 days.",
+      required: true,
+      tip: "If paid bi-weekly, include your last 2 stubs.",
+    },
+    {
+      id: "w2",
+      title: "W-2 Forms (Last 2 Years)",
+      desc: "W-2s from all employers for the past 2 years.",
+      required: true,
+    },
+    {
+      id: "1099",
+      title: "1099 Forms (Last 2 Years)",
+      desc: "1099s from all sources of non-W-2 income for the past 2 years.",
+      required: true,
+      tip: "Include 1099-NEC, 1099-MISC, 1099-INT, 1099-DIV — any that apply.",
+    },
+  ];
+
+  const selfEmployedDocs: DocItem[] = selfEmployed ? [
+    {
+      id: "balance-sheet",
+      title: "Business Balance Sheet",
+      desc: "Current business balance sheet showing assets, liabilities, and equity.",
+      required: true,
+      tip: "Prepared by a CPA or your accounting software (QuickBooks, etc.).",
+    },
+    {
+      id: "profit-loss",
+      title: "Profit & Loss Statement",
+      desc: "Year-to-date P&L statement for your business.",
+      required: true,
+      tip: "Should be current within 60 days.",
+    },
+  ] : [];
+
   const base: DocItem[] = [
     {
       id: "photo-id",
@@ -39,32 +79,14 @@ function getDocList(mortgageType: string, creditScore: string): DocItem[] {
       required: true,
       tip: "Both sides if it's a driver's license.",
     },
-    {
-      id: "pay-stubs",
-      title: "Pay Stubs",
-      desc: "Most recent 30 days of pay stubs from your employer.",
-      required: true,
-      tip: "If paid bi-weekly, upload your last 2 stubs.",
-    },
-    {
-      id: "w2",
-      title: "W-2 Forms",
-      desc: "W-2s from the last 2 years (all employers).",
-      required: true,
-    },
-    {
-      id: "tax-returns",
-      title: "Federal Tax Returns",
-      desc: "Complete federal tax returns for the last 2 years.",
-      required: true,
-      tip: "Include all schedules and pages.",
-    },
+    ...coreIncomeDocs,
+    ...selfEmployedDocs,
     {
       id: "bank-statements",
-      title: "Bank Statements",
-      desc: "Last 2–3 months of statements for all accounts.",
+      title: "Bank Statements (Last 2 Months)",
+      desc: "2 months of statements for all accounts — checking, savings, investments.",
       required: true,
-      tip: "All pages, even blank ones. Savings, checking, and investment accounts.",
+      tip: "All pages, even blank ones.",
     },
   ];
 
@@ -74,15 +96,15 @@ function getDocList(mortgageType: string, creditScore: string): DocItem[] {
       {
         id: "ssn",
         title: "Social Security Card or Documentation",
-        desc: "Copy of your Social Security card or an official SSN document.",
+        desc: "Copy of your Social Security card or official SSN document.",
         required: true,
       },
       {
         id: "down-payment-source",
         title: "Down Payment Source Documentation",
-        desc: "Proof that your down payment funds are yours (account statements showing the balance).",
+        desc: "Proof that your down payment funds are yours — account statements showing the balance.",
         required: true,
-        tip: "Funds must be 'seasoned' (in your account) for at least 60 days.",
+        tip: "Funds should be 'seasoned' (in your account) for at least 60 days.",
       },
       {
         id: "gift-letter",
@@ -101,14 +123,14 @@ function getDocList(mortgageType: string, creditScore: string): DocItem[] {
     ];
   }
 
-  if (mortgageType === "refinance") {
-    return [
-      ...base,
+  if (mortgageType === "refinance" || mortgageType === "cashout") {
+    const refiDocs: DocItem[] = [
       {
         id: "mortgage-statement",
-        title: "Current Mortgage Statement",
-        desc: "Your most recent monthly mortgage statement.",
+        title: "Most Recent Mortgage Statement",
+        desc: "Your most recent lender mortgage statement showing balance and payment history.",
         required: true,
+        tip: "This is the statement from your current lender — not the escrow analysis.",
       },
       {
         id: "insurance-dec",
@@ -123,37 +145,22 @@ function getDocList(mortgageType: string, creditScore: string): DocItem[] {
         required: true,
       },
     ];
-  }
 
-  if (mortgageType === "cashout") {
-    return [
-      ...base,
-      {
-        id: "mortgage-statement",
-        title: "Current Mortgage Statement",
-        desc: "Your most recent monthly mortgage statement.",
-        required: true,
-      },
-      {
-        id: "insurance-dec",
-        title: "Homeowner's Insurance Declaration Page",
-        desc: "The 'dec page' from your current homeowner's insurance policy.",
-        required: true,
-      },
-      {
-        id: "property-tax",
-        title: "Property Tax Bill",
-        desc: "Most recent property tax bill or statement.",
-        required: true,
-      },
-      {
-        id: "use-of-funds",
-        title: "Statement of Intended Use of Funds",
-        desc: "A brief note on what you plan to do with the cash-out proceeds.",
-        required: false,
-        tip: "Not always required, but having it ready speeds up the process.",
-      },
-    ];
+    if (mortgageType === "cashout") {
+      return [
+        ...base,
+        ...refiDocs,
+        {
+          id: "use-of-funds",
+          title: "Statement of Intended Use of Funds",
+          desc: "A brief note on what you plan to do with the cash-out proceeds.",
+          required: false,
+          tip: "Not always required, but having it ready speeds things up.",
+        },
+      ];
+    }
+
+    return [...base, ...refiDocs];
   }
 
   if (mortgageType === "reverse") {
@@ -179,9 +186,28 @@ function getDocList(mortgageType: string, creditScore: string): DocItem[] {
         tip: "Your most recent Social Security award letter works perfectly.",
       },
       {
+        id: "w2",
+        title: "W-2 Forms (Last 2 Years)",
+        desc: "W-2s from all employers for the past 2 years (if applicable).",
+        required: false,
+      },
+      {
+        id: "1099",
+        title: "1099 Forms (Last 2 Years)",
+        desc: "1099s from any non-W-2 income sources for the past 2 years.",
+        required: false,
+      },
+      {
+        id: "bank-statements",
+        title: "Bank Statements (Last 2 Months)",
+        desc: "2 months of statements for all accounts.",
+        required: true,
+        tip: "All pages, even blank ones.",
+      },
+      {
         id: "mortgage-statement",
-        title: "Current Mortgage Statement",
-        desc: "Most recent mortgage statement, if you still have a balance.",
+        title: "Most Recent Mortgage Statement",
+        desc: "Your lender's most recent statement, if you still have a balance.",
         required: false,
       },
       {
@@ -274,9 +300,10 @@ function DocRow({
   };
 
   const isImage = file?.type.startsWith("image/");
-  const sizeStr = file ? (file.size < 1024 * 1024
-    ? `${(file.size / 1024).toFixed(0)} KB`
-    : `${(file.size / 1024 / 1024).toFixed(1)} MB`)
+  const sizeStr = file
+    ? file.size < 1024 * 1024
+      ? `${(file.size / 1024).toFixed(0)} KB`
+      : `${(file.size / 1024 / 1024).toFixed(1)} MB`
     : "";
 
   return (
@@ -289,31 +316,24 @@ function DocRow({
       } p-5`}
     >
       <div className="flex items-start gap-4">
-        {/* Status icon */}
         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
           uploaded ? "bg-green-100 text-green-600" : "bg-secondary text-muted-foreground"
         }`}>
-          {uploaded
-            ? <CheckCircle2 className="w-4 h-4" />
-            : <Clock className="w-4 h-4" />
-          }
+          {uploaded ? <CheckCircle2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <span className="font-medium text-foreground text-sm">{doc.title}</span>
-              {!doc.required && (
-                <span className="ml-2 text-xs text-muted-foreground bg-secondary rounded-full px-2 py-0.5">Optional</span>
-              )}
-            </div>
+          <div className="flex items-start gap-2">
+            <span className="font-medium text-foreground text-sm">{doc.title}</span>
+            {!doc.required && (
+              <span className="shrink-0 text-xs text-muted-foreground bg-secondary rounded-full px-2 py-0.5">Optional</span>
+            )}
           </div>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{doc.desc}</p>
           {doc.tip && !uploaded && (
             <p className="text-xs text-primary/70 mt-1.5 italic">{doc.tip}</p>
           )}
 
-          {/* Uploaded file info */}
           {uploaded && file && (
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               <div className="flex items-center gap-1.5 bg-green-100/80 text-green-700 rounded-lg px-2.5 py-1 text-xs font-medium">
@@ -333,7 +353,6 @@ function DocRow({
             </div>
           )}
 
-          {/* Image preview */}
           <AnimatePresence>
             {preview && isImage && file && (
               <motion.img
@@ -348,7 +367,6 @@ function DocRow({
           </AnimatePresence>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
           {uploaded ? (
             <button
@@ -387,20 +405,27 @@ function DocRow({
 interface DocumentChecklistProps {
   mortgageType: string;
   creditScore: string;
+  employmentType: string;
   code: string;
 }
 
-export function DocumentChecklist({ mortgageType, creditScore, code }: DocumentChecklistProps) {
+export function DocumentChecklist({
+  mortgageType,
+  creditScore,
+  employmentType,
+  code,
+}: DocumentChecklistProps) {
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<Record<string, UploadedFile | undefined>>(() =>
     loadDocStates(code)
   );
 
-  const docs = getDocList(mortgageType, creditScore);
+  const docs = getDocList(mortgageType, creditScore, employmentType);
   const required = docs.filter(d => d.required);
   const optional = docs.filter(d => !d.required);
   const uploadedCount = docs.filter(d => files[d.id]).length;
   const requiredDone = required.filter(d => files[d.id]).length;
+  const allRequiredDone = requiredDone === required.length && required.length > 0;
 
   useEffect(() => {
     saveDocStates(code, files);
@@ -418,11 +443,16 @@ export function DocumentChecklist({ mortgageType, creditScore, code }: DocumentC
     });
   };
 
-  const allRequiredDone = requiredDone === required.length;
+  const typeLabel =
+    mortgageType === "buy" ? "home purchase" :
+    mortgageType === "refinance" ? "refinance" :
+    mortgageType === "cashout" ? "cash-out refinance" :
+    "reverse mortgage";
+
+  const selfEmployed = employmentType === "self-employed";
 
   return (
     <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-md">
-      {/* Toggle header */}
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between p-8 text-left hover:bg-secondary/30 transition-colors"
@@ -436,7 +466,7 @@ export function DocumentChecklist({ mortgageType, creditScore, code }: DocumentC
             <p className="text-sm text-muted-foreground mt-0.5">
               {open
                 ? `${uploadedCount} of ${docs.length} documents uploaded · ${requiredDone}/${required.length} required`
-                : `Personalized document checklist for your ${mortgageType === "buy" ? "home purchase" : mortgageType === "refinance" ? "refinance" : mortgageType === "cashout" ? "cash-out refinance" : "reverse mortgage"}`
+                : `Personalized document checklist for your ${typeLabel}${selfEmployed ? " · self-employed" : ""}`
               }
             </p>
           </div>
@@ -463,7 +493,7 @@ export function DocumentChecklist({ mortgageType, creditScore, code }: DocumentC
           >
             <div className="px-8 pb-8 space-y-8 border-t border-border pt-6">
 
-              {/* Progress bar */}
+              {/* Progress */}
               <div className="space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Required documents</span>
@@ -492,13 +522,13 @@ export function DocumentChecklist({ mortgageType, creditScore, code }: DocumentC
               {/* Intro */}
               <div className="bg-secondary/60 rounded-2xl p-5">
                 <p className="text-sm text-foreground leading-relaxed">
-                  Upload clear photos or scans of each document below. Your files are stored privately on this device only — nothing is sent to any server. Once everything is ready, call{" "}
+                  Upload clear photos or scans of each document below. Your files are stored privately on this device — nothing is sent to any server. Once everything is ready, call{" "}
                   <a href="tel:7144944172" className="text-primary font-semibold hover:underline">714-494-4172</a>
                   {" "}and reference your client code <strong className="font-mono">{code}</strong>.
                 </p>
               </div>
 
-              {/* Required docs */}
+              {/* Required */}
               <div className="space-y-3">
                 <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">Required Documents</p>
                 {required.map(doc => (
@@ -512,7 +542,7 @@ export function DocumentChecklist({ mortgageType, creditScore, code }: DocumentC
                 ))}
               </div>
 
-              {/* Optional docs */}
+              {/* Optional */}
               {optional.length > 0 && (
                 <div className="space-y-3">
                   <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">Optional Documents</p>
@@ -528,7 +558,7 @@ export function DocumentChecklist({ mortgageType, creditScore, code }: DocumentC
                 </div>
               )}
 
-              {/* CTA when done */}
+              {/* Footer CTA */}
               <div className="pt-2 border-t border-border flex flex-col sm:flex-row gap-4 items-center justify-between">
                 <p className="text-sm text-muted-foreground">
                   Ready to move forward? Call us with your client code and we'll take it from here.

@@ -3,6 +3,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export type MortgageType = "buy" | "refinance" | "cashout" | "reverse" | null;
 export type CreditScoreRange = "Below 580" | "580–619" | "620–679" | "680–739" | "740 or above";
 
+export type EmploymentType = "employed" | "self-employed" | "";
+
 export interface Answers {
   income: number;
   monthlyDebt: number;
@@ -11,6 +13,7 @@ export interface Answers {
   homeValue: number;
   mortgageBalance: number;
   age: number;
+  employmentType: EmploymentType;
 }
 
 export interface ScenarioAdjustments {
@@ -66,6 +69,7 @@ const defaultAnswers: Answers = {
   homeValue: 400000,
   mortgageBalance: 200000,
   age: 65,
+  employmentType: "",
 };
 
 const defaultAdjustments: ScenarioAdjustments = {

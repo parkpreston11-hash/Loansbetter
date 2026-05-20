@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, CheckCircle2, Shield, HeartHandshake, RotateCcw, ChevronRight, Star } from "lucide-react";
 import { useMortgage } from "@/context/MortgageContext";
 import { ContactDialog } from "@/components/ContactDialog";
+import { QUESTION_COUNT } from "@/lib/constants";
 
 function getTypeLabel(type: string) {
   if (type === "buy") return "Buy a Home";
@@ -97,7 +98,7 @@ export default function Landing() {
             transition={{ duration: 0.6, delay: 0.15 }}
             className="mt-8 text-xl md:text-2xl text-muted-foreground max-w-2xl leading-relaxed font-light"
           >
-            Five questions. Instant estimates. Zero forms.
+            {QUESTION_COUNT} questions. Instant estimates. Zero forms.
             <br className="hidden md:block" /> Know your options before you talk to anyone.
           </motion.p>
 
@@ -146,7 +147,7 @@ export default function Landing() {
             className="mt-16 flex flex-wrap justify-center gap-4"
           >
             {[
-              { value: "5", label: "Questions" },
+              { value: String(QUESTION_COUNT), label: "Questions" },
               { value: "2 min", label: "To your estimate" },
               { value: "100%", label: "Free & private" },
               { value: "No", label: "Credit check" },
@@ -186,7 +187,7 @@ export default function Landing() {
 
           <div className="grid md:grid-cols-3 gap-px bg-border rounded-3xl overflow-hidden shadow-sm border border-border">
             {[
-              { step: "01", title: "Share your basics", desc: "Five quick questions about your financial picture. No credit check. No sensitive data." },
+              { step: "01", title: "Share your basics", desc: `${QUESTION_COUNT} quick questions about your financial picture. No credit check. No sensitive data.` },
               { step: "02", title: "See your numbers", desc: "Get an instant estimate and interactive scenarios that show exactly what changes your options." },
               { step: "03", title: "Talk when you're ready", desc: "Your summary and a client code are waiting. Hand them to any loan officer — or call ours." },
             ].map((item, i) => (

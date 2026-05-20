@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMortgage, CreditScoreRange } from "@/context/MortgageContext";
+import { useMortgage, CreditScoreRange, EmploymentType } from "@/context/MortgageContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Briefcase, Building2 } from "lucide-react";
+import { QUESTION_COUNT } from "@/lib/constants";
 
 function CurrencyInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [raw, setRaw] = useState("");
@@ -61,7 +62,7 @@ export default function Questions() {
 
   const isBuy = selectedMortgageType === "buy";
   const isReverse = selectedMortgageType === "reverse";
-  const totalSteps = 5;
+  const totalSteps = QUESTION_COUNT;
 
   const handleNext = () => {
     if (step < totalSteps - 1) {
@@ -340,6 +341,57 @@ export default function Questions() {
             </div>
           </div>
         );
+
+      case 5: {
+        const options: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
+          {
+            value: "employed",
+            label: "Employed",
+            sub: "I receive a W-2 from an employer.",
+            icon: <Briefcase className="w-6 h-6" />,
+          },
+          {
+            value: "self-employed",
+            label: "Self-Employed",
+            sub: "I own a business, freelance, or receive 1099 income.",
+            icon: <Building2 className="w-6 h-6" />,
+          },
+        ];
+        return (
+          <div className="space-y-8">
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+              Are you employed or self-employed?
+            </h2>
+            <p className="text-muted-foreground">This helps us tailor your document checklist.</p>
+            <div className="flex flex-col gap-4 py-4">
+              {options.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => updateAnswer("employmentType", opt.value)}
+                  className={`w-full p-5 rounded-2xl border text-left transition-all flex items-center gap-5 ${
+                    answers.employmentType === opt.value
+                      ? "border-primary bg-primary/5 ring-1 ring-primary"
+                      : "border-border bg-card hover:border-primary/50"
+                  }`}
+                >
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                    answers.employmentType === opt.value ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                  }`}>
+                    {opt.icon}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-lg">{opt.label}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">{opt.sub}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      default:
+        return null;
     }
   };
 
