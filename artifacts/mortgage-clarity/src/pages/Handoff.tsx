@@ -4,6 +4,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound } from "lucide-react";
 import { motion } from "framer-motion";
+import { DocumentChecklist } from "@/components/DocumentChecklist";
 
 const BRIEF_KEY_PREFIX = "lb_brief_";
 
@@ -247,6 +248,13 @@ export default function Handoff() {
             )}
           </section>
         </div>
+
+        {/* Document Checklist */}
+        <DocumentChecklist
+          mortgageType={selectedMortgageType}
+          creditScore={answers.creditScore}
+          code={code}
+        />
 
         <p className="text-center text-xs text-muted-foreground pb-8">
           This summary is generated for your convenience and is not a loan application or financial commitment.
