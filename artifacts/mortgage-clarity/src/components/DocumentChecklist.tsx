@@ -500,6 +500,12 @@ export function DocumentChecklist({
     const encodedBody = encodeURIComponent(body);
     const cc = clientEmail.trim() ? `&cc=${encodeURIComponent(clientEmail.trim())}` : "";
     window.open(`mailto:parkpreston11@gmail.com?${cc}subject=${subject}&body=${encodedBody}`, "_blank");
+    if (clientPhone.trim() && !clientEmail.trim()) {
+      const smsBody = encodeURIComponent(
+        `LoansBetter — ${fullName || "Client"}\nNew doc: ${docTitle}\nFile: ${fileName}\nCode: ${code}\n${dateStr}`
+      );
+      setTimeout(() => window.open(`sms:${clientPhone.trim()}?body=${smsBody}`, "_blank"), 600);
+    }
   };
 
   const handleUpload = (id: string, file: UploadedFile) => {
@@ -561,6 +567,16 @@ export function DocumentChecklist({
     const encodedBody = encodeURIComponent(body);
     const cc = clientEmail.trim() ? `&cc=${encodeURIComponent(clientEmail.trim())}` : "";
     window.open(`mailto:parkpreston11@gmail.com?${cc}subject=${subject}&body=${encodedBody}`, "_blank");
+    if (clientPhone.trim() && !clientEmail.trim()) {
+      const smsBody = encodeURIComponent(
+        `LoansBetter — ${fullName || "Client"}\nSubmitted ${uploadedCount} doc(s) for ${
+          mortgageType === "buy" ? "home purchase" :
+          mortgageType === "refinance" ? "refinance" :
+          mortgageType === "cashout" ? "cash-out refinance" : "reverse mortgage"
+        }.\nCode: ${code}\n${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`
+      );
+      setTimeout(() => window.open(`sms:${clientPhone.trim()}?body=${smsBody}`, "_blank"), 600);
+    }
     const dateStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     saveSubmitted(code, dateStr);
     setSubmitted(true);
@@ -720,9 +736,14 @@ export function DocumentChecklist({
                       />
                     </div>
                   </div>
-                  {(!clientEmail.trim() || !clientPhone.trim()) && (
+                  {!clientEmail.trim() && !clientPhone.trim() && (
                     <p className="text-xs text-muted-foreground">
-                      Both fields required — you'll receive a copy of the submission at your email.
+                      Add your email or phone — you'll get a copy of every submission.
+                    </p>
+                  )}
+                  {clientPhone.trim() && !clientEmail.trim() && (
+                    <p className="text-xs text-primary/70">
+                      Phone only — we'll open your texting app to send you a copy.
                     </p>
                   )}
                 </div>
@@ -749,14 +770,14 @@ export function DocumentChecklist({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       onClick={handleSubmit}
-                      disabled={uploadedCount === 0 || !clientEmail.trim() || !clientPhone.trim()}
+                      disabled={uploadedCount === 0 || (!clientEmail.trim() && !clientPhone.trim())}
                       className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       <Send className="w-4 h-4" />
                       {uploadedCount === 0
                         ? "Upload at least one document to submit"
-                        : !clientEmail.trim() || !clientPhone.trim()
-                        ? "Add email and phone to submit"
+                        : !clientEmail.trim() && !clientPhone.trim()
+                        ? "Add email or phone to submit"
                         : `Submit ${uploadedCount} Document${uploadedCount !== 1 ? "s" : ""} to Loan Officer`
                       }
                     </motion.button>
