@@ -282,6 +282,29 @@ export default function Landing() {
                   <p className="text-sm text-muted-foreground font-medium">— {test.author} · <span className="font-normal">{test.role}</span></p>
                 </motion.div>
               ))}
+
+              {/* Rating summary */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.4 }}
+                className="flex items-center gap-4 bg-primary/5 border border-primary/15 rounded-2xl px-6 py-4"
+              >
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, j) => (
+                    <Star
+                      key={j}
+                      className={`w-5 h-5 ${j < 5 ? "fill-primary text-primary" : "text-muted-foreground"}`}
+                      style={j === 4 ? { clipPath: "inset(0 20% 0 0)" } : undefined}
+                    />
+                  ))}
+                </div>
+                <div>
+                  <p className="font-bold text-foreground text-lg leading-none">4.8 <span className="font-normal text-muted-foreground text-sm">out of 5</span></p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Based on client reviews</p>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
