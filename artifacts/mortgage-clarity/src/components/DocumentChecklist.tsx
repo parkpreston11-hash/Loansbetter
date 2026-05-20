@@ -694,8 +694,10 @@ export function DocumentChecklist({
                       />
                     </div>
                   </div>
-                  {!clientEmail.trim() && !clientPhone.trim() && (
-                    <p className="text-xs text-muted-foreground">Add your email or phone so your loan officer can follow up.</p>
+                  {(!clientEmail.trim() || !clientPhone.trim()) && (
+                    <p className="text-xs text-muted-foreground">
+                      Both fields required — you'll receive a copy of the submission at your email.
+                    </p>
                   )}
                 </div>
 
@@ -721,14 +723,14 @@ export function DocumentChecklist({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       onClick={handleSubmit}
-                      disabled={uploadedCount === 0 || (!clientEmail.trim() && !clientPhone.trim())}
+                      disabled={uploadedCount === 0 || !clientEmail.trim() || !clientPhone.trim()}
                       className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       <Send className="w-4 h-4" />
                       {uploadedCount === 0
                         ? "Upload at least one document to submit"
-                        : !clientEmail.trim() && !clientPhone.trim()
-                        ? "Add your contact info to submit"
+                        : !clientEmail.trim() || !clientPhone.trim()
+                        ? "Add email and phone to submit"
                         : `Submit ${uploadedCount} Document${uploadedCount !== 1 ? "s" : ""} to Loan Officer`
                       }
                     </motion.button>
