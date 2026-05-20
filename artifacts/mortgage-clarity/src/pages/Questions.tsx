@@ -122,16 +122,16 @@ export default function Questions() {
               <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.income)}</div>
               <CurrencyInput value={answers.income} onChange={(v) => updateAnswer("income", v)} />
               <Slider
-                value={[Math.min(answers.income, 500000)]}
+                value={[Math.min(answers.income, 5000000)]}
                 min={0}
-                max={500000}
-                step={5000}
+                max={5000000}
+                step={10000}
                 onValueChange={(val) => updateAnswer("income", val[0])}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>$0</span>
-                <span>$500k+</span>
+                <span>$5M+</span>
               </div>
             </div>
           </div>
@@ -148,16 +148,16 @@ export default function Questions() {
                 <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.homeValue)}</div>
                 <CurrencyInput value={answers.homeValue} onChange={(v) => updateAnswer("homeValue", v)} />
                 <Slider
-                  value={[Math.min(answers.homeValue, 2000000)]}
+                  value={[Math.min(answers.homeValue, 5000000)]}
                   min={0}
-                  max={2000000}
+                  max={5000000}
                   step={25000}
                   onValueChange={(val) => updateAnswer("homeValue", val[0])}
                   className="w-full"
                 />
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>$0</span>
-                  <span>$2M+</span>
+                  <span>$5M+</span>
                 </div>
               </div>
             </div>
@@ -173,16 +173,16 @@ export default function Questions() {
               <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.monthlyDebt)}</div>
               <CurrencyInput value={answers.monthlyDebt} onChange={(v) => updateAnswer("monthlyDebt", v)} />
               <Slider
-                value={[Math.min(answers.monthlyDebt, 20000)]}
+                value={[Math.min(answers.monthlyDebt, 500000)]}
                 min={0}
-                max={20000}
-                step={100}
+                max={500000}
+                step={500}
                 onValueChange={(val) => updateAnswer("monthlyDebt", val[0])}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>$0</span>
-                <span>$20k+</span>
+                <span>$500k+</span>
               </div>
             </div>
           </div>
@@ -226,16 +226,16 @@ export default function Questions() {
                 <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.mortgageBalance)}</div>
                 <CurrencyInput value={answers.mortgageBalance} onChange={(v) => updateAnswer("mortgageBalance", v)} />
                 <Slider
-                  value={[Math.min(answers.mortgageBalance, 2000000)]}
+                  value={[Math.min(answers.mortgageBalance, 5000000)]}
                   min={0}
-                  max={2000000}
+                  max={5000000}
                   step={10000}
                   onValueChange={(val) => updateAnswer("mortgageBalance", val[0])}
                   className="w-full"
                 />
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>$0</span>
-                  <span>$2M+</span>
+                  <span>$5M+</span>
                 </div>
               </div>
             </div>
@@ -250,16 +250,16 @@ export default function Questions() {
               <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.downPayment)}</div>
               <CurrencyInput value={answers.downPayment} onChange={(v) => updateAnswer("downPayment", v)} />
               <Slider
-                value={[Math.min(answers.downPayment, 500000)]}
+                value={[Math.min(answers.downPayment, 5000000)]}
                 min={0}
-                max={500000}
-                step={5000}
+                max={5000000}
+                step={10000}
                 onValueChange={(val) => updateAnswer("downPayment", val[0])}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>$0</span>
-                <span>$500k+</span>
+                <span>$5M+</span>
               </div>
             </div>
           </div>
@@ -276,16 +276,16 @@ export default function Questions() {
                 <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.homeValue)}</div>
                 <CurrencyInput value={answers.homeValue} onChange={(v) => updateAnswer("homeValue", v)} />
                 <Slider
-                  value={[Math.min(answers.homeValue, 3000000)]}
+                  value={[Math.min(answers.homeValue, 5000000)]}
                   min={0}
-                  max={3000000}
+                  max={5000000}
                   step={25000}
                   onValueChange={(val) => updateAnswer("homeValue", val[0])}
                   className="w-full"
                 />
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>$0</span>
-                  <span>$3M+</span>
+                  <span>$5M+</span>
                 </div>
               </div>
             </div>
@@ -302,16 +302,16 @@ export default function Questions() {
                 <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.income)}</div>
                 <CurrencyInput value={answers.income} onChange={(v) => updateAnswer("income", v)} />
                 <Slider
-                  value={[Math.min(answers.income, 300000)]}
+                  value={[Math.min(answers.income, 5000000)]}
                   min={0}
-                  max={300000}
-                  step={5000}
+                  max={5000000}
+                  step={10000}
                   onValueChange={(val) => updateAnswer("income", val[0])}
                   className="w-full"
                 />
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>$0</span>
-                  <span>$300k+</span>
+                  <span>$5M+</span>
                 </div>
               </div>
             </div>
@@ -326,16 +326,16 @@ export default function Questions() {
               <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.mortgageBalance)}</div>
               <CurrencyInput value={answers.mortgageBalance} onChange={(v) => updateAnswer("mortgageBalance", v)} />
               <Slider
-                value={[Math.min(answers.mortgageBalance, 2000000)]}
+                value={[Math.min(answers.mortgageBalance, 5000000)]}
                 min={0}
-                max={2000000}
+                max={5000000}
                 step={10000}
                 onValueChange={(val) => updateAnswer("mortgageBalance", val[0])}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>$0</span>
-                <span>$2M+</span>
+                <span>$5M+</span>
               </div>
             </div>
           </div>
