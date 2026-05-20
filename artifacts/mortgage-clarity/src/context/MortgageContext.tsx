@@ -5,6 +5,14 @@ export type CreditScoreRange = "500 or below" | "501–579" | "580–619" | "620
 
 export type EmploymentType = "employed" | "self-employed" | "";
 export type LoanType = "fha" | "conventional" | "va" | "";
+export type LoanTerm = "30-fixed" | "30-arm" | "15-fixed" | "15-arm" | "";
+
+export const LOAN_TERM_RATES: Record<string, { rate: number; label: string; description: string }> = {
+  "30-fixed": { rate: 6.75,  label: "30-Year Fixed",    description: "Stable payment for 30 years. Most popular choice." },
+  "30-arm":   { rate: 6.375, label: "30-Year ARM",       description: "Lower rate for first 5 years, then adjusts with market." },
+  "15-fixed": { rate: 6.125, label: "15-Year Fixed",     description: "Pay off faster and save on interest. Higher monthly payment." },
+  "15-arm":   { rate: 5.875, label: "15-Year ARM",       description: "Lowest starting rate. Adjusts after initial fixed period." },
+};
 
 export interface Answers {
   fullName: string;
@@ -17,6 +25,7 @@ export interface Answers {
   age: number;
   employmentType: EmploymentType;
   loanType: LoanType;
+  loanTerm: LoanTerm;
   currentInterestRate: number;
 }
 
@@ -78,6 +87,7 @@ const defaultAnswers: Answers = {
   age: 65,
   employmentType: "",
   loanType: "",
+  loanTerm: "",
   currentInterestRate: 0,
 };
 
@@ -199,10 +209,15 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
     const debtRed = monthlyDebt * 12 * 2;
 
     if (selectedMortgageType === "buy") {
-      const base = income * 3.5;
-      const low = Math.max(50000, (base - debtRed + downPayment * 2) * creditMultiplier * 0.9);
-      const high = Math.max(60000, (base - debtRed + downPayment * 2) * creditMultiplier * 1.1);
-      setEstimateResult({ low, high, type: "Estimated Home Price Range" });
+      const termInfo = LOAN_TERM_RATES[answers.loanTerm] ?? LOAN_TERM_RATES["30-fixed"];
+      const annualRate = termInfo.rate / 100;
+      const months = answers.loanTerm.startsWith("15") ? 180 : 360;
+      const loanAmount = Math.max(0, homeValue - downPayment);
+      const mr = annualRate / 12;
+      const payment = loanAmount > 0 && mr > 0
+        ? loanAmount * mr * Math.pow(1 + mr, months) / (Math.pow(1 + mr, months) - 1)
+        : 0;
+      setEstimateResult({ low: Math.round(payment * 0.95), high: Math.round(payment * 1.05), type: `Est. Monthly Payment (${termInfo.label} @ ${termInfo.rate}%)` });
     } else if (selectedMortgageType === "refinance") {
       const rateDiff = Math.max(0, (currentInterestRate - CURRENT_MARKET_RATE) / 100);
       const base = rateDiff * mortgageBalance / 12;

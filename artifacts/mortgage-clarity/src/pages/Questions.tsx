@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMortgage, CreditScoreRange, EmploymentType, LoanType, CURRENT_MARKET_RATE } from "@/context/MortgageContext";
+import { useMortgage, CreditScoreRange, EmploymentType, LoanType, LoanTerm, CURRENT_MARKET_RATE, LOAN_TERM_RATES } from "@/context/MortgageContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -67,7 +67,7 @@ export default function Questions() {
   const isReverse = selectedMortgageType === "reverse";
   const isCashout = selectedMortgageType === "cashout";
   const isRefi = selectedMortgageType === "refinance";
-  const totalSteps = isCashout ? 8 : QUESTION_COUNT;
+  const totalSteps = (isCashout || isBuy) ? 8 : QUESTION_COUNT;
 
   const isStepComplete = (s: number): boolean => {
     switch (s) {
@@ -93,9 +93,10 @@ export default function Questions() {
         return answers.mortgageBalance > 0;
       case 6:
         if (isCashout) return answers.mortgageBalance > 0;
+        if (isBuy) return !!answers.loanTerm;
         return !!answers.employmentType;
       case 7:
-        return !!answers.employmentType; // cashout only reaches here
+        return !!answers.employmentType; // buy and cashout only reach here
       default:
         return true;
     }
@@ -557,7 +558,43 @@ export default function Questions() {
         );
 
       case 6: {
-        // Cashout: ask mortgage balance here (shifted); others: employment
+        // Buy: loan term selection; Cashout: mortgage balance; others: employment
+        if (isBuy) {
+          const termKeys = Object.keys(LOAN_TERM_RATES) as LoanTerm[];
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                Which loan term fits you best?
+              </h2>
+              <p className="text-muted-foreground">Rates shown reflect today's market averages.</p>
+              <div className="flex flex-col gap-3 py-4">
+                {termKeys.map((key) => {
+                  const info = LOAN_TERM_RATES[key];
+                  const selected = answers.loanTerm === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => updateAnswer("loanTerm", key)}
+                      className={`w-full p-4 rounded-xl border text-left transition-all ${
+                        selected
+                          ? "border-primary bg-primary/5 ring-1 ring-primary"
+                          : "border-border bg-card hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg font-semibold text-foreground">{info.label}</p>
+                        <span className={`text-sm font-bold px-3 py-1 rounded-full ${selected ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+                          {info.rate}%
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">{info.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        }
         if (isCashout) {
           return (
             <div className="space-y-8">
