@@ -54,6 +54,7 @@ export default function Questions() {
   const { selectedMortgageType, answers, updateAnswer, calculateEstimate } = useMortgage();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [shake, setShake] = useState(false);
 
   if (!selectedMortgageType) {
     setLocation("/start");
@@ -64,7 +65,40 @@ export default function Questions() {
   const isReverse = selectedMortgageType === "reverse";
   const totalSteps = QUESTION_COUNT;
 
+  const isStepComplete = (s: number): boolean => {
+    switch (s) {
+      case 0:
+        if (isReverse) return true; // age slider min 62, always valid
+        return answers.income > 0;
+      case 1:
+        if (isReverse) return answers.homeValue > 0;
+        return true; // monthly debt $0 is a valid real answer
+      case 2:
+        return !!answers.creditScore;
+      case 3:
+        if (isReverse) return true; // $0 balance is explicitly valid
+        return answers.downPayment > 0;
+      case 4:
+        if (isBuy) return answers.homeValue > 0;
+        if (isReverse) return answers.income > 0;
+        return answers.mortgageBalance > 0;
+      case 5:
+        return !!answers.employmentType;
+      default:
+        return true;
+    }
+  };
+
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  };
+
   const handleNext = () => {
+    if (!isStepComplete(step)) {
+      triggerShake();
+      return;
+    }
     if (step < totalSteps - 1) {
       setDirection(1);
       setStep(s => s + 1);
@@ -431,15 +465,34 @@ export default function Questions() {
       </div>
 
       {/* Navigation Footer */}
-      <div className="container mx-auto px-4 py-8 max-w-2xl flex items-center justify-between border-t border-border/50">
-        <Button variant="ghost" onClick={handleBack} className="text-muted-foreground" data-testid="button-back">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        <Button onClick={handleNext} size="lg" className="px-8 rounded-full" data-testid="button-next">
-          {step === totalSteps - 1 ? "See My Results" : "Next"}
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
+      <div className="container mx-auto px-4 py-8 max-w-2xl border-t border-border/50">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" onClick={handleBack} className="text-muted-foreground" data-testid="button-back">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          <div className="flex flex-col items-end gap-1.5">
+            {!isStepComplete(step) && (
+              <p className="text-xs text-muted-foreground animate-in fade-in">
+                {step === 5 ? "Please select an option to continue." : "Please enter a value greater than $0 to continue."}
+              </p>
+            )}
+            <motion.div
+              animate={shake ? { x: [0, -8, 8, -6, 6, -3, 3, 0] } : { x: 0 }}
+              transition={{ duration: 0.45, ease: "easeInOut" }}
+            >
+              <Button
+                onClick={handleNext}
+                size="lg"
+                className={`px-8 rounded-full transition-opacity ${!isStepComplete(step) ? "opacity-50 cursor-not-allowed" : ""}`}
+                data-testid="button-next"
+              >
+                {step === totalSteps - 1 ? "See My Results" : "Next"}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </motion.div>
+          </div>
+        </div>
       </div>
     </div>
   );
