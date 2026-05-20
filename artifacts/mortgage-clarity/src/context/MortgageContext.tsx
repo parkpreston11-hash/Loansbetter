@@ -30,6 +30,7 @@ export interface Answers {
   loanType: LoanType;
   loanTerm: LoanTerm;
   currentInterestRate: number;
+  pensionIncome: number;
   refiGoal: RefiGoal;
   propertyType: PropertyType;
   loanPurpose: LoanPurpose;
@@ -95,6 +96,7 @@ const defaultAnswers: Answers = {
   loanType: "",
   loanTerm: "",
   currentInterestRate: 0,
+  pensionIncome: 0,
   refiGoal: "",
   propertyType: "",
   loanPurpose: "",

@@ -479,25 +479,55 @@ export default function Questions() {
         }
         if (isReverse) {
           return (
-            <div className="space-y-8">
+            <div className="space-y-10">
               <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
-                What is your approximate annual income or pension?
+                Tell us about your income
               </h2>
-              <p className="text-muted-foreground">Include Social Security, pension, retirement distributions, or other income sources.</p>
-              <div className="py-4 space-y-6">
-                <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.income)}</div>
-                <CurrencyInput value={answers.income} onChange={(v) => updateAnswer("income", v)} />
-                <Slider
-                  value={[Math.min(answers.income, 15000000)]}
-                  min={0}
-                  max={15000000}
-                  step={50000}
-                  onValueChange={(val) => updateAnswer("income", val[0])}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>$0</span>
-                  <span>$15M+</span>
+
+              {/* Other annual income */}
+              <div className="space-y-3">
+                <label className="font-medium text-foreground">Other annual income</label>
+                <p className="text-sm text-muted-foreground">Wages, Social Security, rental income, investments, or distributions.</p>
+                <div className="py-2 space-y-4">
+                  <div className="text-3xl font-bold text-primary text-center">{formatCurrency(answers.income)}</div>
+                  <CurrencyInput value={answers.income} onChange={(v) => updateAnswer("income", v)} />
+                  <Slider
+                    value={[Math.min(answers.income, 15000000)]}
+                    min={0}
+                    max={15000000}
+                    step={50000}
+                    onValueChange={(val) => updateAnswer("income", val[0])}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>$0</span>
+                    <span>$15M+</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pension income */}
+              <div className="space-y-3">
+                <label className="font-medium text-foreground">Monthly pension income</label>
+                <p className="text-sm text-muted-foreground">Regular payments from a pension, annuity, or structured retirement plan.</p>
+                <div className="py-2 space-y-4">
+                  <div className="text-3xl font-bold text-primary text-center">
+                    {formatCurrency(answers.pensionIncome)}
+                    <span className="text-base font-normal text-muted-foreground">/mo</span>
+                  </div>
+                  <CurrencyInput value={answers.pensionIncome} onChange={(v) => updateAnswer("pensionIncome", v)} />
+                  <Slider
+                    value={[Math.min(answers.pensionIncome, 50000)]}
+                    min={0}
+                    max={50000}
+                    step={250}
+                    onValueChange={(val) => updateAnswer("pensionIncome", val[0])}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>$0</span>
+                    <span>$50,000/mo</span>
+                  </div>
                 </div>
               </div>
             </div>
