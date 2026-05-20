@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useMortgage } from "@/context/MortgageContext";
 import { Slider } from "@/components/ui/slider";
-import { MessageCircle, FileText, Info } from "lucide-react";
+import { MessageCircle, FileText, Info, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Results() {
@@ -81,6 +81,16 @@ export default function Results() {
               This estimate is for informational purposes only. It does not represent a loan offer or financial advice. Actual results depend on lender guidelines and your complete financial profile.
             </p>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="inline-flex items-center gap-1.5 mt-6 text-xs text-primary-foreground/60 bg-primary-foreground/10 rounded-full px-3 py-1.5"
+          >
+            <Save className="w-3 h-3" />
+            Progress saved — you can close this tab and return anytime
+          </motion.div>
         </div>
       </section>
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 export type MortgageType = "buy" | "refinance" | "cashout" | "reverse" | null;
 export type CreditScoreRange = "Below 580" | "580–619" | "620–679" | "680–739" | "740 or above";
@@ -47,7 +47,11 @@ interface MortgageContextType {
   estimateResult: EstimateResult | null;
   setEstimateResult: (res: EstimateResult | null) => void;
   calculateEstimate: () => void;
+  hasSavedProgress: boolean;
+  clearSavedProgress: () => void;
 }
+
+const STORAGE_KEY = "loansbetter_progress";
 
 const defaultAnswers: Answers = {
   income: 80000,
@@ -66,14 +70,55 @@ const defaultAdjustments: ScenarioAdjustments = {
   downPaymentBoost: 0,
 };
 
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Rehydrate Date objects in chatHistory
+    if (parsed.chatHistory) {
+      parsed.chatHistory = parsed.chatHistory.map((m: ChatMessage) => ({
+        ...m,
+        timestamp: new Date(m.timestamp),
+      }));
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 const MortgageContext = createContext<MortgageContextType | undefined>(undefined);
 
 export function MortgageProvider({ children }: { children: ReactNode }) {
-  const [selectedMortgageType, setSelectedMortgageType] = useState<MortgageType>(null);
-  const [answers, setAnswers] = useState<Answers>(defaultAnswers);
-  const [scenarioAdjustments, setScenarioAdjustments] = useState<ScenarioAdjustments>(defaultAdjustments);
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-  const [estimateResult, setEstimateResult] = useState<EstimateResult | null>(null);
+  const saved = loadFromStorage();
+
+  const [selectedMortgageType, setSelectedMortgageType] = useState<MortgageType>(
+    saved?.selectedMortgageType ?? null
+  );
+  const [answers, setAnswers] = useState<Answers>(saved?.answers ?? defaultAnswers);
+  const [scenarioAdjustments, setScenarioAdjustments] = useState<ScenarioAdjustments>(
+    saved?.scenarioAdjustments ?? defaultAdjustments
+  );
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>(saved?.chatHistory ?? []);
+  const [estimateResult, setEstimateResult] = useState<EstimateResult | null>(
+    saved?.estimateResult ?? null
+  );
+  const [hasSavedProgress, setHasSavedProgress] = useState<boolean>(!!saved?.selectedMortgageType);
+
+  // Auto-save to localStorage whenever anything meaningful changes
+  useEffect(() => {
+    // Only save if the user has actually started (selected a mortgage type)
+    if (!selectedMortgageType) return;
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ selectedMortgageType, answers, scenarioAdjustments, chatHistory, estimateResult })
+      );
+    } catch {
+      // Storage full or unavailable — fail silently
+    }
+  }, [selectedMortgageType, answers, scenarioAdjustments, chatHistory, estimateResult]);
 
   const updateAnswer = <K extends keyof Answers>(key: K, value: Answers[K]) => {
     setAnswers(prev => ({ ...prev, [key]: value }));
@@ -87,6 +132,20 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
     setChatHistory([]);
   };
 
+  const clearSavedProgress = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    setSelectedMortgageType(null);
+    setAnswers(defaultAnswers);
+    setScenarioAdjustments(defaultAdjustments);
+    setChatHistory([]);
+    setEstimateResult(null);
+    setHasSavedProgress(false);
+  };
+
   const calculateEstimate = () => {
     const { income, monthlyDebt, creditScore, downPayment, mortgageBalance, homeValue, age } = answers;
 
@@ -96,24 +155,23 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
     else if (creditScore === "620–679") creditMultiplier = 0.9;
     else if (creditScore === "740 or above") creditMultiplier = 1.1;
 
-    let debtRed = monthlyDebt * 12 * 2;
+    const debtRed = monthlyDebt * 12 * 2;
 
     if (selectedMortgageType === "buy") {
-      let base = income * 3.5;
-      let low = Math.max(50000, (base - debtRed + downPayment * 2) * creditMultiplier * 0.9);
-      let high = Math.max(60000, (base - debtRed + downPayment * 2) * creditMultiplier * 1.1);
+      const base = income * 3.5;
+      const low = Math.max(50000, (base - debtRed + downPayment * 2) * creditMultiplier * 0.9);
+      const high = Math.max(60000, (base - debtRed + downPayment * 2) * creditMultiplier * 1.1);
       setEstimateResult({ low, high, type: "Estimated Home Price Range" });
     } else if (selectedMortgageType === "refinance") {
-      let low = Math.max(0, mortgageBalance * 0.0025);
-      let high = Math.max(0, mortgageBalance * 0.0075);
+      const low = Math.max(0, mortgageBalance * 0.0025);
+      const high = Math.max(0, mortgageBalance * 0.0075);
       setEstimateResult({ low, high, type: "Estimated Monthly Savings" });
     } else if (selectedMortgageType === "cashout") {
-      let homeValEst = mortgageBalance * 1.4;
-      let maxLoan = homeValEst * 0.8;
-      let accessible = Math.max(0, maxLoan - mortgageBalance);
+      const homeValEst = mortgageBalance * 1.4;
+      const maxLoan = homeValEst * 0.8;
+      const accessible = Math.max(0, maxLoan - mortgageBalance);
       setEstimateResult({ low: accessible * 0.9, high: accessible * 1.1, type: "Estimated Accessible Equity" });
     } else if (selectedMortgageType === "reverse") {
-      const yearsRemaining = Math.max(0, 90 - age);
       const equityFactor = 0.4 + (age - 62) * 0.015;
       const low = Math.max(0, homeValue * Math.min(equityFactor, 0.75) * 0.85);
       const high = Math.max(0, homeValue * Math.min(equityFactor, 0.75) * 1.05);
@@ -136,7 +194,9 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
       resetChat,
       estimateResult,
       setEstimateResult,
-      calculateEstimate
+      calculateEstimate,
+      hasSavedProgress,
+      clearSavedProgress,
     }}>
       {children}
     </MortgageContext.Provider>

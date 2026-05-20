@@ -1,8 +1,20 @@
-import { Link } from "wouter";
-import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Shield, HeartHandshake } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, CheckCircle2, Shield, HeartHandshake, RotateCcw, ChevronRight } from "lucide-react";
+import { useMortgage } from "@/context/MortgageContext";
+
+function getTypeLabel(type: string) {
+  if (type === "buy") return "Buy a Home";
+  if (type === "refinance") return "Refinance";
+  if (type === "cashout") return "Cash-Out Refinance";
+  if (type === "reverse") return "Reverse Mortgage";
+  return "your session";
+}
 
 export default function Landing() {
+  const { hasSavedProgress, selectedMortgageType, estimateResult, clearSavedProgress } = useMortgage();
+  const [, setLocation] = useLocation();
+
   return (
     <div className="flex flex-col min-h-[100dvh] w-full">
       <main className="flex-1">
@@ -10,6 +22,46 @@ export default function Landing() {
         <section className="w-full py-24 md:py-32 lg:py-48 flex items-center justify-center bg-gradient-to-b from-secondary/50 to-background overflow-hidden relative">
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, #000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
           <div className="container px-4 md:px-6 flex flex-col items-center text-center z-10">
+
+            {/* Resume Progress Banner */}
+            <AnimatePresence>
+              {hasSavedProgress && (
+                <motion.div
+                  initial={{ opacity: 0, y: -12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.4 }}
+                  className="mb-10 w-full max-w-xl bg-card border border-primary/20 rounded-2xl px-6 py-4 shadow-sm flex flex-col sm:flex-row items-center gap-4 text-left"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">Welcome back — your progress is saved</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {selectedMortgageType ? `Goal: ${getTypeLabel(selectedMortgageType)}` : "Pick up where you left off."}
+                      {estimateResult ? ` · Estimate ready` : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={clearSavedProgress}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-secondary"
+                      data-testid="button-clear-progress"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      Start fresh
+                    </button>
+                    <button
+                      onClick={() => setLocation(estimateResult ? "/results" : "/questions")}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-4 py-1.5 rounded-lg transition-all"
+                      data-testid="button-resume-progress"
+                    >
+                      Continue
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
