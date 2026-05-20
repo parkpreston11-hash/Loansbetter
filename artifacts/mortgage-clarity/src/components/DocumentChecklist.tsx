@@ -478,10 +478,36 @@ export function DocumentChecklist({
     saveContact(code, { email: clientEmail, phone: clientPhone });
   }, [clientEmail, clientPhone, code]);
 
+  const triggerDocumentEmail = (docTitle: string, fileName: string) => {
+    const dateStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    const body = [
+      `New Document Uploaded`,
+      ``,
+      `From: ${fullName || "Client"}`,
+      ...(clientEmail.trim() ? [`Email: ${clientEmail.trim()}`] : []),
+      ...(clientPhone.trim() ? [`Phone: ${clientPhone.trim()}`] : []),
+      ``,
+      `Document: ${docTitle}`,
+      `File: ${fileName}`,
+      ``,
+      `Client Code: ${code}`,
+      `Date: ${dateStr}`,
+      ``,
+      `--`,
+      `Sent automatically via LoansBetter`,
+    ].join("\n");
+    const subject = encodeURIComponent(`LoansBetter — New Document: ${docTitle} — ${code}`);
+    const encodedBody = encodeURIComponent(body);
+    const cc = clientEmail.trim() ? `&cc=${encodeURIComponent(clientEmail.trim())}` : "";
+    window.open(`mailto:parkpreston11@gmail.com?${cc}subject=${subject}&body=${encodedBody}`, "_blank");
+  };
+
   const handleUpload = (id: string, file: UploadedFile) => {
     setFiles(prev => ({ ...prev, [id]: file }));
     clearSubmitted(code);
     setSubmitted(false);
+    const doc = docs.find(d => d.id === id);
+    if (doc) triggerDocumentEmail(doc.title, file.name);
   };
 
   const handleRemove = (id: string) => {
