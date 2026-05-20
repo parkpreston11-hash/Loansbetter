@@ -533,7 +533,8 @@ export function DocumentChecklist({
 
     const subject = encodeURIComponent(`LoansBetter — ${fullName || "Client"} — ${code}`);
     const encodedBody = encodeURIComponent(body);
-    window.open(`mailto:parkpreston11@gmail.com?subject=${subject}&body=${encodedBody}`, "_blank");
+    const cc = clientEmail.trim() ? `&cc=${encodeURIComponent(clientEmail.trim())}` : "";
+    window.open(`mailto:parkpreston11@gmail.com?${cc}subject=${subject}&body=${encodedBody}`, "_blank");
     const dateStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     saveSubmitted(code, dateStr);
     setSubmitted(true);
