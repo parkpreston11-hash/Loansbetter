@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMortgage } from "@/context/MortgageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, UserCircle2, Bot, ArrowLeft, Phone, Sparkles } from "lucide-react";
+import { Send, UserCircle2, ArrowLeft, Phone, Sparkles, BookmarkCheck, Bookmark } from "lucide-react";
 
 // ─── Response Engine ──────────────────────────────────────────────────────────
 
@@ -466,7 +466,7 @@ const suggestedQuestions = [
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Chat() {
-  const { chatHistory, addChatMessage, resetChat, answers, selectedMortgageType, estimateResult } = useMortgage();
+  const { chatHistory, addChatMessage, saveChatHistory, chatSaved, answers, selectedMortgageType, estimateResult } = useMortgage();
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
@@ -519,7 +519,6 @@ export default function Chat() {
   };
 
   const handleTalkToLoanOfficer = () => {
-    resetChat();
     setLocation("/handoff");
   };
 
@@ -544,6 +543,18 @@ export default function Chat() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={saveChatHistory}
+            disabled={chatHistory.filter(m => m.role === "user").length === 0}
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 h-9 text-sm font-medium text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            data-testid="button-save-chat"
+            title={chatSaved ? "Chat saved" : "Save chat so it's available on the summary page"}
+          >
+            {chatSaved
+              ? <><BookmarkCheck className="w-3.5 h-3.5 text-primary" /> <span className="text-primary">Saved</span></>
+              : <><Bookmark className="w-3.5 h-3.5" /> Save Chat</>
+            }
+          </button>
           <a
             href="tel:7027279713"
             data-testid="link-call-loan-officer"
@@ -661,9 +672,20 @@ export default function Chat() {
           <Phone className="w-3.5 h-3.5" />
           (702) 727-9713
         </a>
-        <button onClick={handleTalkToLoanOfficer} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Ready to Talk
-        </button>
+        <div className="flex items-center gap-3">
+          {chatHistory.filter(m => m.role === "user").length > 0 && (
+            <button
+              onClick={saveChatHistory}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {chatSaved ? <BookmarkCheck className="w-3.5 h-3.5 text-primary" /> : <Bookmark className="w-3.5 h-3.5" />}
+              {chatSaved ? "Saved" : "Save"}
+            </button>
+          )}
+          <button onClick={handleTalkToLoanOfficer} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Ready to Talk
+          </button>
+        </div>
       </div>
 
       {/* Input Area */}

@@ -44,6 +44,8 @@ interface MortgageContextType {
   setChatHistory: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   addChatMessage: (msg: Omit<ChatMessage, "timestamp">) => void;
   resetChat: () => void;
+  saveChatHistory: () => void;
+  chatSaved: boolean;
   estimateResult: EstimateResult | null;
   setEstimateResult: (res: EstimateResult | null) => void;
   calculateEstimate: () => void;
@@ -51,7 +53,10 @@ interface MortgageContextType {
   clearSavedProgress: () => void;
 }
 
-const STORAGE_KEY = "loansbetter_progress";
+// Progress key: answers, mortgage type, estimate — auto-saved
+const PROGRESS_KEY = "loansbetter_progress";
+// Chat key: only saved when user explicitly clicks Save
+const CHAT_KEY = "loansbetter_chat";
 
 const defaultAnswers: Answers = {
   income: 80000,
@@ -70,28 +75,30 @@ const defaultAdjustments: ScenarioAdjustments = {
   downPaymentBoost: 0,
 };
 
-function loadFromStorage() {
+function loadProgress() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    // Rehydrate Date objects in chatHistory
-    if (parsed.chatHistory) {
-      parsed.chatHistory = parsed.chatHistory.map((m: ChatMessage) => ({
-        ...m,
-        timestamp: new Date(m.timestamp),
-      }));
-    }
-    return parsed;
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
+  }
+}
+
+function loadSavedChat(): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(CHAT_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return parsed.map((m: ChatMessage) => ({ ...m, timestamp: new Date(m.timestamp) }));
+  } catch {
+    return [];
   }
 }
 
 const MortgageContext = createContext<MortgageContextType | undefined>(undefined);
 
 export function MortgageProvider({ children }: { children: ReactNode }) {
-  const saved = loadFromStorage();
+  const saved = loadProgress();
 
   const [selectedMortgageType, setSelectedMortgageType] = useState<MortgageType>(
     saved?.selectedMortgageType ?? null
@@ -100,25 +107,36 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
   const [scenarioAdjustments, setScenarioAdjustments] = useState<ScenarioAdjustments>(
     saved?.scenarioAdjustments ?? defaultAdjustments
   );
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>(saved?.chatHistory ?? []);
   const [estimateResult, setEstimateResult] = useState<EstimateResult | null>(
     saved?.estimateResult ?? null
   );
   const [hasSavedProgress, setHasSavedProgress] = useState<boolean>(!!saved?.selectedMortgageType);
 
-  // Auto-save to localStorage whenever anything meaningful changes
+  // Chat: loaded from its own key (only present if user explicitly saved it)
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>(loadSavedChat);
+  const [chatSaved, setChatSaved] = useState<boolean>(() => !!localStorage.getItem(CHAT_KEY));
+
+  // Auto-save progress (not chat) whenever meaningful state changes
   useEffect(() => {
-    // Only save if the user has actually started (selected a mortgage type)
     if (!selectedMortgageType) return;
     try {
       localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ selectedMortgageType, answers, scenarioAdjustments, chatHistory, estimateResult })
+        PROGRESS_KEY,
+        JSON.stringify({ selectedMortgageType, answers, scenarioAdjustments, estimateResult })
       );
+      setHasSavedProgress(true);
     } catch {
       // Storage full or unavailable — fail silently
     }
-  }, [selectedMortgageType, answers, scenarioAdjustments, chatHistory, estimateResult]);
+  }, [selectedMortgageType, answers, scenarioAdjustments, estimateResult]);
+
+  // Keep saved chat in sync when chatSaved is true and new messages are added
+  useEffect(() => {
+    if (!chatSaved || chatHistory.length === 0) return;
+    try {
+      localStorage.setItem(CHAT_KEY, JSON.stringify(chatHistory));
+    } catch {}
+  }, [chatHistory, chatSaved]);
 
   const updateAnswer = <K extends keyof Answers>(key: K, value: Answers[K]) => {
     setAnswers(prev => ({ ...prev, [key]: value }));
@@ -128,20 +146,30 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
     setChatHistory(prev => [...prev, { ...msg, timestamp: new Date() }]);
   };
 
+  // Explicit save: persists chat to localStorage
+  const saveChatHistory = () => {
+    try {
+      localStorage.setItem(CHAT_KEY, JSON.stringify(chatHistory));
+      setChatSaved(true);
+    } catch {}
+  };
+
   const resetChat = () => {
     setChatHistory([]);
+    setChatSaved(false);
+    try { localStorage.removeItem(CHAT_KEY); } catch {}
   };
 
   const clearSavedProgress = () => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // ignore
-    }
+      localStorage.removeItem(PROGRESS_KEY);
+      localStorage.removeItem(CHAT_KEY);
+    } catch {}
     setSelectedMortgageType(null);
     setAnswers(defaultAnswers);
     setScenarioAdjustments(defaultAdjustments);
     setChatHistory([]);
+    setChatSaved(false);
     setEstimateResult(null);
     setHasSavedProgress(false);
   };
@@ -192,6 +220,8 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
       setChatHistory,
       addChatMessage,
       resetChat,
+      saveChatHistory,
+      chatSaved,
       estimateResult,
       setEstimateResult,
       calculateEstimate,
