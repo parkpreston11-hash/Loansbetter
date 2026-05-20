@@ -162,11 +162,11 @@ export default function Handoff() {
         <div className="bg-primary rounded-2xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-lg">
           <div>
             <p className="text-primary-foreground/80 text-sm font-medium uppercase tracking-wider mb-1">Speak with a Loan Officer Now</p>
-            <p className="text-primary-foreground text-2xl font-bold font-serif">Call (702) 727-9713</p>
+            <p className="text-primary-foreground text-2xl font-bold font-serif">Call 714-494-4172</p>
             <p className="text-primary-foreground/70 text-sm mt-1">Available Mon–Sat, 8am–7pm</p>
           </div>
           <a
-            href="tel:7027279713"
+            href="tel:7144944172"
             data-testid="link-call-now"
             className="inline-flex items-center gap-2 bg-white text-primary rounded-full px-8 h-12 font-semibold text-base hover:bg-white/90 transition-all hover:scale-105 active:scale-95 shrink-0"
           >

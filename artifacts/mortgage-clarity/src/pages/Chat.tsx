@@ -556,12 +556,12 @@ export default function Chat() {
             }
           </button>
           <a
-            href="tel:7027279713"
+            href="tel:7144944172"
             data-testid="link-call-loan-officer"
             className="hidden sm:inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 h-9 text-sm font-medium text-foreground hover:border-primary/50 hover:shadow-sm transition-all"
           >
             <Phone className="w-3.5 h-3.5 text-primary" />
-            (702) 727-9713
+            714-494-4172
           </a>
           <Button
             onClick={handleTalkToLoanOfficer}
@@ -668,9 +668,9 @@ export default function Chat() {
 
       {/* Mobile bar */}
       <div className="sm:hidden flex items-center justify-between gap-2 px-4 py-2 border-t border-border bg-secondary/30">
-        <a href="tel:7027279713" className="flex items-center gap-1.5 text-sm text-primary font-medium">
+        <a href="tel:7144944172" className="flex items-center gap-1.5 text-sm text-primary font-medium">
           <Phone className="w-3.5 h-3.5" />
-          (702) 727-9713
+          714-494-4172
         </a>
         <div className="flex items-center gap-3">
           {chatHistory.filter(m => m.role === "user").length > 0 && (

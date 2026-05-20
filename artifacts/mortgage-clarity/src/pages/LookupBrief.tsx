@@ -227,11 +227,11 @@ export default function LookupBrief() {
               <div className="pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
                 <p className="text-sm text-muted-foreground">Ready to follow up with this client?</p>
                 <a
-                  href="tel:7027279713"
+                  href="tel:7144944172"
                   className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-6 h-11 font-medium text-sm hover:bg-primary/90 transition-all"
                 >
                   <Phone className="w-4 h-4" />
-                  (702) 727-9713
+                  714-494-4172
                 </a>
               </div>
             </motion.div>
