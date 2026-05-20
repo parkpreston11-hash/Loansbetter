@@ -12,6 +12,7 @@ import Results from "@/pages/Results";
 import Chat from "@/pages/Chat";
 import Handoff from "@/pages/Handoff";
 import LookupBrief from "@/pages/LookupBrief";
+import Learn from "@/pages/Learn";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ function Router() {
         <Route path="/chat" component={Chat} />
         <Route path="/handoff" component={Handoff} />
         <Route path="/lookup" component={LookupBrief} />
+        <Route path="/learn" component={Learn} />
         <Route component={NotFound} />
       </Switch>
     </>

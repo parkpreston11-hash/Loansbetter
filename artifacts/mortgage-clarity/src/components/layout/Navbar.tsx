@@ -25,7 +25,7 @@ export function Navbar() {
           <Link href="/questions" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Calculate
           </Link>
-          <Link href="/start" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/learn" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Learn
           </Link>
         </div>
