@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMortgage, CreditScoreRange, EmploymentType } from "@/context/MortgageContext";
+import { useMortgage, CreditScoreRange, EmploymentType, LoanType } from "@/context/MortgageContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -66,7 +66,7 @@ export default function Questions() {
   const isBuy = selectedMortgageType === "buy";
   const isReverse = selectedMortgageType === "reverse";
   const isCashout = selectedMortgageType === "cashout";
-  const totalSteps = QUESTION_COUNT;
+  const totalSteps = isCashout ? 8 : QUESTION_COUNT;
 
   const isStepComplete = (s: number): boolean => {
     switch (s) {
@@ -82,14 +82,17 @@ export default function Questions() {
         return !!answers.creditScore;
       case 4:
         if (isReverse) return true; // $0 balance is explicitly valid
-        if (isCashout) return answers.homeValue > 0;
+        if (isCashout) return !!answers.loanType; // loan type required
         return answers.downPayment > 0;
       case 5:
-        if (isBuy) return answers.homeValue > 0;
+        if (isBuy || isCashout) return answers.homeValue > 0;
         if (isReverse) return answers.income > 0;
         return answers.mortgageBalance > 0;
       case 6:
+        if (isCashout) return answers.mortgageBalance > 0;
         return !!answers.employmentType;
+      case 7:
+        return !!answers.employmentType; // cashout only reaches here
       default:
         return true;
     }
@@ -106,21 +109,23 @@ export default function Questions() {
       return;
     }
 
-    // Credit score gate (all loan types)
-    if (step === 3 && answers.creditScore === "500 or below") {
+    // Credit score gate (all loan types EXCEPT reverse mortgage)
+    if (step === 3 && answers.creditScore === "500 or below" && !isReverse) {
       setDisqualReason(
         "Unfortunately we're unable to assist with a credit score of 500 or below. Most loan programs require a minimum score of 501. Consider working with a credit counselor to improve your score, then come back — we'd love to help."
       );
       return;
     }
 
-    // Cash-out equity gate: after mortgage balance is entered (step 5)
-    if (step === 5 && isCashout) {
-      const maxCashOut = answers.homeValue * 0.8 - answers.mortgageBalance;
+    // Cash-out equity gate: after mortgage balance is entered (step 6 for cashout)
+    if (step === 6 && isCashout) {
+      const ltvMultiplier = answers.loanType === "va" ? 0.9 : 0.8;
+      const maxCashOut = answers.homeValue * ltvMultiplier - answers.mortgageBalance;
       if (maxCashOut < 25000) {
         const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+        const pct = answers.loanType === "va" ? "90%" : "80%";
         setDisqualReason(
-          `Based on your home value (${fmt.format(answers.homeValue)}) and mortgage balance (${fmt.format(answers.mortgageBalance)}), your maximum cash-out would be ${fmt.format(Math.max(0, maxCashOut))} — below our $25,000 minimum. Unfortunately we can't help with this scenario.`
+          `Based on your home value (${fmt.format(answers.homeValue)}) and mortgage balance (${fmt.format(answers.mortgageBalance)}), your maximum cash-out would be ${fmt.format(Math.max(0, maxCashOut))} (${pct} LTV) — below our $25,000 minimum. Unfortunately we can't help with this scenario.`
         );
         return;
       }
@@ -341,27 +346,32 @@ export default function Questions() {
           );
         }
         if (isCashout) {
+          const loanOptions: { value: LoanType; label: string; sub: string }[] = [
+            { value: "conventional", label: "Conventional", sub: "Standard loan not backed by the government." },
+            { value: "fha",         label: "FHA",          sub: "Insured by the Federal Housing Administration." },
+            { value: "va",          label: "VA",           sub: "Guaranteed by the Dept. of Veterans Affairs — up to 90% LTV." },
+          ];
           return (
             <div className="space-y-8">
               <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
-                What is your home currently worth?
+                What type of loan do you currently have?
               </h2>
-              <p className="text-muted-foreground">Use your best estimate — a recent appraisal or online estimate works great.</p>
-              <div className="py-4 space-y-6">
-                <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.homeValue)}</div>
-                <CurrencyInput value={answers.homeValue} onChange={(v) => updateAnswer("homeValue", v)} />
-                <Slider
-                  value={[Math.min(answers.homeValue, 30000000)]}
-                  min={0}
-                  max={30000000}
-                  step={100000}
-                  onValueChange={(val) => updateAnswer("homeValue", val[0])}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>$0</span>
-                  <span>$30M+</span>
-                </div>
+              <p className="text-muted-foreground">This affects your maximum cash-out percentage.</p>
+              <div className="flex flex-col gap-3 py-4">
+                {loanOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => updateAnswer("loanType", opt.value)}
+                    className={`w-full p-4 rounded-xl border text-left transition-all ${
+                      answers.loanType === opt.value
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border bg-card hover:border-primary/50"
+                    }`}
+                  >
+                    <p className="text-lg font-semibold text-foreground">{opt.label}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">{opt.sub}</p>
+                  </button>
+                ))}
               </div>
             </div>
           );
@@ -391,12 +401,13 @@ export default function Questions() {
         );
 
       case 5:
-        if (isBuy) {
+        if (isBuy || isCashout) {
           return (
             <div className="space-y-8">
               <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
-                What home price range are you targeting?
+                {isCashout ? "What is your home currently worth?" : "What home price range are you targeting?"}
               </h2>
+              {isCashout && <p className="text-muted-foreground">Use your best estimate — a recent appraisal or online estimate works great.</p>}
               <div className="py-4 space-y-6">
                 <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.homeValue)}</div>
                 <CurrencyInput value={answers.homeValue} onChange={(v) => updateAnswer("homeValue", v)} />
@@ -467,19 +478,36 @@ export default function Questions() {
         );
 
       case 6: {
-        const options: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
-          {
-            value: "employed",
-            label: "Employed",
-            sub: "I receive a W-2 from an employer.",
-            icon: <Briefcase className="w-6 h-6" />,
-          },
-          {
-            value: "self-employed",
-            label: "Self-Employed",
-            sub: "I own a business, freelance, or receive 1099 income.",
-            icon: <Building2 className="w-6 h-6" />,
-          },
+        // Cashout: ask mortgage balance here (shifted); others: employment
+        if (isCashout) {
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                How much do you still owe on your mortgage?
+              </h2>
+              <p className="text-muted-foreground">Enter your current outstanding balance.</p>
+              <div className="py-4 space-y-6">
+                <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.mortgageBalance)}</div>
+                <CurrencyInput value={answers.mortgageBalance} onChange={(v) => updateAnswer("mortgageBalance", v)} />
+                <Slider
+                  value={[Math.min(answers.mortgageBalance, 5000000)]}
+                  min={0}
+                  max={5000000}
+                  step={10000}
+                  onValueChange={(val) => updateAnswer("mortgageBalance", val[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>$0</span>
+                  <span>$5M+</span>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        const employmentOptions: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
+          { value: "employed",      label: "Employed",      sub: "I receive a W-2 from an employer.",                         icon: <Briefcase className="w-6 h-6" /> },
+          { value: "self-employed", label: "Self-Employed", sub: "I own a business, freelance, or receive 1099 income.",       icon: <Building2 className="w-6 h-6" /> },
         ];
         return (
           <div className="space-y-8">
@@ -488,7 +516,46 @@ export default function Questions() {
             </h2>
             <p className="text-muted-foreground">This helps us tailor your document checklist.</p>
             <div className="flex flex-col gap-4 py-4">
-              {options.map((opt) => (
+              {employmentOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => updateAnswer("employmentType", opt.value)}
+                  className={`w-full p-5 rounded-2xl border text-left transition-all flex items-center gap-5 ${
+                    answers.employmentType === opt.value
+                      ? "border-primary bg-primary/5 ring-1 ring-primary"
+                      : "border-border bg-card hover:border-primary/50"
+                  }`}
+                >
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                    answers.employmentType === opt.value ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                  }`}>
+                    {opt.icon}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-lg">{opt.label}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">{opt.sub}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case 7: {
+        // Cashout only — employment (final step, shifted from case 6)
+        const empOptions: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
+          { value: "employed",      label: "Employed",      sub: "I receive a W-2 from an employer.",                         icon: <Briefcase className="w-6 h-6" /> },
+          { value: "self-employed", label: "Self-Employed", sub: "I own a business, freelance, or receive 1099 income.",       icon: <Building2 className="w-6 h-6" /> },
+        ];
+        return (
+          <div className="space-y-8">
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+              Are you employed or self-employed?
+            </h2>
+            <p className="text-muted-foreground">This helps us tailor your document checklist.</p>
+            <div className="flex flex-col gap-4 py-4">
+              {empOptions.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => updateAnswer("employmentType", opt.value)}
@@ -601,7 +668,11 @@ export default function Questions() {
           <div className="flex flex-col items-end gap-1.5">
             {!isStepComplete(step) && (
               <p className="text-xs text-muted-foreground animate-in fade-in">
-                {step === 0 ? "Please enter your full name to continue." : step === 6 ? "Please select an option to continue." : "Please enter a value greater than $0 to continue."}
+                {step === 0
+                  ? "Please enter your full name to continue."
+                  : (step === 3 || step === 7 || (step === 4 && isCashout) || (step === 6 && !isCashout))
+                    ? "Please select an option to continue."
+                    : "Please enter a value greater than $0 to continue."}
               </p>
             )}
             <motion.div

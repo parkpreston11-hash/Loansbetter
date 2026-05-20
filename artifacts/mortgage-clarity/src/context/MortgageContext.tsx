@@ -4,6 +4,7 @@ export type MortgageType = "buy" | "refinance" | "cashout" | "reverse" | null;
 export type CreditScoreRange = "500 or below" | "501–579" | "580–619" | "620–679" | "680–739" | "740 or above";
 
 export type EmploymentType = "employed" | "self-employed" | "";
+export type LoanType = "fha" | "conventional" | "va" | "";
 
 export interface Answers {
   fullName: string;
@@ -15,6 +16,7 @@ export interface Answers {
   mortgageBalance: number;
   age: number;
   employmentType: EmploymentType;
+  loanType: LoanType;
 }
 
 export interface ScenarioAdjustments {
@@ -72,6 +74,7 @@ const defaultAnswers: Answers = {
   mortgageBalance: 200000,
   age: 65,
   employmentType: "",
+  loanType: "",
 };
 
 const defaultAdjustments: ScenarioAdjustments = {
@@ -201,7 +204,8 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
       const high = Math.max(0, mortgageBalance * 0.0075);
       setEstimateResult({ low, high, type: "Estimated Monthly Savings" });
     } else if (selectedMortgageType === "cashout") {
-      const maxCashOut = Math.max(0, homeValue * 0.8 - mortgageBalance);
+      const ltvMultiplier = answers.loanType === "va" ? 0.9 : 0.8;
+      const maxCashOut = Math.max(0, homeValue * ltvMultiplier - mortgageBalance);
       setEstimateResult({ low: maxCashOut, high: maxCashOut, type: "Maximum Cash-Out Amount" });
     } else if (selectedMortgageType === "reverse") {
       const maxCashOut = Math.max(0, homeValue * 0.5 - mortgageBalance);
