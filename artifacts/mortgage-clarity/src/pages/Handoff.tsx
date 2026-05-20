@@ -84,6 +84,8 @@ export default function Handoff() {
       code,
       date: today,
       goal: selectedMortgageType,
+      creditScore: answers.creditScore,
+      employmentType: answers.employmentType,
       profile: buildProfile(),
       estimate: {
         label: estimateResult.type,

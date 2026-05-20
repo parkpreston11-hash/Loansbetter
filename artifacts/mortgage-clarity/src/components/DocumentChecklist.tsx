@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload, CheckCircle2, Clock, ChevronDown, ChevronUp,
-  FileImage, X, Eye, Folder
+  FileImage, X, Eye, Folder, Send, PartyPopper
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -419,6 +419,7 @@ export function DocumentChecklist({
   const [files, setFiles] = useState<Record<string, UploadedFile | undefined>>(() =>
     loadDocStates(code)
   );
+  const [submitted, setSubmitted] = useState(false);
 
   const docs = getDocList(mortgageType, creditScore, employmentType);
   const required = docs.filter(d => d.required);
@@ -433,6 +434,7 @@ export function DocumentChecklist({
 
   const handleUpload = (id: string, file: UploadedFile) => {
     setFiles(prev => ({ ...prev, [id]: file }));
+    setSubmitted(false);
   };
 
   const handleRemove = (id: string) => {
@@ -441,6 +443,46 @@ export function DocumentChecklist({
       delete next[id];
       return next;
     });
+    setSubmitted(false);
+  };
+
+  const handleSubmit = () => {
+    const typeFull =
+      mortgageType === "buy" ? "Buy a Home" :
+      mortgageType === "refinance" ? "Refinance" :
+      mortgageType === "cashout" ? "Cash-Out Refinance" :
+      "Reverse Mortgage";
+
+    const uploadedDocs = docs
+      .filter(d => files[d.id])
+      .map(d => `  • ${d.title} — ${files[d.id]!.name}`)
+      .join("\n");
+
+    const missingRequired = required
+      .filter(d => !files[d.id])
+      .map(d => `  • ${d.title}`)
+      .join("\n");
+
+    const body = [
+      `LoansBetter Document Submission`,
+      ``,
+      `Client Code: ${code}`,
+      `Loan Type: ${typeFull}`,
+      `Employment: ${employmentType || "Not specified"}`,
+      `Date: ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`,
+      ``,
+      `UPLOADED DOCUMENTS (${uploadedCount}):`,
+      uploadedDocs || "  None",
+      ...(missingRequired ? [``, `STILL NEEDED:`, missingRequired] : []),
+      ``,
+      `--`,
+      `Submitted via LoansBetter`,
+    ].join("\n");
+
+    const subject = encodeURIComponent(`LoansBetter Document Submission — ${code}`);
+    const encodedBody = encodeURIComponent(body);
+    window.open(`mailto:parkpreston11@gmail.com?subject=${subject}&body=${encodedBody}`, "_blank");
+    setSubmitted(true);
   };
 
   const typeLabel =
@@ -558,14 +600,63 @@ export function DocumentChecklist({
                 </div>
               )}
 
+              {/* Submit section */}
+              <div className="rounded-2xl border-2 border-dashed border-primary/20 bg-primary/3 p-6 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Send className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">Submit to Loan Officer</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      When you're ready, hit the button below. Your email app will open with a pre-filled summary of your uploaded documents — just press Send.
+                    </p>
+                  </div>
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {submitted ? (
+                    <motion.div
+                      key="done"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4"
+                    >
+                      <PartyPopper className="w-5 h-5 text-green-600 shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-green-800">Email opened — just press Send!</p>
+                        <p className="text-xs text-green-700 mt-0.5">
+                          Your loan officer will receive your document list and follow up with next steps.
+                        </p>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      key="btn"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      onClick={handleSubmit}
+                      disabled={uploadedCount === 0}
+                      className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    >
+                      <Send className="w-4 h-4" />
+                      {uploadedCount === 0
+                        ? "Upload at least one document to submit"
+                        : `Submit ${uploadedCount} Document${uploadedCount !== 1 ? "s" : ""} to Loan Officer`
+                      }
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
+
               {/* Footer CTA */}
               <div className="pt-2 border-t border-border flex flex-col sm:flex-row gap-4 items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Ready to move forward? Call us with your client code and we'll take it from here.
+                  Prefer to call? Reference your client code and we'll take it from here.
                 </p>
                 <a
                   href="tel:7144944172"
-                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-8 h-12 font-semibold text-sm hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 shrink-0 whitespace-nowrap"
+                  className="inline-flex items-center gap-2 bg-card border border-border text-foreground rounded-full px-8 h-12 font-semibold text-sm hover:bg-secondary transition-all shrink-0 whitespace-nowrap"
                 >
                   Call 714-494-4172
                 </a>
