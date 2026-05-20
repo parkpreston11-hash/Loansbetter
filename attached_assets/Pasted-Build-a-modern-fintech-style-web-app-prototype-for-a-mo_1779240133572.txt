@@ -1,0 +1,235 @@
+Build a modern fintech-style web app prototype for a mortgage clarity platform. This is NOT a real mortgage lender or banking app yet. It is only a front-end prototype/demo focused on user experience, simplicity, and guided onboarding.
+
+Tech stack:
+
+React frontend
+Modern responsive UI
+Clean component structure
+Mobile-friendly
+Smooth animations/transitions
+Simple fintech design aesthetic similar to modern finance apps
+Use dummy/fake calculation logic for now
+No real financial integrations yet
+No real authentication required yet
+
+MAIN GOAL:
+The app should help users understand their mortgage-related options quickly before doing paperwork.
+
+The experience should feel:
+
+simple
+fast
+low-stress
+clean
+trustworthy
+guided step-by-step
+
+IMPORTANT DESIGN RULES:
+
+One question per screen/card
+Large modern buttons
+Minimal clutter
+Very easy for non-technical users
+Modern fintech aesthetic
+Calm professional colors
+Clear typography
+Smooth transitions between steps
+
+APP FLOW:
+
+==================================================
+PAGE 1 — LANDING PAGE
+
+Create a homepage with:
+
+modern hero section
+headline:
+“Understand your mortgage options before paperwork.”
+short subtitle explaining the platform
+“Get Started” button
+clean fintech UI
+
+Add sections below:
+
+“How it Works”
+“Why It’s Different”
+“Simple • Transparent • Stress-Free”
+
+Include placeholder testimonials/reviews section for future trust-building.
+
+==================================================
+PAGE 2 — USER INTENT SELECTION
+
+When user clicks “Get Started”, show a clean selection screen with large buttons/cards:
+
+Options:
+
+Buy a Home
+Refinance
+Cash-Out Refinance
+Reverse Mortgage (disabled or marked “Coming Soon”)
+
+Save the selected option in app state.
+
+==================================================
+PAGE 3 — GUIDED QUESTION FLOW
+
+After selecting an option, guide the user through a multi-step question flow.
+
+IMPORTANT:
+
+Only ONE question visible at a time
+Use progress indicator
+Smooth transitions
+Very simple UX
+
+Questions should vary slightly depending on selected option.
+
+Example questions:
+
+Annual income
+Monthly debt
+Credit score range
+Down payment amount
+Estimated home value
+Current mortgage balance
+
+Use sliders, button ranges, dropdowns, and simple inputs instead of large forms whenever possible.
+
+==================================================
+PAGE 4 — RESULTS / ESTIMATE SCREEN
+
+After questions are completed:
+
+Generate a simple estimate using fake/demo calculation logic.
+Show estimated affordability range or estimated result.
+
+Examples:
+
+“You may qualify for homes around $300k–$350k.”
+“You may be able to access approximately $40k–$60k in cash.”
+
+IMPORTANT:
+
+Clearly state estimates are informational only.
+Add simple explanation section:
+“Here’s what affected your estimate.”
+
+Include:
+
+debt impact
+credit impact
+down payment impact
+
+Do NOT present this as official financial advice.
+
+==================================================
+PAGE 5 — SCENARIO EXPLORER
+
+Below the results, add optional “Explore Scenarios” section.
+
+This should let users test hypothetical changes like:
+
+Increase income
+Reduce debt
+Improve credit score
+Increase down payment
+
+When adjusted:
+
+dynamically update estimate ranges
+show simple visual feedback
+smooth animations
+
+IMPORTANT:
+The app should explain possibilities neutrally and not predict markets or give financial advice.
+
+==================================================
+PAGE 6 — AI CHAT / GUIDANCE PANEL
+
+Add a mock AI assistant/chat interface.
+
+The AI should:
+
+answer general mortgage questions
+explain terms simply
+explain hypothetical scenarios
+provide educational guidance only
+
+The AI should NOT:
+
+predict markets
+tell users what they should financially do
+give legal or financial advice
+
+Add disclaimer text.
+
+The chat UI should feel modern and friendly.
+
+==================================================
+PAGE 7 — CONTINUE / LOAN OFFICER HANDOFF
+
+Add a “Continue” or “Talk to a Loan Officer” button.
+
+When clicked:
+
+generate a mock “context ticket” summary page.
+
+The ticket should include:
+
+selected mortgage goal
+answers user provided
+estimate results
+scenario changes explored
+questions asked in chat
+timestamp
+
+The goal:
+
+simulate passing context to a loan officer
+avoid users repeating information
+
+This is only a front-end demo for now.
+
+==================================================
+ADDITIONAL FEATURES
+
+Add:
+
+responsive design
+smooth loading states
+progress bars
+clean cards/components
+placeholder reviews
+trust-focused language
+modern fintech aesthetic
+
+Include:
+
+disclaimer footer
+privacy placeholder
+terms placeholder
+==================================================
+IMPORTANT
+
+This is NOT a real mortgage platform yet.
+Do NOT implement:
+
+real loan approvals
+banking integrations
+real underwriting
+real credit checks
+real financial advice
+
+Focus ONLY on:
+
+UX
+onboarding flow
+clarity
+simplicity
+guided experience
+scenario exploration
+seamless context handoff demo
+
+The final result should feel like:
+“a modern mortgage clarity assistant that reduces confusion before paperwork begins.”
