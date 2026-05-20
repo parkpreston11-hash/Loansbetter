@@ -11,6 +11,7 @@ import Questions from "@/pages/Questions";
 import Results from "@/pages/Results";
 import Chat from "@/pages/Chat";
 import Handoff from "@/pages/Handoff";
+import LookupBrief from "@/pages/LookupBrief";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ function Router() {
         <Route path="/results" component={Results} />
         <Route path="/chat" component={Chat} />
         <Route path="/handoff" component={Handoff} />
+        <Route path="/lookup" component={LookupBrief} />
         <Route component={NotFound} />
       </Switch>
     </>

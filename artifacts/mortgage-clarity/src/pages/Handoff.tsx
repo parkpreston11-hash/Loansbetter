@@ -1,21 +1,25 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useMortgage } from "@/context/MortgageContext";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen } from "lucide-react";
+import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound } from "lucide-react";
+import { motion } from "framer-motion";
 
-function generateRefCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "LB-";
-  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
+const BRIEF_KEY_PREFIX = "lb_brief_";
+
+function generateCode(): string {
+  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const digits = "0123456789";
+  const rand = (pool: string, n: number) =>
+    Array.from({ length: n }, () => pool[Math.floor(Math.random() * pool.length)]).join("");
+  return `-${rand(letters, 4)}-${rand(digits, 4)}-${rand(letters, 4)}`;
 }
 
 export default function Handoff() {
   const { selectedMortgageType, answers, estimateResult, scenarioAdjustments, chatHistory } = useMortgage();
   const [, setLocation] = useLocation();
-  const [copied, setCopied] = useState(false);
-  const [refCode] = useState(generateRefCode);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [code] = useState(generateCode);
 
   if (!selectedMortgageType || !estimateResult) {
     setLocation("/start");
@@ -33,88 +37,76 @@ export default function Handoff() {
     return "Unknown";
   };
 
-  const userQuestions = chatHistory.filter(m => m.role === "user");
+  const userQuestions = chatHistory.filter(m => m.role === "user").map(m => m.content);
 
   const today = new Date().toLocaleDateString("en-US", {
     month: "long", day: "numeric", year: "numeric",
   });
 
-  // Build the plain-text brief the loan officer can paste into any system
-  const buildBrief = useCallback(() => {
-    const divider = "─".repeat(40);
-    const lines: string[] = [
-      "=== LoansBetter Client Brief ===",
-      `Reference: ${refCode}   |   ${today}`,
-      divider,
-      `GOAL: ${getTypeLabel(selectedMortgageType)}`,
-      divider,
-      "PROFILE",
-    ];
-
+  // Build profile object for storage and display
+  const buildProfile = (): Record<string, string> => {
     if (selectedMortgageType === "reverse") {
-      lines.push(`  Age:               ${answers.age} years old`);
-      lines.push(`  Home Value:        ${fmt(answers.homeValue)}`);
-      lines.push(`  Mortgage Balance:  ${fmt(answers.mortgageBalance)}`);
-      lines.push(`  Credit Score:      ${answers.creditScore}`);
-      lines.push(`  Annual Income:     ${fmt(answers.income)}`);
+      return {
+        "Age": `${answers.age} years old`,
+        "Home Value": fmt(answers.homeValue),
+        "Mortgage Balance": fmt(answers.mortgageBalance),
+        "Credit Score": answers.creditScore,
+        "Annual Income": fmt(answers.income),
+      };
+    }
+    const base: Record<string, string> = {
+      "Annual Income": fmt(answers.income),
+      "Monthly Debt": fmt(answers.monthlyDebt),
+      "Credit Score": answers.creditScore,
+    };
+    if (selectedMortgageType === "buy") {
+      base["Down Payment"] = fmt(answers.downPayment);
+      base["Target Home Price"] = fmt(answers.homeValue);
     } else {
-      lines.push(`  Annual Income:     ${fmt(answers.income)}`);
-      lines.push(`  Monthly Debt:      ${fmt(answers.monthlyDebt)}`);
-      lines.push(`  Credit Score:      ${answers.creditScore}`);
-      if (selectedMortgageType === "buy") {
-        lines.push(`  Down Payment:      ${fmt(answers.downPayment)}`);
-        lines.push(`  Target Price:      ${fmt(answers.homeValue)}`);
-      } else {
-        lines.push(`  Mortgage Balance:  ${fmt(answers.mortgageBalance)}`);
-      }
+      base["Mortgage Balance"] = fmt(answers.mortgageBalance);
     }
+    return base;
+  };
 
-    lines.push(divider);
-    lines.push(`ESTIMATE: ${estimateResult.type}`);
-    lines.push(`  ${fmt(estimateResult.low)} – ${fmt(estimateResult.high)}`);
+  const buildScenarios = (): string[] => {
+    const s: string[] = [];
+    if (scenarioAdjustments.incomeBoost > 0) s.push(`Explored increasing income by ${fmt(scenarioAdjustments.incomeBoost)}`);
+    if (scenarioAdjustments.debtReduction > 0) s.push(`Explored reducing monthly debt by ${fmt(scenarioAdjustments.debtReduction)}`);
+    if (scenarioAdjustments.creditImprovement > 0) s.push(`Explored improving credit score by ${scenarioAdjustments.creditImprovement} tier(s)`);
+    if (scenarioAdjustments.downPaymentBoost > 0) s.push(`Explored increasing down payment by ${fmt(scenarioAdjustments.downPaymentBoost)}`);
+    return s;
+  };
 
-    const hasScenarios =
-      scenarioAdjustments.incomeBoost > 0 ||
-      scenarioAdjustments.debtReduction > 0 ||
-      scenarioAdjustments.creditImprovement > 0 ||
-      scenarioAdjustments.downPaymentBoost > 0;
-
-    if (hasScenarios) {
-      lines.push(divider);
-      lines.push("SCENARIOS EXPLORED");
-      if (scenarioAdjustments.incomeBoost > 0)
-        lines.push(`  • Income increase of ${fmt(scenarioAdjustments.incomeBoost)}`);
-      if (scenarioAdjustments.debtReduction > 0)
-        lines.push(`  • Monthly debt reduction of ${fmt(scenarioAdjustments.debtReduction)}`);
-      if (scenarioAdjustments.creditImprovement > 0)
-        lines.push(`  • Credit improvement of ${scenarioAdjustments.creditImprovement} tier(s)`);
-      if (scenarioAdjustments.downPaymentBoost > 0)
-        lines.push(`  • Down payment increase of ${fmt(scenarioAdjustments.downPaymentBoost)}`);
-    }
-
-    if (userQuestions.length > 0) {
-      lines.push(divider);
-      lines.push("QUESTIONS THE CLIENT ASKED");
-      userQuestions.forEach((q, i) => {
-        lines.push(`  ${i + 1}. ${q.content}`);
-      });
-    }
-
-    lines.push(divider);
-    lines.push("LoansBetter Mortgage  |  (702) 727-9713");
-    lines.push("This brief is for loan officer use and is not a loan commitment.");
-
-    return lines.join("\n");
-  }, [refCode, selectedMortgageType, answers, estimateResult, scenarioAdjustments, userQuestions, today]);
-
-  const handleCopy = async () => {
+  // Save brief to localStorage under the code key on mount
+  useEffect(() => {
+    const brief = {
+      code,
+      date: today,
+      goal: selectedMortgageType,
+      profile: buildProfile(),
+      estimate: {
+        label: estimateResult.type,
+        low: fmt(estimateResult.low),
+        high: fmt(estimateResult.high),
+      },
+      scenarios: buildScenarios(),
+      questions: userQuestions,
+    };
     try {
-      await navigator.clipboard.writeText(buildBrief());
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      // Fallback: select text
-    }
+      localStorage.setItem(BRIEF_KEY_PREFIX + code, JSON.stringify(brief));
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const profile = buildProfile();
+  const scenarios = buildScenarios();
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2500);
+    } catch {}
   };
 
   return (
@@ -132,9 +124,39 @@ export default function Handoff() {
         <div className="text-center space-y-4">
           <h1 className="font-serif text-4xl md:text-5xl font-semibold text-foreground">You're Ready to Talk</h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            We've prepared a complete summary of your profile and questions for your loan officer.
+            Your profile and questions have been saved. Share your code with your loan officer — they'll have everything instantly.
           </p>
         </div>
+
+        {/* Client Code — the main feature */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-card border-2 border-primary/20 rounded-3xl p-8 text-center space-y-5 shadow-lg"
+        >
+          <div className="flex items-center justify-center gap-2 text-primary">
+            <KeyRound className="w-5 h-5" />
+            <span className="text-sm font-semibold uppercase tracking-widest">Your Client Code</span>
+          </div>
+          <p className="font-mono text-5xl md:text-6xl font-bold text-foreground tracking-widest leading-none">
+            {code}
+          </p>
+          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+            Give this code to your loan officer. They can enter it at <strong>loansbetter.com/lookup</strong> to see your full profile and every question you asked.
+          </p>
+          <Button
+            onClick={handleCopyCode}
+            variant="outline"
+            size="lg"
+            className="h-12 px-8 rounded-full font-semibold"
+            data-testid="button-copy-code"
+          >
+            {codeCopied
+              ? <><Check className="w-4 h-4 mr-2 text-primary" /> Code Copied!</>
+              : <><Copy className="w-4 h-4 mr-2" /> Copy Code</>
+            }
+          </Button>
+        </motion.div>
 
         {/* Call CTA */}
         <div className="bg-primary rounded-2xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-lg">
@@ -160,7 +182,10 @@ export default function Handoff() {
               <ShieldCheck className="w-6 h-6" />
               <span className="font-semibold text-lg">LoansBetter Summary</span>
             </div>
-            <span className="text-sm text-muted-foreground">{today}</span>
+            <div className="text-right">
+              <p className="font-mono text-sm font-bold text-primary">{code}</p>
+              <p className="text-xs text-muted-foreground">{today}</p>
+            </div>
           </div>
 
           <section>
@@ -171,62 +196,12 @@ export default function Handoff() {
           <section>
             <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-4">Profile</h3>
             <div className="grid sm:grid-cols-2 gap-y-4 gap-x-8 text-base">
-              {selectedMortgageType === "reverse" ? (
-                <>
-                  <div className="flex justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Age</span>
-                    <span className="font-medium text-foreground">{answers.age} years old</span>
-                  </div>
-                  <div className="flex justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Home Value</span>
-                    <span className="font-medium text-foreground">{fmt(answers.homeValue)}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Credit Score</span>
-                    <span className="font-medium text-foreground">{answers.creditScore}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Mortgage Balance</span>
-                    <span className="font-medium text-foreground">{fmt(answers.mortgageBalance)}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Annual Income</span>
-                    <span className="font-medium text-foreground">{fmt(answers.income)}</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Annual Income</span>
-                    <span className="font-medium text-foreground">{fmt(answers.income)}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Monthly Debt</span>
-                    <span className="font-medium text-foreground">{fmt(answers.monthlyDebt)}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-border/50 pb-2">
-                    <span className="text-muted-foreground">Credit Score</span>
-                    <span className="font-medium text-foreground">{answers.creditScore}</span>
-                  </div>
-                  {selectedMortgageType === "buy" ? (
-                    <>
-                      <div className="flex justify-between border-b border-border/50 pb-2">
-                        <span className="text-muted-foreground">Down Payment</span>
-                        <span className="font-medium text-foreground">{fmt(answers.downPayment)}</span>
-                      </div>
-                      <div className="flex justify-between border-b border-border/50 pb-2">
-                        <span className="text-muted-foreground">Target Home Price</span>
-                        <span className="font-medium text-foreground">{fmt(answers.homeValue)}</span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex justify-between border-b border-border/50 pb-2">
-                      <span className="text-muted-foreground">Mortgage Balance</span>
-                      <span className="font-medium text-foreground">{fmt(answers.mortgageBalance)}</span>
-                    </div>
-                  )}
-                </>
-              )}
+              {Object.entries(profile).map(([label, value]) => (
+                <div key={label} className="flex justify-between border-b border-border/50 pb-2">
+                  <span className="text-muted-foreground">{label}</span>
+                  <span className="font-medium text-foreground">{value}</span>
+                </div>
+              ))}
             </div>
           </section>
 
@@ -240,19 +215,19 @@ export default function Handoff() {
             </div>
           </section>
 
-          {(scenarioAdjustments.incomeBoost > 0 || scenarioAdjustments.debtReduction > 0 || scenarioAdjustments.creditImprovement > 0 || scenarioAdjustments.downPaymentBoost > 0) && (
+          {scenarios.length > 0 && (
             <section>
               <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-4">Scenarios Explored</h3>
-              <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                {scenarioAdjustments.incomeBoost > 0 && <li>Explored increasing income by {fmt(scenarioAdjustments.incomeBoost)}</li>}
-                {scenarioAdjustments.debtReduction > 0 && <li>Explored reducing monthly debt by {fmt(scenarioAdjustments.debtReduction)}</li>}
-                {scenarioAdjustments.creditImprovement > 0 && <li>Explored improving credit score by {scenarioAdjustments.creditImprovement} tier(s)</li>}
-                {scenarioAdjustments.downPaymentBoost > 0 && <li>Explored increasing down payment by {fmt(scenarioAdjustments.downPaymentBoost)}</li>}
+              <ul className="space-y-2 ml-4">
+                {scenarios.map((s, i) => (
+                  <li key={i} className="flex items-start gap-2 text-muted-foreground text-sm">
+                    <span className="text-primary mt-0.5">•</span> {s}
+                  </li>
+                ))}
               </ul>
             </section>
           )}
 
-          {/* Questions Asked */}
           <section>
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="w-4 h-4 text-muted-foreground" />
@@ -260,10 +235,10 @@ export default function Handoff() {
             </div>
             {userQuestions.length > 0 ? (
               <ul className="space-y-3">
-                {userQuestions.map((msg, i) => (
-                  <li key={i} className="bg-secondary p-3 rounded-lg text-sm text-foreground flex gap-3">
+                {userQuestions.map((q, i) => (
+                  <li key={i} className="bg-secondary p-4 rounded-xl text-sm text-foreground flex gap-3">
                     <span className="text-muted-foreground font-medium shrink-0">{i + 1}.</span>
-                    <span>"{msg.content}"</span>
+                    <span>"{q}"</span>
                   </li>
                 ))}
               </ul>
@@ -273,52 +248,7 @@ export default function Handoff() {
           </section>
         </div>
 
-        {/* Loan Officer Brief */}
-        <div className="bg-card border border-border rounded-3xl p-8 space-y-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="font-semibold text-lg text-foreground">Loan Officer Brief</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Copy this and paste it directly into your CRM, email, or notes. Your loan officer gets the full picture instantly.
-              </p>
-            </div>
-            <div className="text-right shrink-0">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Reference</p>
-              <p className="font-mono font-bold text-xl text-primary">{refCode}</p>
-            </div>
-          </div>
-
-          {/* Formatted brief preview */}
-          <pre className="bg-secondary/60 border border-border rounded-xl p-5 text-xs text-foreground font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap">
-            {buildBrief()}
-          </pre>
-
-          <Button
-            onClick={handleCopy}
-            size="lg"
-            className="w-full h-14 rounded-full text-base font-semibold"
-            data-testid="button-copy-brief"
-          >
-            {copied ? (
-              <><Check className="w-5 h-5 mr-2" /> Copied to Clipboard</>
-            ) : (
-              <><Copy className="w-5 h-5 mr-2" /> Copy Client Brief</>
-            )}
-          </Button>
-        </div>
-
-        <div className="flex justify-center mt-4">
-          <a
-            href="tel:7027279713"
-            data-testid="link-call-loan-officer-footer"
-            className="inline-flex items-center justify-center gap-2 h-14 px-10 rounded-full bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
-          >
-            <Phone className="w-5 h-5" />
-            Call (702) 727-9713
-          </a>
-        </div>
-
-        <p className="text-center text-xs text-muted-foreground mt-4 pb-8">
+        <p className="text-center text-xs text-muted-foreground pb-8">
           This summary is generated for your convenience and is not a loan application or financial commitment.
         </p>
 
