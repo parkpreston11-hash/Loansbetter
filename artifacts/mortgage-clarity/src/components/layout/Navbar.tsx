@@ -13,9 +13,9 @@ export function Navbar() {
       <div className="container mx-auto h-full flex items-center justify-between px-4 md:px-8">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold font-serif text-xl">
-            C
+            L
           </div>
-          <span className="font-serif font-semibold text-xl tracking-tight text-foreground">ClearPath</span>
+          <span className="font-serif font-semibold text-xl tracking-tight text-foreground">LoansBetter</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">

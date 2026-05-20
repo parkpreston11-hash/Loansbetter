@@ -10,7 +10,7 @@ export default function Landing() {
         <section className="w-full py-24 md:py-32 lg:py-48 flex items-center justify-center bg-gradient-to-b from-secondary/50 to-background overflow-hidden relative">
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, #000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
           <div className="container px-4 md:px-6 flex flex-col items-center text-center z-10">
-            <motion.h1 
+            <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -18,25 +18,39 @@ export default function Landing() {
             >
               Understand your mortgage options <span className="text-primary italic">before</span> paperwork.
             </motion.h1>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
               className="mt-6 text-xl text-muted-foreground max-w-2xl leading-relaxed"
             >
-              ClearPath walks you through your mortgage options in minutes — no forms, no jargon, no pressure.
+              LoansBetter walks you through your mortgage options in minutes — no forms, no jargon, no pressure.
             </motion.p>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mt-10"
+              className="mt-10 flex flex-col sm:flex-row gap-4 items-center"
             >
               <Link href="/start" className="inline-flex items-center justify-center rounded-full text-lg font-medium transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bg-primary text-primary-foreground shadow-lg h-14 px-10">
                 Get Started
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
+              <a
+                href="tel:7027279713"
+                className="inline-flex items-center justify-center rounded-full text-lg font-medium transition-transform hover:scale-105 active:scale-95 h-14 px-10 border border-border bg-background text-foreground hover:bg-secondary"
+              >
+                Talk to a Loan Officer
+              </a>
             </motion.div>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mt-4 text-muted-foreground text-base"
+            >
+              Call us: <a href="tel:7027279713" className="font-semibold text-primary hover:underline">(702) 727-9713</a>
+            </motion.p>
           </div>
         </section>
 
@@ -47,7 +61,7 @@ export default function Landing() {
               <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">How It Works</h2>
               <p className="mt-4 text-lg text-muted-foreground">Three simple steps to clarity.</p>
             </div>
-            
+
             <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
               {[
                 { step: "01", title: "Share your basics", desc: "Answer 5 simple questions about your financial picture. No credit checks or sensitive info." },
@@ -63,6 +77,12 @@ export default function Landing() {
                 </div>
               ))}
             </div>
+
+            <div className="mt-16 text-center">
+              <Link href="/" className="inline-flex items-center text-primary font-medium hover:underline">
+                Back to Home
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -75,9 +95,9 @@ export default function Landing() {
                   Not a bank. Not a lead generator.
                 </h2>
                 <p className="text-xl text-muted-foreground mb-10 leading-relaxed">
-                  We built ClearPath because the mortgage process is intentionally confusing. We're here to give you back the power.
+                  We built LoansBetter because the mortgage process is intentionally confusing. We're here to give you back the power.
                 </p>
-                
+
                 <div className="space-y-8">
                   {[
                     { icon: Shield, title: "Stress-Free & Secure", desc: "We never sell your data or spam your phone." },
@@ -99,10 +119,10 @@ export default function Landing() {
               <div className="bg-secondary rounded-3xl p-8 md:p-12 border border-border relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
                 <div className="relative z-10 space-y-6">
-                  {/* Testimonial Cards */}
                   {[
                     { quote: "For the first time, I actually understood how my student loans affected my homebuying budget.", author: "Sarah M.", role: "First-time buyer" },
                     { quote: "The scenario sliders are brilliant. I saw exactly what paying off my car would do to my mortgage options.", author: "James T.", role: "Refinancing" },
+                    { quote: "I called the loan officer already knowing what to ask. Made the whole process so much smoother.", author: "Patricia R.", role: "Cash-out refinance" },
                   ].map((test, i) => (
                     <div key={i} className="bg-background rounded-2xl p-6 shadow-sm border border-border/50">
                       <p className="text-foreground text-lg mb-4">"{test.quote}"</p>
@@ -114,16 +134,33 @@ export default function Landing() {
             </div>
           </div>
         </section>
+
+        {/* CTA Banner */}
+        <section className="w-full py-20 bg-primary text-primary-foreground">
+          <div className="container px-4 md:px-6 text-center">
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-4">Ready to get clarity?</h2>
+            <p className="text-primary-foreground/80 text-lg mb-8">Start in minutes or call us directly — no paperwork required.</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link href="/start" className="inline-flex items-center justify-center rounded-full font-medium h-14 px-10 bg-white text-primary hover:bg-white/90 transition-transform hover:scale-105 active:scale-95">
+                Get Started Free
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Link>
+              <a href="tel:7027279713" className="inline-flex items-center justify-center rounded-full font-medium h-14 px-10 border border-white/40 text-primary-foreground hover:bg-white/10 transition-all">
+                Call (702) 727-9713
+              </a>
+            </div>
+          </div>
+        </section>
       </main>
 
       <footer className="w-full py-12 bg-background border-t border-border">
         <div className="container px-4 md:px-6 mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold font-serif text-xs">C</div>
-            <span className="font-serif font-semibold text-lg tracking-tight">ClearPath</span>
+            <div className="w-6 h-6 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold font-serif text-xs">L</div>
+            <span className="font-serif font-semibold text-lg tracking-tight">LoansBetter</span>
           </div>
           <p className="text-xs text-muted-foreground text-center md:text-left max-w-md">
-            ClearPath Mortgage is an educational tool only. Not a lender. Estimates are informational and do not constitute financial advice.
+            LoansBetter is an educational tool only. Not a lender. Estimates are informational and do not constitute financial advice.
           </p>
           <div className="flex gap-6 text-sm text-muted-foreground">
             <a href="#" className="hover:text-foreground">Privacy</a>

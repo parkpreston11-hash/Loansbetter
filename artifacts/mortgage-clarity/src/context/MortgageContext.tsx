@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-export type MortgageType = "buy" | "refinance" | "cashout" | null;
+export type MortgageType = "buy" | "refinance" | "cashout" | "reverse" | null;
 export type CreditScoreRange = "Below 580" | "580–619" | "620–679" | "680–739" | "740 or above";
 
 export interface Answers {
@@ -10,6 +10,7 @@ export interface Answers {
   downPayment: number;
   homeValue: number;
   mortgageBalance: number;
+  age: number;
 }
 
 export interface ScenarioAdjustments {
@@ -42,6 +43,7 @@ interface MortgageContextType {
   chatHistory: ChatMessage[];
   setChatHistory: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   addChatMessage: (msg: Omit<ChatMessage, "timestamp">) => void;
+  resetChat: () => void;
   estimateResult: EstimateResult | null;
   setEstimateResult: (res: EstimateResult | null) => void;
   calculateEstimate: () => void;
@@ -54,6 +56,7 @@ const defaultAnswers: Answers = {
   downPayment: 20000,
   homeValue: 400000,
   mortgageBalance: 200000,
+  age: 65,
 };
 
 const defaultAdjustments: ScenarioAdjustments = {
@@ -80,11 +83,13 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
     setChatHistory(prev => [...prev, { ...msg, timestamp: new Date() }]);
   };
 
+  const resetChat = () => {
+    setChatHistory([]);
+  };
+
   const calculateEstimate = () => {
-    const { income, monthlyDebt, creditScore, downPayment, mortgageBalance } = answers;
-    
-    // Base math
-    let base = income * 3.5;
+    const { income, monthlyDebt, creditScore, downPayment, mortgageBalance, homeValue, age } = answers;
+
     let creditMultiplier = 1.0;
     if (creditScore === "Below 580") creditMultiplier = 0.7;
     else if (creditScore === "580–619") creditMultiplier = 0.8;
@@ -94,18 +99,25 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
     let debtRed = monthlyDebt * 12 * 2;
 
     if (selectedMortgageType === "buy") {
+      let base = income * 3.5;
       let low = Math.max(50000, (base - debtRed + downPayment * 2) * creditMultiplier * 0.9);
       let high = Math.max(60000, (base - debtRed + downPayment * 2) * creditMultiplier * 1.1);
-      setEstimateResult({ low, high, type: "Target Home Price" });
+      setEstimateResult({ low, high, type: "Estimated Home Price Range" });
     } else if (selectedMortgageType === "refinance") {
-      let low = Math.max(0, mortgageBalance * 0.0025); // dummy savings
+      let low = Math.max(0, mortgageBalance * 0.0025);
       let high = Math.max(0, mortgageBalance * 0.0075);
-      setEstimateResult({ low, high, type: "Monthly Savings" });
+      setEstimateResult({ low, high, type: "Estimated Monthly Savings" });
     } else if (selectedMortgageType === "cashout") {
-      let homeValEst = mortgageBalance * 1.4; // fake home value assumption
+      let homeValEst = mortgageBalance * 1.4;
       let maxLoan = homeValEst * 0.8;
       let accessible = Math.max(0, maxLoan - mortgageBalance);
-      setEstimateResult({ low: accessible * 0.9, high: accessible * 1.1, type: "Accessible Equity" });
+      setEstimateResult({ low: accessible * 0.9, high: accessible * 1.1, type: "Estimated Accessible Equity" });
+    } else if (selectedMortgageType === "reverse") {
+      const yearsRemaining = Math.max(0, 90 - age);
+      const equityFactor = 0.4 + (age - 62) * 0.015;
+      const low = Math.max(0, homeValue * Math.min(equityFactor, 0.75) * 0.85);
+      const high = Math.max(0, homeValue * Math.min(equityFactor, 0.75) * 1.05);
+      setEstimateResult({ low, high, type: "Estimated Loan Proceeds" });
     }
   };
 
@@ -121,6 +133,7 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
       chatHistory,
       setChatHistory,
       addChatMessage,
+      resetChat,
       estimateResult,
       setEstimateResult,
       calculateEstimate
