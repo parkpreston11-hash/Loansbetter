@@ -23,7 +23,17 @@ export default function Handoff() {
   const { selectedMortgageType, answers, estimateResult, scenarioAdjustments, chatHistory } = useMortgage();
   const [, setLocation] = useLocation();
   const [codeCopied, setCodeCopied] = useState(false);
-  const [code] = useState(generateCode);
+  const [code] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lb_active_code");
+      if (saved) return saved;
+      const fresh = generateCode();
+      localStorage.setItem("lb_active_code", fresh);
+      return fresh;
+    } catch {
+      return generateCode();
+    }
+  });
   const [clientEmail, setClientEmail] = useState(() => {
     try { return JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").email ?? ""; } catch { return ""; }
   });
