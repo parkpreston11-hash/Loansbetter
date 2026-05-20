@@ -3,12 +3,13 @@ import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Search, Phone, ShieldCheck, BookOpen,
-  AlertCircle, User, Briefcase,
+  AlertCircle, User, Briefcase, Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DocumentChecklist } from "@/components/DocumentChecklist";
 
 const BRIEF_KEY_PREFIX = "lb_brief_";
+const CONTACT_KEY_PREFIX = "lb_contact_";
 
 interface StoredBrief {
   code: string;
@@ -34,6 +35,7 @@ function getTypeLabel(type: string) {
 export default function LookupBrief() {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<StoredBrief | null>(null);
+  const [contact, setContact] = useState<{ email: string; phone: string } | null>(null);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
   const [activeTab, setActiveTab] = useState<"officer" | "client">("officer");
@@ -63,11 +65,18 @@ export default function LookupBrief() {
     setSearched(true);
     if (!stored) {
       setResult(null);
+      setContact(null);
       setError("No brief found for that code. Double-check the code and try again.");
     } else {
       try {
         setResult(JSON.parse(stored));
         setError("");
+        try {
+          const raw = localStorage.getItem(CONTACT_KEY_PREFIX + input);
+          setContact(raw ? JSON.parse(raw) : null);
+        } catch {
+          setContact(null);
+        }
       } catch {
         setError("The brief data appears to be corrupted. Ask the client to generate a new code.");
       }
@@ -274,15 +283,42 @@ export default function LookupBrief() {
                       )}
                     </section>
 
-                    <div className="pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
-                      <p className="text-sm text-muted-foreground">Ready to follow up with this client?</p>
-                      <a
-                        href="tel:7144944172"
-                        className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-6 h-11 font-medium text-sm hover:bg-primary/90 transition-all"
-                      >
-                        <Phone className="w-4 h-4" />
-                        714-494-4172
-                      </a>
+                    <div className="pt-4 border-t border-border space-y-4">
+                      {(contact?.email || contact?.phone) && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">Client Contact Info</p>
+                          <div className="flex flex-col gap-2">
+                            {contact.email && (
+                              <a
+                                href={`mailto:${contact.email}`}
+                                className="inline-flex items-center gap-2 text-sm text-foreground font-medium hover:text-primary transition-colors"
+                              >
+                                <Mail className="w-4 h-4 text-muted-foreground shrink-0" />
+                                {contact.email}
+                              </a>
+                            )}
+                            {contact.phone && (
+                              <a
+                                href={`tel:${contact.phone.replace(/\D/g, "")}`}
+                                className="inline-flex items-center gap-2 text-sm text-foreground font-medium hover:text-primary transition-colors"
+                              >
+                                <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
+                                {contact.phone}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-border/50">
+                        <p className="text-sm text-muted-foreground">Get a hold of your loan officer</p>
+                        <a
+                          href="tel:7144944172"
+                          className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-6 h-11 font-medium text-sm hover:bg-primary/90 transition-all"
+                        >
+                          <Phone className="w-4 h-4" />
+                          714-494-4172
+                        </a>
+                      </div>
                     </div>
                   </motion.div>
                 )}
