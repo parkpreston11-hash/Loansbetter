@@ -107,7 +107,7 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
   const [selectedMortgageType, setSelectedMortgageType] = useState<MortgageType>(
     saved?.selectedMortgageType ?? null
   );
-  const [answers, setAnswers] = useState<Answers>(saved?.answers ?? defaultAnswers);
+  const [answers, setAnswers] = useState<Answers>({ ...defaultAnswers, ...(saved?.answers ?? {}) });
   const [scenarioAdjustments, setScenarioAdjustments] = useState<ScenarioAdjustments>(
     saved?.scenarioAdjustments ?? defaultAdjustments
   );

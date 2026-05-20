@@ -250,6 +250,7 @@ function getDocList(
 // ─── Storage ──────────────────────────────────────────────────────────────────
 
 const DOCS_KEY_PREFIX = "lb_docs_";
+const SUBMITTED_KEY_PREFIX = "lb_submitted_";
 
 function loadDocStates(code: string): Record<string, UploadedFile | undefined> {
   try {
@@ -263,6 +264,26 @@ function loadDocStates(code: string): Record<string, UploadedFile | undefined> {
 function saveDocStates(code: string, states: Record<string, UploadedFile | undefined>) {
   try {
     localStorage.setItem(DOCS_KEY_PREFIX + code, JSON.stringify(states));
+  } catch {}
+}
+
+function loadSubmitted(code: string): boolean {
+  try {
+    return !!localStorage.getItem(SUBMITTED_KEY_PREFIX + code);
+  } catch {
+    return false;
+  }
+}
+
+function saveSubmitted(code: string, date: string) {
+  try {
+    localStorage.setItem(SUBMITTED_KEY_PREFIX + code, date);
+  } catch {}
+}
+
+function clearSubmitted(code: string) {
+  try {
+    localStorage.removeItem(SUBMITTED_KEY_PREFIX + code);
   } catch {}
 }
 
@@ -419,7 +440,7 @@ export function DocumentChecklist({
   const [files, setFiles] = useState<Record<string, UploadedFile | undefined>>(() =>
     loadDocStates(code)
   );
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(() => loadSubmitted(code));
 
   const docs = getDocList(mortgageType, creditScore, employmentType);
   const required = docs.filter(d => d.required);
@@ -434,6 +455,7 @@ export function DocumentChecklist({
 
   const handleUpload = (id: string, file: UploadedFile) => {
     setFiles(prev => ({ ...prev, [id]: file }));
+    clearSubmitted(code);
     setSubmitted(false);
   };
 
@@ -443,6 +465,7 @@ export function DocumentChecklist({
       delete next[id];
       return next;
     });
+    clearSubmitted(code);
     setSubmitted(false);
   };
 
@@ -482,6 +505,8 @@ export function DocumentChecklist({
     const subject = encodeURIComponent(`LoansBetter Document Submission — ${code}`);
     const encodedBody = encodeURIComponent(body);
     window.open(`mailto:parkpreston11@gmail.com?subject=${subject}&body=${encodedBody}`, "_blank");
+    const dateStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    saveSubmitted(code, dateStr);
     setSubmitted(true);
   };
 

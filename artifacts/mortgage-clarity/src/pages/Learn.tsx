@@ -236,7 +236,7 @@ function renderMarkdown(text: string) {
       return <span key={j}>{part}</span>;
     });
     if (line.startsWith("• ")) {
-      return <li key={i} className="ml-4 list-none flex gap-2"><span className="text-primary mt-0.5 shrink-0">•</span><span>{rendered.map((r, j) => j === 0 ? <span key={j}>{(r as React.ReactElement).props.children?.slice(2)}</span> : r)}</span></li>;
+      return <li key={i} className="ml-4 list-none flex gap-2"><span className="text-primary mt-0.5 shrink-0">•</span><span>{rendered.map((r, j) => { const el = r as React.ReactElement<{children?: string}>; return j === 0 ? <span key={j}>{String(el.props.children ?? "").slice(2)}</span> : r; })}</span></li>;
     }
     if (line === "") return <div key={i} className="h-2" />;
     return <p key={i}>{rendered}</p>;
