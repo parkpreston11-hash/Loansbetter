@@ -205,11 +205,11 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
       setEstimateResult({ low, high, type: "Estimated Monthly Savings" });
     } else if (selectedMortgageType === "cashout") {
       const ltvMultiplier = answers.loanType === "va" ? 0.9 : 0.8;
-      const maxCashOut = Math.max(0, homeValue * ltvMultiplier - mortgageBalance);
-      setEstimateResult({ low: maxCashOut, high: maxCashOut, type: "Maximum Cash-Out Amount" });
+      const maxCashOut = Math.max(25000, homeValue * ltvMultiplier - mortgageBalance);
+      setEstimateResult({ low: 25000, high: maxCashOut, type: "Cash-Out Range" });
     } else if (selectedMortgageType === "reverse") {
-      const maxCashOut = Math.max(0, homeValue * 0.5 - mortgageBalance);
-      setEstimateResult({ low: maxCashOut, high: maxCashOut, type: "Estimated Loan Proceeds" });
+      const maxCashOut = Math.max(25000, homeValue * 0.5 - mortgageBalance);
+      setEstimateResult({ low: 25000, high: maxCashOut, type: "Estimated Loan Proceeds Range" });
     }
   };
 
