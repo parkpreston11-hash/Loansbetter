@@ -68,21 +68,23 @@ export default function Questions() {
   const isStepComplete = (s: number): boolean => {
     switch (s) {
       case 0:
+        return answers.fullName.trim().length > 0;
+      case 1:
         if (isReverse) return true; // age slider min 62, always valid
         return answers.income > 0;
-      case 1:
+      case 2:
         if (isReverse) return answers.homeValue > 0;
         return true; // monthly debt $0 is a valid real answer
-      case 2:
-        return !!answers.creditScore;
       case 3:
+        return !!answers.creditScore;
+      case 4:
         if (isReverse) return true; // $0 balance is explicitly valid
         return answers.downPayment > 0;
-      case 4:
+      case 5:
         if (isBuy) return answers.homeValue > 0;
         if (isReverse) return answers.income > 0;
         return answers.mortgageBalance > 0;
-      case 5:
+      case 6:
         return !!answers.employmentType;
       default:
         return true;
@@ -123,6 +125,26 @@ export default function Questions() {
   const renderQuestion = () => {
     switch (step) {
       case 0:
+        return (
+          <div className="space-y-8">
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+              What's your full name?
+            </h2>
+            <p className="text-muted-foreground">We'll include this on your loan officer brief.</p>
+            <div className="py-4">
+              <Input
+                value={answers.fullName}
+                onChange={(e) => updateAnswer("fullName", e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && answers.fullName.trim()) handleNext(); }}
+                placeholder="e.g. Jane Smith"
+                autoFocus
+                className="h-16 text-xl font-semibold text-center rounded-2xl border-border bg-card focus:border-primary"
+              />
+            </div>
+          </div>
+        );
+
+      case 1:
         if (isReverse) {
           return (
             <div className="space-y-8">
@@ -172,7 +194,7 @@ export default function Questions() {
           </div>
         );
 
-      case 1:
+      case 2:
         if (isReverse) {
           return (
             <div className="space-y-8">
@@ -223,7 +245,7 @@ export default function Questions() {
           </div>
         );
 
-      case 2: {
+      case 3: {
         const ranges: CreditScoreRange[] = ["Below 580", "580–619", "620–679", "680–739", "740 or above"];
         return (
           <div className="space-y-8">
@@ -249,7 +271,7 @@ export default function Questions() {
         );
       }
 
-      case 3:
+      case 4:
         if (isReverse) {
           return (
             <div className="space-y-8">
@@ -300,7 +322,7 @@ export default function Questions() {
           </div>
         );
 
-      case 4:
+      case 5:
         if (isBuy) {
           return (
             <div className="space-y-8">
@@ -376,7 +398,7 @@ export default function Questions() {
           </div>
         );
 
-      case 5: {
+      case 6: {
         const options: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
           {
             value: "employed",
@@ -474,7 +496,7 @@ export default function Questions() {
           <div className="flex flex-col items-end gap-1.5">
             {!isStepComplete(step) && (
               <p className="text-xs text-muted-foreground animate-in fade-in">
-                {step === 5 ? "Please select an option to continue." : "Please enter a value greater than $0 to continue."}
+                {step === 0 ? "Please enter your full name to continue." : step === 6 ? "Please select an option to continue." : "Please enter a value greater than $0 to continue."}
               </p>
             )}
             <motion.div

@@ -84,6 +84,7 @@ export default function Handoff() {
       code,
       date: today,
       goal: selectedMortgageType,
+      fullName: answers.fullName,
       creditScore: answers.creditScore,
       employmentType: answers.employmentType,
       profile: buildProfile(),
@@ -196,6 +197,13 @@ export default function Handoff() {
             <p className="text-2xl font-serif text-foreground">{getTypeLabel(selectedMortgageType)}</p>
           </section>
 
+          {answers.fullName && (
+            <section>
+              <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-4">Client</h3>
+              <p className="text-2xl font-serif text-foreground">{answers.fullName}</p>
+            </section>
+          )}
+
           <section>
             <h3 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-4">Profile</h3>
             <div className="grid sm:grid-cols-2 gap-y-4 gap-x-8 text-base">
@@ -257,6 +265,7 @@ export default function Handoff() {
           creditScore={answers.creditScore}
           employmentType={answers.employmentType}
           code={code}
+          fullName={answers.fullName}
         />
 
         <p className="text-center text-xs text-muted-foreground pb-8">

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload, CheckCircle2, Clock, ChevronDown, ChevronUp,
-  FileImage, X, Eye, Folder, Send, PartyPopper
+  FileImage, X, Eye, Folder, Send, PartyPopper, Mail, Phone
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -287,6 +287,23 @@ function clearSubmitted(code: string) {
   } catch {}
 }
 
+const CONTACT_KEY_PREFIX = "lb_contact_";
+
+function loadContact(code: string): { email: string; phone: string } {
+  try {
+    const raw = localStorage.getItem(CONTACT_KEY_PREFIX + code);
+    return raw ? JSON.parse(raw) : { email: "", phone: "" };
+  } catch {
+    return { email: "", phone: "" };
+  }
+}
+
+function saveContact(code: string, data: { email: string; phone: string }) {
+  try {
+    localStorage.setItem(CONTACT_KEY_PREFIX + code, JSON.stringify(data));
+  } catch {}
+}
+
 // ─── Single doc item ──────────────────────────────────────────────────────────
 
 function DocRow({
@@ -428,6 +445,7 @@ interface DocumentChecklistProps {
   creditScore: string;
   employmentType: string;
   code: string;
+  fullName: string;
 }
 
 export function DocumentChecklist({
@@ -435,12 +453,15 @@ export function DocumentChecklist({
   creditScore,
   employmentType,
   code,
+  fullName,
 }: DocumentChecklistProps) {
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<Record<string, UploadedFile | undefined>>(() =>
     loadDocStates(code)
   );
   const [submitted, setSubmitted] = useState(() => loadSubmitted(code));
+  const [clientEmail, setClientEmail] = useState(() => loadContact(code).email);
+  const [clientPhone, setClientPhone] = useState(() => loadContact(code).phone);
 
   const docs = getDocList(mortgageType, creditScore, employmentType);
   const required = docs.filter(d => d.required);
@@ -452,6 +473,10 @@ export function DocumentChecklist({
   useEffect(() => {
     saveDocStates(code, files);
   }, [files, code]);
+
+  useEffect(() => {
+    saveContact(code, { email: clientEmail, phone: clientPhone });
+  }, [clientEmail, clientPhone, code]);
 
   const handleUpload = (id: string, file: UploadedFile) => {
     setFiles(prev => ({ ...prev, [id]: file }));
@@ -489,6 +514,10 @@ export function DocumentChecklist({
     const body = [
       `LoansBetter Document Submission`,
       ``,
+      `From: ${fullName || "Client"}`,
+      ...(clientEmail.trim() ? [`Email: ${clientEmail.trim()}`] : []),
+      ...(clientPhone.trim() ? [`Phone: ${clientPhone.trim()}`] : []),
+      ``,
       `Client Code: ${code}`,
       `Loan Type: ${typeFull}`,
       `Employment: ${employmentType || "Not specified"}`,
@@ -502,7 +531,7 @@ export function DocumentChecklist({
       `Submitted via LoansBetter`,
     ].join("\n");
 
-    const subject = encodeURIComponent(`LoansBetter Document Submission — ${code}`);
+    const subject = encodeURIComponent(`LoansBetter — ${fullName || "Client"} — ${code}`);
     const encodedBody = encodeURIComponent(body);
     window.open(`mailto:parkpreston11@gmail.com?subject=${subject}&body=${encodedBody}`, "_blank");
     const dateStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
@@ -634,9 +663,39 @@ export function DocumentChecklist({
                   <div>
                     <p className="font-semibold text-foreground text-sm">Submit to Loan Officer</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      When you're ready, hit the button below. Your email app will open with a pre-filled summary of your uploaded documents — just press Send.
+                      Add your contact info and hit the button below. Your email app will open pre-filled — just press Send.
                     </p>
                   </div>
+                </div>
+
+                {/* Contact info */}
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">Your Contact Info</p>
+                  <div className="grid gap-2">
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                      <input
+                        type="email"
+                        value={clientEmail}
+                        onChange={(e) => setClientEmail(e.target.value)}
+                        placeholder="Email address"
+                        className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                      />
+                    </div>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                      <input
+                        type="tel"
+                        value={clientPhone}
+                        onChange={(e) => setClientPhone(e.target.value)}
+                        placeholder="Phone number"
+                        className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                      />
+                    </div>
+                  </div>
+                  {!clientEmail.trim() && !clientPhone.trim() && (
+                    <p className="text-xs text-muted-foreground">Add your email or phone so your loan officer can follow up.</p>
+                  )}
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -661,12 +720,14 @@ export function DocumentChecklist({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       onClick={handleSubmit}
-                      disabled={uploadedCount === 0}
+                      disabled={uploadedCount === 0 || (!clientEmail.trim() && !clientPhone.trim())}
                       className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       <Send className="w-4 h-4" />
                       {uploadedCount === 0
                         ? "Upload at least one document to submit"
+                        : !clientEmail.trim() && !clientPhone.trim()
+                        ? "Add your contact info to submit"
                         : `Submit ${uploadedCount} Document${uploadedCount !== 1 ? "s" : ""} to Loan Officer`
                       }
                     </motion.button>

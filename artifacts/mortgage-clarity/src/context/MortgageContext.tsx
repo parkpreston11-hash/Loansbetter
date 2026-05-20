@@ -6,6 +6,7 @@ export type CreditScoreRange = "Below 580" | "580–619" | "620–679" | "680–
 export type EmploymentType = "employed" | "self-employed" | "";
 
 export interface Answers {
+  fullName: string;
   income: number;
   monthlyDebt: number;
   creditScore: CreditScoreRange;
@@ -62,6 +63,7 @@ const PROGRESS_KEY = "loansbetter_progress";
 const CHAT_KEY = "loansbetter_chat";
 
 const defaultAnswers: Answers = {
+  fullName: "",
   income: 80000,
   monthlyDebt: 500,
   creditScore: "680–739",

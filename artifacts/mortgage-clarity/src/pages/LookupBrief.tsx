@@ -14,6 +14,7 @@ interface StoredBrief {
   code: string;
   date: string;
   goal: string;
+  fullName?: string;
   creditScore: string;
   employmentType: string;
   profile: Record<string, string>;
@@ -205,6 +206,13 @@ export default function LookupBrief() {
                       <p className="text-2xl font-serif text-foreground">{getTypeLabel(result.goal)}</p>
                     </section>
 
+                    {result.fullName && (
+                      <section>
+                        <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">Client Name</h3>
+                        <p className="text-2xl font-serif text-foreground">{result.fullName}</p>
+                      </section>
+                    )}
+
                     {(result.employmentType) && (
                       <section>
                         <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">Employment</h3>
@@ -298,6 +306,7 @@ export default function LookupBrief() {
                       creditScore={result.creditScore ?? ""}
                       employmentType={result.employmentType ?? ""}
                       code={result.code}
+                      fullName={result.fullName ?? ""}
                     />
                   </motion.div>
                 )}
