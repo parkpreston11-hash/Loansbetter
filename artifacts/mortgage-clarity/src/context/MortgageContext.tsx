@@ -17,7 +17,10 @@ export interface Answers {
   age: number;
   employmentType: EmploymentType;
   loanType: LoanType;
+  currentInterestRate: number;
 }
+
+export const CURRENT_MARKET_RATE = 6.875;
 
 export interface ScenarioAdjustments {
   incomeBoost: number;
@@ -75,6 +78,7 @@ const defaultAnswers: Answers = {
   age: 65,
   employmentType: "",
   loanType: "",
+  currentInterestRate: 0,
 };
 
 const defaultAdjustments: ScenarioAdjustments = {
@@ -184,7 +188,7 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
   };
 
   const calculateEstimate = () => {
-    const { income, monthlyDebt, creditScore, downPayment, mortgageBalance, homeValue, age } = answers;
+    const { income, monthlyDebt, creditScore, downPayment, mortgageBalance, homeValue, age, currentInterestRate } = answers;
 
     let creditMultiplier = 1.0;
     if (creditScore === "500 or below" || creditScore === "501–579") creditMultiplier = 0.7;
@@ -200,8 +204,10 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
       const high = Math.max(60000, (base - debtRed + downPayment * 2) * creditMultiplier * 1.1);
       setEstimateResult({ low, high, type: "Estimated Home Price Range" });
     } else if (selectedMortgageType === "refinance") {
-      const low = Math.max(0, mortgageBalance * 0.0025);
-      const high = Math.max(0, mortgageBalance * 0.0075);
+      const rateDiff = Math.max(0, (currentInterestRate - CURRENT_MARKET_RATE) / 100);
+      const base = rateDiff * mortgageBalance / 12;
+      const low = Math.max(0, base * 0.9);
+      const high = Math.max(0, base * 1.1);
       setEstimateResult({ low, high, type: "Estimated Monthly Savings" });
     } else if (selectedMortgageType === "cashout") {
       const ltvMultiplier = answers.loanType === "va" ? 0.9 : 0.8;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMortgage, CreditScoreRange, EmploymentType, LoanType } from "@/context/MortgageContext";
+import { useMortgage, CreditScoreRange, EmploymentType, LoanType, CURRENT_MARKET_RATE } from "@/context/MortgageContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -66,6 +66,7 @@ export default function Questions() {
   const isBuy = selectedMortgageType === "buy";
   const isReverse = selectedMortgageType === "reverse";
   const isCashout = selectedMortgageType === "cashout";
+  const isRefi = selectedMortgageType === "refinance";
   const totalSteps = isCashout ? 8 : QUESTION_COUNT;
 
   const isStepComplete = (s: number): boolean => {
@@ -83,10 +84,12 @@ export default function Questions() {
       case 4:
         if (isReverse) return true; // $0 balance is explicitly valid
         if (isCashout) return !!answers.loanType; // loan type required
+        if (isRefi) return answers.mortgageBalance > 0;
         return answers.downPayment > 0;
       case 5:
         if (isBuy || isCashout) return answers.homeValue > 0;
         if (isReverse) return answers.income > 0;
+        if (isRefi) return answers.currentInterestRate > 0;
         return answers.mortgageBalance > 0;
       case 6:
         if (isCashout) return answers.mortgageBalance > 0;
@@ -115,6 +118,24 @@ export default function Questions() {
         "Unfortunately we're unable to assist with a credit score of 500 or below. Most loan programs require a minimum score of 501. Consider working with a credit counselor to improve your score, then come back — we'd love to help."
       );
       return;
+    }
+
+    // Refi interest rate gate (step 5)
+    if (step === 5 && isRefi) {
+      const r = answers.currentInterestRate;
+      const fmt = (n: number) => n.toFixed(3).replace(/\.?0+$/, "") + "%";
+      if (r <= CURRENT_MARKET_RATE + 0.249) {
+        if (r < CURRENT_MARKET_RATE) {
+          setDisqualReason(
+            `Your current rate of ${fmt(r)} is already below today's market rate of ~${fmt(CURRENT_MARKET_RATE)}. You have a great rate — refinancing wouldn't make financial sense and we wouldn't be able to lower it further. Come back if rates drop significantly!`
+          );
+        } else {
+          setDisqualReason(
+            `Your current rate of ${fmt(r)} is right at today's market rate of ~${fmt(CURRENT_MARKET_RATE)}. Refinancing wouldn't make a meaningful difference in your monthly payment.`
+          );
+        }
+        return;
+      }
     }
 
     // Cash-out equity gate: after mortgage balance is entered (step 6 for cashout)
@@ -376,6 +397,28 @@ export default function Questions() {
             </div>
           );
         }
+        if (isRefi) {
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                What is your current mortgage balance?
+              </h2>
+              <div className="py-4 space-y-6">
+                <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.mortgageBalance)}</div>
+                <CurrencyInput value={answers.mortgageBalance} onChange={(v) => updateAnswer("mortgageBalance", v)} />
+                <Slider
+                  value={[Math.min(answers.mortgageBalance, 5000000)]}
+                  min={0} max={5000000} step={10000}
+                  onValueChange={(val) => updateAnswer("mortgageBalance", val[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>$0</span><span>$5M+</span>
+                </div>
+              </div>
+            </div>
+          );
+        }
         return (
           <div className="space-y-8">
             <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
@@ -449,6 +492,42 @@ export default function Questions() {
                   <span>$0</span>
                   <span>$5M+</span>
                 </div>
+              </div>
+            </div>
+          );
+        }
+        if (isRefi) {
+          const r = answers.currentInterestRate;
+          const rateVerdict = r === 0 ? null
+            : r < CURRENT_MARKET_RATE
+              ? { color: "text-amber-600", bg: "bg-amber-50 border-amber-200", text: `Your rate of ${r.toFixed(3).replace(/\.?0+$/, "")}% is below today's market rate — you already have a great rate.` }
+              : r <= CURRENT_MARKET_RATE + 0.249
+                ? { color: "text-amber-600", bg: "bg-amber-50 border-amber-200", text: `Your rate of ${r.toFixed(3).replace(/\.?0+$/, "")}% is right at today's market rate — refinancing wouldn't make a meaningful difference.` }
+                : { color: "text-green-700", bg: "bg-green-50 border-green-200", text: `Your rate of ${r.toFixed(3).replace(/\.?0+$/, "")}% is above today's market rate of ~${CURRENT_MARKET_RATE}% — we can definitely lower it!` };
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                What is your current interest rate?
+              </h2>
+              <p className="text-muted-foreground">Today's market rate is approximately <strong>{CURRENT_MARKET_RATE}%</strong>.</p>
+              <div className="py-4 space-y-6">
+                <div className="text-5xl font-bold text-primary text-center">
+                  {r === 0 ? <span className="text-3xl text-muted-foreground">Move slider to set rate</span> : `${r.toFixed(3).replace(/\.?0+$/, "")}%`}
+                </div>
+                <Slider
+                  value={[r === 0 ? 2 : r]}
+                  min={2} max={15} step={0.125}
+                  onValueChange={(val) => updateAnswer("currentInterestRate", val[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>2%</span><span>15%</span>
+                </div>
+                {rateVerdict && (
+                  <div className={`flex items-start gap-3 rounded-xl border px-4 py-3 ${rateVerdict.bg}`}>
+                    <p className={`text-sm font-medium ${rateVerdict.color}`}>{rateVerdict.text}</p>
+                  </div>
+                )}
               </div>
             </div>
           );
