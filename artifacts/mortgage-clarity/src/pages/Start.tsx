@@ -2,6 +2,7 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useMortgage, MortgageType } from "@/context/MortgageContext";
 import { Home, TrendingDown, HandCoins, Building2, Phone } from "lucide-react";
+import { ContactDialog } from "@/components/ContactDialog";
 
 export default function Start() {
   const [, setLocation] = useLocation();
@@ -103,14 +104,18 @@ export default function Start() {
           className="mt-10 flex flex-col items-center gap-3 text-center"
         >
           <p className="text-muted-foreground text-sm">Prefer to speak with someone directly?</p>
-          <a
-            href="tel:7027279713"
-            data-testid="link-loan-officer-phone"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-8 h-12 text-base font-medium text-foreground hover:border-primary/50 hover:shadow-sm transition-all hover:-translate-y-0.5"
-          >
-            <Phone className="w-4 h-4 text-primary" />
-            Talk to a Loan Officer — (702) 727-9713
-          </a>
+          <ContactDialog>
+            {(open) => (
+              <button
+                onClick={open}
+                data-testid="link-loan-officer-phone"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-8 h-12 text-base font-medium text-foreground hover:border-primary/50 hover:shadow-sm transition-all hover:-translate-y-0.5"
+              >
+                <Phone className="w-4 h-4 text-primary" />
+                Talk to a Loan Officer
+              </button>
+            )}
+          </ContactDialog>
         </motion.div>
       </div>
     </div>

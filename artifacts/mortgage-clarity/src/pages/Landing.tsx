@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, CheckCircle2, Shield, HeartHandshake, RotateCcw, ChevronRight } from "lucide-react";
 import { useMortgage } from "@/context/MortgageContext";
+import { ContactDialog } from "@/components/ContactDialog";
 
 function getTypeLabel(type: string) {
   if (type === "buy") return "Buy a Home";
@@ -88,12 +89,16 @@ export default function Landing() {
                 Get Started
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
-              <a
-                href="tel:7027279713"
-                className="inline-flex items-center justify-center rounded-full text-lg font-medium transition-transform hover:scale-105 active:scale-95 h-14 px-10 border border-border bg-background text-foreground hover:bg-secondary"
-              >
-                Talk to a Loan Officer
-              </a>
+              <ContactDialog>
+                {(open) => (
+                  <button
+                    onClick={open}
+                    className="inline-flex items-center justify-center rounded-full text-lg font-medium transition-transform hover:scale-105 active:scale-95 h-14 px-10 border border-border bg-background text-foreground hover:bg-secondary"
+                  >
+                    Talk to a Loan Officer
+                  </button>
+                )}
+              </ContactDialog>
             </motion.div>
             <motion.p
               initial={{ opacity: 0 }}
