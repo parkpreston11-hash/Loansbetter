@@ -354,6 +354,57 @@ const rules: MatchRule[] = [
       `Hey! Good to hear from you. I'm your mortgage clarity guide — here to make the confusing stuff make sense.\n\nFeel free to ask about anything: rates, loan types, what affects your qualifying amount, how the process works, or any terms you've heard that you want explained plainly.\n\nWhat's on your mind?`,
   },
 
+  // ── Market Predictions ───────────────────────────────────────────────────
+  {
+    patterns: [
+      "will rates go down", "will rates drop", "will rates fall", "when will rates drop",
+      "will rates go up", "will rates rise", "will rates increase",
+      "where will rates be", "rate forecast", "rate prediction", "future rates",
+      "should i wait for rates", "wait for lower rates",
+    ],
+    response: () =>
+      `Rates move based on a complex mix of factors — inflation data, Federal Reserve policy, bond market demand, employment reports, and global economic conditions. No one has a reliable crystal ball on where they'll land.\n\n**What we do know historically:**\n• Rates have ranged from under 3% (2020–2021) to over 8% (late 2023) within just a few years\n• Waiting for the "perfect" rate has a real cost: every month of waiting is a month of rent paid, not equity built\n• The old saying holds up: "Marry the home, date the rate" — you can refinance later if rates improve\n\n**A useful framework instead of trying to time rates:**\n• What does your monthly payment look like at today's rate? Is it manageable?\n• How long do you plan to stay? Longer time horizons make rate timing less critical\n• What's your opportunity cost of waiting — rising prices, less inventory, continued renting?\n\nThe rate you get today can be refinanced. The home you pass on today may not come back.`,
+  },
+  {
+    patterns: [
+      "will home prices drop", "will prices fall", "housing market crash", "will market crash",
+      "housing bubble", "home prices going down", "real estate crash", "prices going to drop",
+      "when will housing", "housing market prediction", "home value prediction",
+    ],
+    response: () =>
+      `Home price movements are shaped by supply and demand at the local level, interest rates, employment, population trends, and policy — and they vary enormously neighborhood by neighborhood.\n\n**What history tells us:**\n• Nationally, home values have risen over virtually every 10-year period on record\n• Short-term corrections do happen — 2008 was the most dramatic in modern history, driven by fundamentally different lending conditions than today\n• Local markets behave independently — a city with job growth and housing shortages behaves differently than one with declining population\n\n**The more useful question to ask yourself:**\n• How long do you plan to own? Longer horizons smooth out short-term volatility\n• What's your financial cushion if values dip temporarily?\n• Are you buying a home to live in, or purely as an investment? For primary residences, the "right" time has personal factors beyond just market timing\n\n**One thing that's consistent:** People who waited for a "crash" often waited years and paid more in rent than any dip would have saved them. That's not a prediction — it's just a pattern worth knowing.`,
+  },
+  {
+    patterns: [
+      "is now a good time to buy", "should i buy now", "good time to buy", "bad time to buy",
+      "should i wait to buy", "should i buy or wait", "right time to buy", "buy now or later",
+      "is it a buyer's market", "is it a seller's market", "market conditions",
+    ],
+    response: (ctx) => {
+      const hasAnswers = ctx.income > 0 && ctx.creditScore;
+      const personalNote = hasAnswers
+        ? `\n\nBased on what you've shared — your income, credit, and what you're targeting — the financial fundamentals are what will drive whether *this moment* is the right one for *you*. Your estimate gives you a sense of the range you're working with.`
+        : "";
+      return `"Is now a good time to buy?" is one of the most personal questions in real estate — and the honest answer depends more on your situation than the market.\n\n**Personal factors that matter more than timing:**\n• Do you have stable income and job security?\n• Do you have enough for the down payment *and* an emergency fund?\n• Do you plan to stay in the area for at least 3–5 years?\n• Is your monthly payment comfortable, even if unexpected costs come up?\n\n**What market conditions actually tell us:**\n• High rates reduce purchasing power but often soften competition and prices\n• Low rates create competition and drive prices up — the "savings" from low rates often get absorbed into higher prices\n• These forces partially offset each other more than people expect\n\n**The question worth sitting with:**\nIf this home worked financially today, and you stayed 7+ years, would a temporary dip in value matter to you? For most people who plan to stay, the answer is no.${personalNote}`;
+    },
+  },
+  {
+    patterns: [
+      "fed rate", "federal reserve", "fed meeting", "interest rate hike", "rate cut",
+      "inflation mortgage", "inflation rate", "cpi mortgage",
+    ],
+    response: () =>
+      `The Federal Reserve sets the federal funds rate — which influences short-term borrowing costs broadly — but mortgage rates are more directly tied to the 10-year Treasury bond yield.\n\n**How it connects:**\nWhen the Fed raises rates to fight inflation, bond yields often rise too, pushing mortgage rates up. When the Fed cuts, the opposite can happen — though the relationship isn't perfectly direct.\n\n**What this means practically:**\nMortgage rates have already priced in a lot of what the market *expects* the Fed to do. By the time a cut actually happens, rates may not move much — because lenders anticipated it.\n\n**The part that doesn't change regardless of the Fed:**\nYour credit score, down payment, loan type, and debt-to-income ratio are the levers you actually control. A strong profile gets you the best available rate in any environment — and that spread between a strong and weak profile can be 1–2%, which is often bigger than the Fed's moves over a year.\n\nFocus on what you can control. That's where the real leverage is.`,
+  },
+  {
+    patterns: [
+      "invest in real estate", "real estate investment", "rental property", "buy to rent",
+      "appreciation", "will my home appreciate", "home as investment",
+    ],
+    response: () =>
+      `Real estate has historically been one of the most accessible paths to wealth-building for everyday households — and understanding why helps set realistic expectations.\n\n**Why homes tend to appreciate over time:**\n• Land is finite; population generally grows\n• Inflation lifts the nominal value of hard assets\n• Demand in desirable areas tends to outpace new supply\n\n**What homeownership actually gives you financially:**\n• Forced savings through equity building with each payment\n• Leverage — you control a $400k asset with $40k down\n• Protection from rising rents\n• Potential appreciation on the full value, not just your down payment\n\n**The realistic picture:**\nHistorically, home values have appreciated roughly in line with inflation on a national average basis — around 3–4% annually over long periods, with significant variation by location. Some markets dramatically outperform; others underperform.\n\n**Primary home vs. pure investment:**\nA home you live in serves two purposes — housing and investment. Expecting it to perform like a growth stock isn't quite the right frame. Its value is in the combination: stability, equity, and appreciation over time.`,
+  },
+
   // ── Thank You ────────────────────────────────────────────────────────────
   {
     patterns: ["thank you", "thanks", "that helps", "helpful", "that makes sense", "got it", "i understand"],
