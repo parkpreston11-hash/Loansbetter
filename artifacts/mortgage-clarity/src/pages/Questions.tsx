@@ -5,7 +5,7 @@ import { useMortgage, CreditScoreRange, EmploymentType, LoanType, RefiGoal, Prop
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ArrowRight, Briefcase, Building2, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Briefcase, Building2, Sunset, XCircle } from "lucide-react";
 import { QUESTION_COUNT } from "@/lib/constants";
 
 function CurrencyInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -796,11 +796,12 @@ export default function Questions() {
         const empOpts8: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
           { value: "employed",      label: "Employed",      sub: "I receive a W-2 from an employer.",                   icon: <Briefcase className="w-6 h-6" /> },
           { value: "self-employed", label: "Self-Employed", sub: "I own a business, freelance, or receive 1099 income.", icon: <Building2 className="w-6 h-6" /> },
+          ...(isReverse ? [{ value: "retired" as EmploymentType, label: "Retired", sub: "I no longer work and live on retirement income, pension, or savings.", icon: <Sunset className="w-6 h-6" /> }] : []),
         ];
         return (
           <div className="space-y-8">
             <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
-              Are you employed or self-employed?
+              {isReverse ? "What is your employment status?" : "Are you employed or self-employed?"}
             </h2>
             <p className="text-muted-foreground">This helps us tailor your document checklist.</p>
             <div className="flex flex-col gap-4 py-4">

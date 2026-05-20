@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export type MortgageType = "buy" | "refinance" | "cashout" | "reverse" | null;
 export type CreditScoreRange = "500 or below" | "501–579" | "580–619" | "620–679" | "680–739" | "740 or above";
 
-export type EmploymentType = "employed" | "self-employed" | "";
+export type EmploymentType = "employed" | "self-employed" | "retired" | "";
 export type LoanType = "fha" | "conventional" | "va" | "";
 export type LoanTerm = "30-fixed" | "30-arm" | "15-fixed" | "15-arm" | "";
 export type RefiGoal = "lower-rate" | "lower-payment" | "pay-off-faster" | "consolidate-debt" | "";
