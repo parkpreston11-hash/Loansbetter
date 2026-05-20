@@ -11,11 +11,8 @@ export function Navbar() {
   return (
     <nav className="w-full h-20 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
       <div className="container mx-auto h-full flex items-center justify-between px-4 md:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold font-serif text-xl">
-            L
-          </div>
-          <span className="font-serif font-semibold text-xl tracking-tight text-foreground">LoansBetter</span>
+        <Link href="/" className="flex items-center">
+          <img src="/logo.png" alt="LoansBetter" className="h-8 w-auto" />
         </Link>
 
         <div className="hidden md:flex items-center gap-8">

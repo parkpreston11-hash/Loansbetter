@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { MortgageProvider } from "@/context/MortgageContext";
 
 import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import Landing from "@/pages/Landing";
 import Start from "@/pages/Start";
 import Questions from "@/pages/Questions";
@@ -19,20 +20,23 @@ const queryClient = new QueryClient();
 
 function Router() {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <Switch>
-        <Route path="/" component={Landing} />
-        <Route path="/start" component={Start} />
-        <Route path="/questions" component={Questions} />
-        <Route path="/results" component={Results} />
-        <Route path="/chat" component={Chat} />
-        <Route path="/handoff" component={Handoff} />
-        <Route path="/lookup" component={LookupBrief} />
-        <Route path="/learn" component={Learn} />
-        <Route component={NotFound} />
-      </Switch>
-    </>
+      <main className="flex-1">
+        <Switch>
+          <Route path="/" component={Landing} />
+          <Route path="/start" component={Start} />
+          <Route path="/questions" component={Questions} />
+          <Route path="/results" component={Results} />
+          <Route path="/chat" component={Chat} />
+          <Route path="/handoff" component={Handoff} />
+          <Route path="/lookup" component={LookupBrief} />
+          <Route path="/learn" component={Learn} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+      <Footer />
+    </div>
   );
 }
 
