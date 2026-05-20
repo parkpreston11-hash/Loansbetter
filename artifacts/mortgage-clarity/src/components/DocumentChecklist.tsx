@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload, CheckCircle2, Clock, ChevronDown, ChevronUp,
-  FileImage, X, Eye, Folder
+  FileImage, X, Eye, Folder, Send, PartyPopper
 } from "lucide-react";
 import { sendNotification } from "../lib/notify";
 
@@ -442,6 +442,7 @@ export function DocumentChecklist({
   );
   const [clientEmail, setClientEmail] = useState(() => loadContact(code).email);
   const [clientPhone, setClientPhone] = useState(() => loadContact(code).phone);
+  const [docSubmitted, setDocSubmitted] = useState(false);
 
   const docs = getDocList(mortgageType, creditScore, employmentType);
   const required = docs.filter(d => d.required);
@@ -482,6 +483,27 @@ export function DocumentChecklist({
       delete next[id];
       return next;
     });
+    setDocSubmitted(false);
+  };
+
+  const handleDocSubmit = () => {
+    const uploadedDocsList = docs
+      .filter(d => files[d.id])
+      .map(d => `${d.title} — ${files[d.id]!.name}`);
+    const typeFull =
+      mortgageType === "buy" ? "Buy a Home" :
+      mortgageType === "refinance" ? "Refinance" :
+      mortgageType === "cashout" ? "Cash-Out Refinance" :
+      "Reverse Mortgage";
+    void sendNotification({
+      type: "submission",
+      name: fullName || "Client",
+      code,
+      docs: uploadedDocsList,
+      loanType: typeFull,
+      employment: employmentType || "Not specified",
+    });
+    setDocSubmitted(true);
   };
 
   const typeLabel =
@@ -598,6 +620,41 @@ export function DocumentChecklist({
                   ))}
                 </div>
               )}
+
+              {/* Submit docs to loan officer */}
+              <div className="rounded-2xl border border-primary/20 bg-primary/3 p-5 space-y-3">
+                <AnimatePresence mode="wait">
+                  {docSubmitted ? (
+                    <motion.div
+                      key="done"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3"
+                    >
+                      <PartyPopper className="w-5 h-5 text-green-600 shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-green-800">Documents sent to your loan officer!</p>
+                        <p className="text-xs text-green-700 mt-0.5">They'll follow up with next steps.</p>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      key="btn"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      onClick={handleDocSubmit}
+                      disabled={uploadedCount === 0}
+                      className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    >
+                      <Send className="w-4 h-4" />
+                      {uploadedCount === 0
+                        ? "Upload at least one document to submit"
+                        : `Submit ${uploadedCount} Document${uploadedCount !== 1 ? "s" : ""} to Loan Officer`
+                      }
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* Footer CTA */}
               <div className="pt-2 border-t border-border flex flex-col sm:flex-row gap-4 items-center justify-between">
