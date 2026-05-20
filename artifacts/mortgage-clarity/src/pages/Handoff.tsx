@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { useMortgage } from "@/context/MortgageContext";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound, Mail, Send, PartyPopper } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { DocumentChecklist } from "@/components/DocumentChecklist";
+import { sendNotification } from "@/lib/notify";
+
+const CONTACT_KEY_PREFIX = "lb_contact_";
 
 const BRIEF_KEY_PREFIX = "lb_brief_";
 
@@ -21,6 +24,13 @@ export default function Handoff() {
   const [, setLocation] = useLocation();
   const [codeCopied, setCodeCopied] = useState(false);
   const [code] = useState(generateCode);
+  const [clientEmail, setClientEmail] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").email ?? ""; } catch { return ""; }
+  });
+  const [clientPhone, setClientPhone] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").phone ?? ""; } catch { return ""; }
+  });
+  const [summarySubmitted, setSummarySubmitted] = useState(false);
 
   if (!selectedMortgageType || !estimateResult) {
     setLocation("/start");
@@ -102,6 +112,12 @@ export default function Handoff() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(CONTACT_KEY_PREFIX + code, JSON.stringify({ email: clientEmail, phone: clientPhone }));
+    } catch {}
+  }, [clientEmail, clientPhone, code]);
+
   const profile = buildProfile();
   const scenarios = buildScenarios();
 
@@ -111,6 +127,22 @@ export default function Handoff() {
       setCodeCopied(true);
       setTimeout(() => setCodeCopied(false), 2500);
     } catch {}
+  };
+
+  const handleSummarySubmit = () => {
+    void sendNotification({
+      type: "profile",
+      name: answers.fullName || "Client",
+      email: clientEmail.trim() || undefined,
+      phone: clientPhone.trim() || undefined,
+      code,
+      goal: getTypeLabel(selectedMortgageType),
+      profileItems: Object.entries(profile).map(([k, v]) => `${k} — ${v}`),
+      estimate: `${estimateResult.type}: ${fmt(estimateResult.low)} – ${fmt(estimateResult.high)}`,
+      employment: answers.employmentType || "Not specified",
+      scenarios,
+    });
+    setSummarySubmitted(true);
   };
 
   return (
@@ -257,6 +289,81 @@ export default function Handoff() {
               <p className="text-muted-foreground italic text-sm">No questions were asked in the chat.</p>
             )}
           </section>
+
+          {/* ── Send Summary ─────────────────────────────────────────── */}
+          <div className="border-t border-border pt-8 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Send className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-sm">Send This Summary to Your Loan Officer</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Enter your email or phone and hit Submit — your full profile and code will be sent instantly.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <input
+                  type="email"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  placeholder="Email address"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                />
+              </div>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <input
+                  type="tel"
+                  value={clientPhone}
+                  onChange={(e) => setClientPhone(e.target.value)}
+                  placeholder="Phone number"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                />
+              </div>
+              {!clientEmail.trim() && !clientPhone.trim() && (
+                <p className="text-xs text-muted-foreground">Add your email or phone — you'll receive a copy instantly.</p>
+              )}
+              {clientPhone.trim() && !clientEmail.trim() && (
+                <p className="text-xs text-primary/70">Phone only — you'll receive a text with your summary.</p>
+              )}
+            </div>
+
+            <AnimatePresence mode="wait">
+              {summarySubmitted ? (
+                <motion.div
+                  key="done"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4"
+                >
+                  <PartyPopper className="w-5 h-5 text-green-600 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-green-800">Summary sent!</p>
+                    <p className="text-xs text-green-700 mt-0.5">Your loan officer has your profile and code. They'll follow up with next steps.</p>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="btn"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  onClick={handleSummarySubmit}
+                  disabled={!clientEmail.trim() && !clientPhone.trim()}
+                  className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  <Send className="w-4 h-4" />
+                  {!clientEmail.trim() && !clientPhone.trim()
+                    ? "Add email or phone to submit"
+                    : "Submit Summary to Loan Officer"}
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Document Checklist */}

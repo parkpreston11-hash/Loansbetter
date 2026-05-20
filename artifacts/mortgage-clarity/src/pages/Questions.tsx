@@ -68,7 +68,7 @@ export default function Questions() {
   const isStepComplete = (s: number): boolean => {
     switch (s) {
       case 0:
-        return answers.fullName.trim().length > 0;
+        return (answers.fullName ?? "").trim().length > 0;
       case 1:
         if (isReverse) return true; // age slider min 62, always valid
         return answers.income > 0;
@@ -135,7 +135,7 @@ export default function Questions() {
               <Input
                 value={answers.fullName}
                 onChange={(e) => updateAnswer("fullName", e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && answers.fullName.trim()) handleNext(); }}
+                onKeyDown={(e) => { if (e.key === "Enter" && (answers.fullName ?? "").trim()) handleNext(); }}
                 placeholder="e.g. Jane Smith"
                 autoFocus
                 className="h-16 text-xl font-semibold text-center rounded-2xl border-border bg-card focus:border-primary"

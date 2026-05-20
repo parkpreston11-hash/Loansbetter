@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload, CheckCircle2, Clock, ChevronDown, ChevronUp,
-  FileImage, X, Eye, Folder, Send, PartyPopper, Mail, Phone
+  FileImage, X, Eye, Folder
 } from "lucide-react";
 import { sendNotification } from "../lib/notify";
 
@@ -251,7 +251,6 @@ function getDocList(
 // ─── Storage ──────────────────────────────────────────────────────────────────
 
 const DOCS_KEY_PREFIX = "lb_docs_";
-const SUBMITTED_KEY_PREFIX = "lb_submitted_";
 
 function loadDocStates(code: string): Record<string, UploadedFile | undefined> {
   try {
@@ -268,25 +267,6 @@ function saveDocStates(code: string, states: Record<string, UploadedFile | undef
   } catch {}
 }
 
-function loadSubmitted(code: string): boolean {
-  try {
-    return !!localStorage.getItem(SUBMITTED_KEY_PREFIX + code);
-  } catch {
-    return false;
-  }
-}
-
-function saveSubmitted(code: string, date: string) {
-  try {
-    localStorage.setItem(SUBMITTED_KEY_PREFIX + code, date);
-  } catch {}
-}
-
-function clearSubmitted(code: string) {
-  try {
-    localStorage.removeItem(SUBMITTED_KEY_PREFIX + code);
-  } catch {}
-}
 
 const CONTACT_KEY_PREFIX = "lb_contact_";
 
@@ -460,7 +440,6 @@ export function DocumentChecklist({
   const [files, setFiles] = useState<Record<string, UploadedFile | undefined>>(() =>
     loadDocStates(code)
   );
-  const [submitted, setSubmitted] = useState(() => loadSubmitted(code));
   const [clientEmail, setClientEmail] = useState(() => loadContact(code).email);
   const [clientPhone, setClientPhone] = useState(() => loadContact(code).phone);
 
@@ -493,8 +472,6 @@ export function DocumentChecklist({
 
   const handleUpload = (id: string, file: UploadedFile) => {
     setFiles(prev => ({ ...prev, [id]: file }));
-    clearSubmitted(code);
-    setSubmitted(false);
     const doc = docs.find(d => d.id === id);
     if (doc) triggerDocumentEmail(doc.title, file.name);
   };
@@ -505,35 +482,6 @@ export function DocumentChecklist({
       delete next[id];
       return next;
     });
-    clearSubmitted(code);
-    setSubmitted(false);
-  };
-
-  const handleSubmit = () => {
-    const typeFull =
-      mortgageType === "buy" ? "Buy a Home" :
-      mortgageType === "refinance" ? "Refinance" :
-      mortgageType === "cashout" ? "Cash-Out Refinance" :
-      "Reverse Mortgage";
-
-    const uploadedDocsList = docs
-      .filter(d => files[d.id])
-      .map(d => `${d.title} — ${files[d.id]!.name}`);
-
-    void sendNotification({
-      type: "submission",
-      name: fullName || "Client",
-      email: clientEmail.trim() || undefined,
-      phone: clientPhone.trim() || undefined,
-      code,
-      docs: uploadedDocsList,
-      loanType: typeFull,
-      employment: employmentType || "Not specified",
-    });
-
-    const dateStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    saveSubmitted(code, dateStr);
-    setSubmitted(true);
   };
 
   const typeLabel =
@@ -650,94 +598,6 @@ export function DocumentChecklist({
                   ))}
                 </div>
               )}
-
-              {/* Submit section */}
-              <div className="rounded-2xl border-2 border-dashed border-primary/20 bg-primary/3 p-6 space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Send className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground text-sm">Submit to Loan Officer</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Add your contact info and hit the button below. Your email app will open pre-filled — just press Send.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Contact info */}
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">Your Contact Info</p>
-                  <div className="grid gap-2">
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                      <input
-                        type="email"
-                        value={clientEmail}
-                        onChange={(e) => setClientEmail(e.target.value)}
-                        placeholder="Email address"
-                        className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                      />
-                    </div>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                      <input
-                        type="tel"
-                        value={clientPhone}
-                        onChange={(e) => setClientPhone(e.target.value)}
-                        placeholder="Phone number"
-                        className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                      />
-                    </div>
-                  </div>
-                  {!clientEmail.trim() && !clientPhone.trim() && (
-                    <p className="text-xs text-muted-foreground">
-                      Add your email or phone — you'll get a copy of every submission.
-                    </p>
-                  )}
-                  {clientPhone.trim() && !clientEmail.trim() && (
-                    <p className="text-xs text-primary/70">
-                      Phone only — we'll open your texting app to send you a copy.
-                    </p>
-                  )}
-                </div>
-
-                <AnimatePresence mode="wait">
-                  {submitted ? (
-                    <motion.div
-                      key="done"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4"
-                    >
-                      <PartyPopper className="w-5 h-5 text-green-600 shrink-0" />
-                      <div>
-                        <p className="text-sm font-semibold text-green-800">Email opened — just press Send!</p>
-                        <p className="text-xs text-green-700 mt-0.5">
-                          Your loan officer will receive your document list and follow up with next steps.
-                        </p>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.button
-                      key="btn"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      onClick={handleSubmit}
-                      disabled={uploadedCount === 0 || (!clientEmail.trim() && !clientPhone.trim())}
-                      className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    >
-                      <Send className="w-4 h-4" />
-                      {uploadedCount === 0
-                        ? "Upload at least one document to submit"
-                        : !clientEmail.trim() && !clientPhone.trim()
-                        ? "Add email or phone to submit"
-                        : `Submit ${uploadedCount} Document${uploadedCount !== 1 ? "s" : ""} to Loan Officer`
-                      }
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-              </div>
 
               {/* Footer CTA */}
               <div className="pt-2 border-t border-border flex flex-col sm:flex-row gap-4 items-center justify-between">

@@ -19,7 +19,20 @@ export interface NotifySubmissionPayload {
   employment: string;
 }
 
-export type NotifyPayload = NotifyDocumentPayload | NotifySubmissionPayload;
+export interface NotifyProfilePayload {
+  type: "profile";
+  name: string;
+  email?: string;
+  phone?: string;
+  code: string;
+  goal: string;
+  profileItems: string[];
+  estimate: string;
+  employment: string;
+  scenarios?: string[];
+}
+
+export type NotifyPayload = NotifyDocumentPayload | NotifySubmissionPayload | NotifyProfilePayload;
 
 export async function sendNotification(payload: NotifyPayload): Promise<void> {
   try {

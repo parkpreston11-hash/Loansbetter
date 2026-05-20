@@ -5,7 +5,7 @@ import twilio from "twilio";
 const router = Router();
 
 function buildEmailContent(body: Record<string, unknown>) {
-  const { type, name, email, phone, code, docTitle, fileName, docs, loanType, employment } = body as {
+  const { type, name, email, phone, code, docTitle, fileName, docs, loanType, employment, goal, profileItems, estimate, scenarios } = body as {
     type: string;
     name?: string;
     email?: string;
@@ -16,6 +16,10 @@ function buildEmailContent(body: Record<string, unknown>) {
     docs?: string[];
     loanType?: string;
     employment?: string;
+    goal?: string;
+    profileItems?: string[];
+    estimate?: string;
+    scenarios?: string[];
   };
 
   const dateStr = new Date().toLocaleDateString("en-US", {
@@ -42,6 +46,42 @@ function buildEmailContent(body: Record<string, unknown>) {
         ``,
         `--`,
         `Sent automatically via LoansBetter`,
+      ]
+        .filter((l) => l !== null)
+        .join("\n"),
+    };
+  }
+
+  if (type === "profile") {
+    const profileLines = profileItems && profileItems.length > 0
+      ? profileItems.map((item) => `  • ${item}`)
+      : ["  None"];
+    const scenarioLines = scenarios && scenarios.length > 0
+      ? scenarios.map((s) => `  • ${s}`)
+      : null;
+    return {
+      subject: `LoansBetter — ${name || "Client"} — ${code}`,
+      text: [
+        `LoansBetter Client Summary`,
+        ``,
+        `From: ${name || "Client"}`,
+        email ? `Email: ${email}` : null,
+        phone ? `Phone: ${phone}` : null,
+        ``,
+        `Goal: ${goal || "Not specified"}`,
+        `Employment: ${employment || "Not specified"}`,
+        `Client Code: ${code}`,
+        `Date: ${dateStr}`,
+        ``,
+        `PROFILE:`,
+        ...profileLines,
+        ``,
+        `ESTIMATE:`,
+        `  ${estimate || "Not available"}`,
+        ...(scenarioLines ? [``, `SCENARIOS EXPLORED:`, ...scenarioLines] : []),
+        ``,
+        `--`,
+        `Submitted via LoansBetter`,
       ]
         .filter((l) => l !== null)
         .join("\n"),
