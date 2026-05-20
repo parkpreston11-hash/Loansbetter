@@ -4,6 +4,7 @@ import {
   Upload, CheckCircle2, Clock, ChevronDown, ChevronUp,
   FileImage, X, Eye, Folder, Send, PartyPopper, Mail, Phone
 } from "lucide-react";
+import { sendNotification } from "../lib/notify";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -479,33 +480,15 @@ export function DocumentChecklist({
   }, [clientEmail, clientPhone, code]);
 
   const triggerDocumentEmail = (docTitle: string, fileName: string) => {
-    const dateStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    const body = [
-      `New Document Uploaded`,
-      ``,
-      `From: ${fullName || "Client"}`,
-      ...(clientEmail.trim() ? [`Email: ${clientEmail.trim()}`] : []),
-      ...(clientPhone.trim() ? [`Phone: ${clientPhone.trim()}`] : []),
-      ``,
-      `Document: ${docTitle}`,
-      `File: ${fileName}`,
-      ``,
-      `Client Code: ${code}`,
-      `Date: ${dateStr}`,
-      ``,
-      `--`,
-      `Sent automatically via LoansBetter`,
-    ].join("\n");
-    const subject = encodeURIComponent(`LoansBetter — New Document: ${docTitle} — ${code}`);
-    const encodedBody = encodeURIComponent(body);
-    const cc = clientEmail.trim() ? `&cc=${encodeURIComponent(clientEmail.trim())}` : "";
-    window.open(`mailto:parkpreston11@gmail.com?${cc}subject=${subject}&body=${encodedBody}`, "_blank");
-    if (clientPhone.trim() && !clientEmail.trim()) {
-      const smsBody = encodeURIComponent(
-        `LoansBetter — ${fullName || "Client"}\nNew doc: ${docTitle}\nFile: ${fileName}\nCode: ${code}\n${dateStr}`
-      );
-      setTimeout(() => window.open(`sms:${clientPhone.trim()}?body=${smsBody}`, "_blank"), 600);
-    }
+    void sendNotification({
+      type: "document",
+      name: fullName || "Client",
+      email: clientEmail.trim() || undefined,
+      phone: clientPhone.trim() || undefined,
+      code,
+      docTitle,
+      fileName,
+    });
   };
 
   const handleUpload = (id: string, file: UploadedFile) => {
@@ -533,50 +516,21 @@ export function DocumentChecklist({
       mortgageType === "cashout" ? "Cash-Out Refinance" :
       "Reverse Mortgage";
 
-    const uploadedDocs = docs
+    const uploadedDocsList = docs
       .filter(d => files[d.id])
-      .map(d => `  • ${d.title} — ${files[d.id]!.name}`)
-      .join("\n");
+      .map(d => `${d.title} — ${files[d.id]!.name}`);
 
-    const missingRequired = required
-      .filter(d => !files[d.id])
-      .map(d => `  • ${d.title}`)
-      .join("\n");
+    void sendNotification({
+      type: "submission",
+      name: fullName || "Client",
+      email: clientEmail.trim() || undefined,
+      phone: clientPhone.trim() || undefined,
+      code,
+      docs: uploadedDocsList,
+      loanType: typeFull,
+      employment: employmentType || "Not specified",
+    });
 
-    const body = [
-      `LoansBetter Document Submission`,
-      ``,
-      `From: ${fullName || "Client"}`,
-      ...(clientEmail.trim() ? [`Email: ${clientEmail.trim()}`] : []),
-      ...(clientPhone.trim() ? [`Phone: ${clientPhone.trim()}`] : []),
-      ``,
-      `Client Code: ${code}`,
-      `Loan Type: ${typeFull}`,
-      `Employment: ${employmentType || "Not specified"}`,
-      `Date: ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`,
-      ``,
-      `UPLOADED DOCUMENTS (${uploadedCount}):`,
-      uploadedDocs || "  None",
-      ...(missingRequired ? [``, `STILL NEEDED:`, missingRequired] : []),
-      ``,
-      `--`,
-      `Submitted via LoansBetter`,
-    ].join("\n");
-
-    const subject = encodeURIComponent(`LoansBetter — ${fullName || "Client"} — ${code}`);
-    const encodedBody = encodeURIComponent(body);
-    const cc = clientEmail.trim() ? `&cc=${encodeURIComponent(clientEmail.trim())}` : "";
-    window.open(`mailto:parkpreston11@gmail.com?${cc}subject=${subject}&body=${encodedBody}`, "_blank");
-    if (clientPhone.trim() && !clientEmail.trim()) {
-      const smsBody = encodeURIComponent(
-        `LoansBetter — ${fullName || "Client"}\nSubmitted ${uploadedCount} doc(s) for ${
-          mortgageType === "buy" ? "home purchase" :
-          mortgageType === "refinance" ? "refinance" :
-          mortgageType === "cashout" ? "cash-out refinance" : "reverse mortgage"
-        }.\nCode: ${code}\n${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`
-      );
-      setTimeout(() => window.open(`sms:${clientPhone.trim()}?body=${smsBody}`, "_blank"), 600);
-    }
     const dateStr = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     saveSubmitted(code, dateStr);
     setSubmitted(true);
