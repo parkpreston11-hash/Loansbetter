@@ -242,7 +242,7 @@ export default function Results() {
           <div className="bg-secondary/40 border border-border rounded-3xl p-8">
             <div className="flex items-center gap-3 mb-2">
               <Home className="w-5 h-5 text-primary" />
-              <p className="font-semibold text-foreground text-lg">Can't buy a home right now?</p>
+              <p className="font-semibold text-foreground text-lg">Can't find a home?</p>
             </div>
             <p className="text-muted-foreground text-sm mb-6">
               Browse homes for sale near you in your estimated price range ({formatCurrency(adjustedEstimate?.low ?? 0)} – {formatCurrency(adjustedEstimate?.high ?? 0)}) and start planning your next move.
