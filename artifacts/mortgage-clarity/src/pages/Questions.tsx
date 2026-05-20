@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMortgage, CreditScoreRange, EmploymentType, LoanType, LoanTerm, CURRENT_MARKET_RATE, LOAN_TERM_RATES } from "@/context/MortgageContext";
+import { useMortgage, CreditScoreRange, EmploymentType, LoanType, LoanTerm, RefiGoal, PropertyType, LoanPurpose, CURRENT_MARKET_RATE, LOAN_TERM_RATES } from "@/context/MortgageContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -67,7 +67,7 @@ export default function Questions() {
   const isReverse = selectedMortgageType === "reverse";
   const isCashout = selectedMortgageType === "cashout";
   const isRefi = selectedMortgageType === "refinance";
-  const totalSteps = (isCashout || isBuy) ? 8 : QUESTION_COUNT;
+  const totalSteps = (isRefi || isReverse) ? 9 : 8;
 
   const isStepComplete = (s: number): boolean => {
     switch (s) {
@@ -94,9 +94,16 @@ export default function Questions() {
       case 6:
         if (isCashout) return answers.mortgageBalance > 0;
         if (isBuy) return !!answers.loanTerm;
+        if (isRefi) return answers.homeValue > 0;
+        if (isReverse) return !!answers.propertyType;
         return !!answers.employmentType;
       case 7:
-        return !!answers.employmentType; // buy and cashout only reach here
+        if (isBuy || isCashout) return !!answers.employmentType;
+        if (isRefi) return !!answers.refiGoal;
+        if (isReverse) return !!answers.loanPurpose;
+        return true;
+      case 8:
+        return !!answers.employmentType; // refi and reverse only
       default:
         return true;
     }
@@ -621,9 +628,68 @@ export default function Questions() {
             </div>
           );
         }
+        if (isRefi) {
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                What is your home currently worth?
+              </h2>
+              <p className="text-muted-foreground">Your best estimate is fine — we use this to assess your equity position.</p>
+              <div className="py-4 space-y-6">
+                <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.homeValue)}</div>
+                <CurrencyInput value={answers.homeValue} onChange={(v) => updateAnswer("homeValue", v)} />
+                <Slider
+                  value={[Math.min(answers.homeValue, 5000000)]}
+                  min={0}
+                  max={5000000}
+                  step={10000}
+                  onValueChange={(val) => updateAnswer("homeValue", val[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>$0</span>
+                  <span>$5M+</span>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        if (isReverse) {
+          const propTypes: { value: PropertyType; label: string; sub: string }[] = [
+            { value: "single-family", label: "Single Family Home", sub: "A standalone house on its own lot." },
+            { value: "condo",         label: "Condominium",         sub: "A unit in a shared building or complex." },
+            { value: "townhouse",     label: "Townhouse",           sub: "A multi-story home sharing walls with neighbors." },
+            { value: "multi-family",  label: "Multi-Family (2–4 units)", sub: "A duplex, triplex, or fourplex." },
+          ];
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                What type of property is this?
+              </h2>
+              <p className="text-muted-foreground">Property type affects reverse mortgage eligibility and limits.</p>
+              <div className="flex flex-col gap-3 py-4">
+                {propTypes.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => updateAnswer("propertyType", opt.value)}
+                    className={`w-full p-4 rounded-xl border text-left transition-all ${
+                      answers.propertyType === opt.value
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border bg-card hover:border-primary/50"
+                    }`}
+                  >
+                    <p className="font-semibold text-foreground">{opt.label}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">{opt.sub}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        }
+        // refi/reverse now have their own case 6 — this else handles employment for any remaining flow
         const employmentOptions: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
-          { value: "employed",      label: "Employed",      sub: "I receive a W-2 from an employer.",                         icon: <Briefcase className="w-6 h-6" /> },
-          { value: "self-employed", label: "Self-Employed", sub: "I own a business, freelance, or receive 1099 income.",       icon: <Building2 className="w-6 h-6" /> },
+          { value: "employed",      label: "Employed",      sub: "I receive a W-2 from an employer.",                   icon: <Briefcase className="w-6 h-6" /> },
+          { value: "self-employed", label: "Self-Employed", sub: "I own a business, freelance, or receive 1099 income.", icon: <Building2 className="w-6 h-6" /> },
         ];
         return (
           <div className="space-y-8">
@@ -659,10 +725,114 @@ export default function Questions() {
       }
 
       case 7: {
-        // Cashout only — employment (final step, shifted from case 6)
-        const empOptions: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
-          { value: "employed",      label: "Employed",      sub: "I receive a W-2 from an employer.",                         icon: <Briefcase className="w-6 h-6" /> },
-          { value: "self-employed", label: "Self-Employed", sub: "I own a business, freelance, or receive 1099 income.",       icon: <Building2 className="w-6 h-6" /> },
+        // Buy/Cashout: employment; Refi: refi goal; Reverse: loan purpose
+        if (isBuy || isCashout) {
+          const empOpts: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
+            { value: "employed",      label: "Employed",      sub: "I receive a W-2 from an employer.",                   icon: <Briefcase className="w-6 h-6" /> },
+            { value: "self-employed", label: "Self-Employed", sub: "I own a business, freelance, or receive 1099 income.", icon: <Building2 className="w-6 h-6" /> },
+          ];
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                Are you employed or self-employed?
+              </h2>
+              <p className="text-muted-foreground">This helps us tailor your document checklist.</p>
+              <div className="flex flex-col gap-4 py-4">
+                {empOpts.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => updateAnswer("employmentType", opt.value)}
+                    className={`w-full p-5 rounded-2xl border text-left transition-all flex items-center gap-5 ${
+                      answers.employmentType === opt.value
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border bg-card hover:border-primary/50"
+                    }`}
+                  >
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                      answers.employmentType === opt.value ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                    }`}>
+                      {opt.icon}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground text-lg">{opt.label}</p>
+                      <p className="text-sm text-muted-foreground mt-0.5">{opt.sub}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        }
+        if (isRefi) {
+          const refiGoals: { value: RefiGoal; label: string; sub: string }[] = [
+            { value: "lower-rate",     label: "Get a lower interest rate",  sub: "Reduce what I pay the bank each month." },
+            { value: "lower-payment",  label: "Lower my monthly payment",   sub: "Free up cash flow each month." },
+            { value: "pay-off-faster", label: "Pay off my home faster",     sub: "Switch to a shorter term and build equity quicker." },
+            { value: "consolidate-debt", label: "Consolidate debt",         sub: "Roll high-interest debt into my mortgage." },
+          ];
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                What's your primary goal with refinancing?
+              </h2>
+              <p className="text-muted-foreground">This helps us recommend the right loan structure for you.</p>
+              <div className="flex flex-col gap-3 py-4">
+                {refiGoals.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => updateAnswer("refiGoal", opt.value)}
+                    className={`w-full p-4 rounded-xl border text-left transition-all ${
+                      answers.refiGoal === opt.value
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border bg-card hover:border-primary/50"
+                    }`}
+                  >
+                    <p className="font-semibold text-foreground">{opt.label}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">{opt.sub}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        }
+        // isReverse
+        const loanPurposes: { value: LoanPurpose; label: string; sub: string }[] = [
+          { value: "supplement-income",  label: "Supplement retirement income", sub: "Use equity to cover everyday living expenses." },
+          { value: "medical",            label: "Cover medical costs",           sub: "Healthcare, prescriptions, or long-term care." },
+          { value: "home-improvements",  label: "Fund home improvements",        sub: "Updates, repairs, or accessibility modifications." },
+          { value: "debt-payoff",        label: "Pay off existing debt",         sub: "Eliminate a mortgage balance or other obligations." },
+        ];
+        return (
+          <div className="space-y-8">
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+              What would you use the funds for?
+            </h2>
+            <p className="text-muted-foreground">Helps us tailor your loan structure and next steps.</p>
+            <div className="flex flex-col gap-3 py-4">
+              {loanPurposes.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => updateAnswer("loanPurpose", opt.value)}
+                  className={`w-full p-4 rounded-xl border text-left transition-all ${
+                    answers.loanPurpose === opt.value
+                      ? "border-primary bg-primary/5 ring-1 ring-primary"
+                      : "border-border bg-card hover:border-primary/50"
+                  }`}
+                >
+                  <p className="font-semibold text-foreground">{opt.label}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{opt.sub}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case 8: {
+        // Refi and Reverse: employment (final step)
+        const empOpts8: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
+          { value: "employed",      label: "Employed",      sub: "I receive a W-2 from an employer.",                   icon: <Briefcase className="w-6 h-6" /> },
+          { value: "self-employed", label: "Self-Employed", sub: "I own a business, freelance, or receive 1099 income.", icon: <Building2 className="w-6 h-6" /> },
         ];
         return (
           <div className="space-y-8">
@@ -671,7 +841,7 @@ export default function Questions() {
             </h2>
             <p className="text-muted-foreground">This helps us tailor your document checklist.</p>
             <div className="flex flex-col gap-4 py-4">
-              {empOptions.map((opt) => (
+              {empOpts8.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => updateAnswer("employmentType", opt.value)}

@@ -6,6 +6,9 @@ export type CreditScoreRange = "500 or below" | "501–579" | "580–619" | "620
 export type EmploymentType = "employed" | "self-employed" | "";
 export type LoanType = "fha" | "conventional" | "va" | "";
 export type LoanTerm = "30-fixed" | "30-arm" | "15-fixed" | "15-arm" | "";
+export type RefiGoal = "lower-rate" | "lower-payment" | "pay-off-faster" | "consolidate-debt" | "";
+export type PropertyType = "single-family" | "condo" | "townhouse" | "multi-family" | "";
+export type LoanPurpose = "supplement-income" | "medical" | "home-improvements" | "debt-payoff" | "";
 
 export const LOAN_TERM_RATES: Record<string, { rate: number; label: string; description: string }> = {
   "30-fixed": { rate: 6.75,  label: "30-Year Fixed",    description: "Stable payment for 30 years. Most popular choice." },
@@ -27,6 +30,9 @@ export interface Answers {
   loanType: LoanType;
   loanTerm: LoanTerm;
   currentInterestRate: number;
+  refiGoal: RefiGoal;
+  propertyType: PropertyType;
+  loanPurpose: LoanPurpose;
 }
 
 export const CURRENT_MARKET_RATE = 6.875;
@@ -89,6 +95,9 @@ const defaultAnswers: Answers = {
   loanType: "",
   loanTerm: "",
   currentInterestRate: 0,
+  refiGoal: "",
+  propertyType: "",
+  loanPurpose: "",
 };
 
 const defaultAdjustments: ScenarioAdjustments = {
