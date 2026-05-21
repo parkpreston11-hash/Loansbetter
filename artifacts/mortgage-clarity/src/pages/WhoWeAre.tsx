@@ -163,12 +163,10 @@ export default function WhoWeAre() {
               decisions before committing to anything.
             </p>
             <p className="text-muted-foreground">
-              We do not issue loans or act as a bank.{" "}
               <span className="text-foreground font-medium">
                 Our focus is helping you understand your options clearly before
                 you make any financial commitments.
-              </span>{" "}
-              That's the entire scope of what we do — and we think that's enough.
+              </span>
             </p>
           </div>
         </motion.div>
