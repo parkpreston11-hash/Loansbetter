@@ -783,13 +783,16 @@ export default function LookupBrief() {
                                             <span className="text-xs text-muted-foreground shrink-0">or type:</span>
                                             <input
                                               type="number"
-                                              value={num}
-                                              min={cfg.min}
-                                              max={cfg.max}
+                                              defaultValue={num}
+                                              key={`${lbl}-${num}`}
                                               step={cfg.step}
-                                              onChange={(e) => {
-                                                const v = Math.max(cfg.min, Math.min(cfg.max, Number(e.target.value)));
-                                                updateProfileNum(lbl, v);
+                                              onBlur={(e) => {
+                                                const parsed = Number(e.target.value);
+                                                if (!isNaN(parsed)) {
+                                                  const clamped = Math.max(cfg.min, Math.min(cfg.max, parsed));
+                                                  updateProfileNum(lbl, clamped);
+                                                  e.target.value = String(clamped);
+                                                }
                                               }}
                                               className="w-36 h-8 rounded-lg border border-border bg-secondary/50 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
                                             />
