@@ -366,7 +366,78 @@ export default function LookupBrief() {
 
         {/* Results */}
         <AnimatePresence>
-          {result && (
+          {result && stageData.archived ? (
+            /* ── Archived / closed file view ─────────────────────────────── */
+            <motion.div
+              key="closed"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-card border border-border rounded-3xl p-8 md:p-10 shadow-md space-y-6"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-border pb-6">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <FolderX className="w-5 h-5" />
+                  <span className="font-semibold text-lg">LoansBetter Client File</span>
+                </div>
+                <div className="text-right">
+                  <p className="font-mono text-sm font-bold text-muted-foreground">{result.code}</p>
+                  <p className="text-xs text-muted-foreground">{result.date}</p>
+                </div>
+              </div>
+
+              {/* Closed banner */}
+              <div className="flex items-start gap-4 bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                <div className="w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center shrink-0">
+                  <FolderX className="w-6 h-6 text-slate-500" />
+                </div>
+                <div className="flex-1 min-w-0 space-y-1">
+                  <p className="font-bold text-slate-700 text-lg">File Closed</p>
+                  <p className="text-sm text-slate-500">
+                    This client file has been closed and is no longer active.
+                  </p>
+                </div>
+              </div>
+
+              {/* Details */}
+              <div className="space-y-4">
+                {stageData.archiveReason && (
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Reason</p>
+                    <p className="text-foreground font-medium">{stageData.archiveReason}</p>
+                  </div>
+                )}
+                {stageData.archiveNote && (
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Officer Note</p>
+                    <p className="text-foreground italic">"{stageData.archiveNote}"</p>
+                  </div>
+                )}
+                {stageData.archiveTimestamp && (
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Closed On</p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      {stageData.archiveTimestamp}
+                      {stageData.archiveOfficer && ` · ${stageData.archiveOfficer}`}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Contact */}
+              <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">Questions? Reach your loan officer directly.</p>
+                <a
+                  href="tel:7144944172"
+                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-6 h-11 font-medium text-sm hover:bg-primary/90 transition-all"
+                >
+                  <Phone className="w-4 h-4" />
+                  714-494-4172
+                </a>
+              </div>
+            </motion.div>
+          ) : result && (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
