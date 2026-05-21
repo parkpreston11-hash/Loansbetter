@@ -19,7 +19,7 @@ export function Navbar() {
           <Link href="/how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             How it works
           </Link>
-          <Link href="/questions" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/start" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Calculate
           </Link>
           <Link href="/learn" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
@@ -50,7 +50,7 @@ export function Navbar() {
               <Link href="/how-it-works" className="text-lg font-medium text-foreground">
                 How it works
               </Link>
-              <Link href="/questions" className="text-lg font-medium text-foreground">
+              <Link href="/start" className="text-lg font-medium text-foreground">
                 Calculate
               </Link>
               <Link href="/learn" className="text-lg font-medium text-foreground">
