@@ -155,7 +155,7 @@ export default function NewHome() {
           >
             {[
               { val: "< 10", label: "Questions to your estimate" },
-              { val: "$0", label: "Cost — ever" },
+              { val: "$0", label: "Cost Pre-Approval" },
               { val: "0%", label: "Pressure or obligation" },
             ].map((s) => (
               <div key={s.label} className="text-center">
