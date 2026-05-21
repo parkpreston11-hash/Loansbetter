@@ -92,7 +92,7 @@ export default function NewHome() {
             className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.04] tracking-tight text-white mb-7 max-w-4xl mx-auto"
           >
             Smarter mortgage decisions,{" "}
-            <span className="italic text-primary-foreground/90 drop-shadow-lg">made simple.</span>
+            <span className="italic text-primary-foreground/90 drop-shadow-lg">made better.</span>
           </motion.h1>
 
           <motion.p
