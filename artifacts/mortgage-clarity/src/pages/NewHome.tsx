@@ -146,7 +146,7 @@ export default function NewHome() {
             {[
               { val: "< 10", label: "Questions to your estimate" },
               { val: "$0", label: "No Cost Option Available" },
-              { val: "0%", label: "Pressure or obligation" },
+              { val: "0%", label: "No Pressure or Obligation" },
             ].map((s) => (
               <div key={s.label} className="text-center">
                 <p className="font-serif text-3xl font-bold text-white mb-1">{s.val}</p>
