@@ -164,8 +164,8 @@ export default function WhoWeAre() {
             </p>
             <p className="text-muted-foreground">
               <span className="text-foreground font-medium">
-                Our focus is helping you understand your options clearly before
-                you make any financial commitments.
+                We're here to make sure you feel informed, confident, and
+                ready — long before you sign anything.
               </span>
             </p>
           </div>
