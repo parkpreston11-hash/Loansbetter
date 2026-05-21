@@ -34,6 +34,56 @@ export default function Start() {
           </motion.p>
         </div>
 
+        {/* Instant Value Preview — sample results before any input */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.07 }}
+          className="mb-10"
+        >
+          <p className="text-center text-sm text-muted-foreground mb-4">
+            See what others discovered — your results will be fully personalized:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              {
+                label: "Home Purchase",
+                result: "$340K – $420K",
+                sub: "estimated buying range",
+                detail: "$85K income · 680 credit · 10% down",
+                colorClass: "text-emerald-700",
+                bgClass: "bg-emerald-50/70 border-emerald-200/60",
+              },
+              {
+                label: "Refinance",
+                result: "~$280/mo less",
+                sub: "potential monthly savings",
+                detail: "6.9% → 6.2% rate · 30-yr fixed",
+                colorClass: "text-primary",
+                bgClass: "bg-primary/5 border-primary/20",
+              },
+              {
+                label: "Cash-Out Equity",
+                result: "~$62,000",
+                sub: "potential equity access",
+                detail: "$480K home · $310K balance",
+                colorClass: "text-amber-700",
+                bgClass: "bg-amber-50/70 border-amber-200/60",
+              },
+            ].map(({ label, result, sub, detail, colorClass, bgClass }) => (
+              <div key={label} className={`border rounded-2xl p-5 text-center ${bgClass}`}>
+                <p className={`text-[11px] font-semibold uppercase tracking-widest mb-2 ${colorClass}`}>{label}</p>
+                <p className={`font-serif text-xl font-bold mb-0.5 ${colorClass}`}>{result}</p>
+                <p className="text-xs text-muted-foreground mb-2">{sub}</p>
+                <p className="text-[11px] text-muted-foreground/70 leading-snug">{detail}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-[11px] text-muted-foreground/55 mt-3">
+            Sample profiles for illustration · your estimate is calculated from your real answers
+          </p>
+        </motion.div>
+
         <div className="grid md:grid-cols-2 gap-6">
           <motion.button
             initial={{ opacity: 0, scale: 0.95 }}
