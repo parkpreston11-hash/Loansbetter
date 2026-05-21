@@ -220,17 +220,17 @@ export default function Landing() {
             >
               <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-4">Why LoansBetter</p>
               <h2 className="font-serif text-4xl md:text-5xl font-semibold text-foreground mb-6 leading-tight">
-                On your side,<br />before you sign.
+                Better clarity.<br />Better outcomes.
               </h2>
               <p className="text-lg text-muted-foreground mb-12 leading-relaxed">
-                Most people enter the mortgage process at a disadvantage — and lenders know it. LoansBetter changes that. We give you the numbers, the knowledge, and the confidence to walk into any conversation already ahead.
+                Borrowers who understand their numbers <em>before</em> talking to a lender negotiate better rates, close with fewer surprises, and save thousands over the life of their loan. That edge is exactly what LoansBetter gives you — free, in under 2 minutes.
               </p>
 
               <div className="space-y-8">
                 {[
-                  { icon: Shield, title: "You stay in control", desc: "No data sold. No spam calls. No pressure. Your information never leaves without your permission." },
-                  { icon: CheckCircle2, title: "Clarity that leads to better outcomes", desc: "Informed borrowers get better rates, better terms, and fewer surprises at closing. That's the advantage we're here to give you." },
-                  { icon: HeartHandshake, title: "Real guidance, zero obligation", desc: "We help you understand your options completely before you ever speak to a lender. You decide the next step — always." },
+                  { icon: Shield, title: "Your data stays yours — always", desc: "We never sell your information or share it with lenders without your say-so. No spam. No pressure calls. Your trust is the only thing we're asking for." },
+                  { icon: CheckCircle2, title: "Know before you owe", desc: "Most borrowers leave money on the table because they didn't know their position going in. Two minutes with LoansBetter changes that — your personalized estimate is ready instantly." },
+                  { icon: HeartHandshake, title: "You stay in the driver's seat", desc: "No obligation, ever. When you're ready, a loan officer who already knows your full picture is one step away. Until then, the next move is always yours." },
                 ].map((item, i) => (
                   <motion.div
                     key={i}
