@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useMortgage } from "@/context/MortgageContext";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -11,29 +11,46 @@ const CONTACT_KEY_PREFIX = "lb_contact_";
 
 const BRIEF_KEY_PREFIX = "lb_brief_";
 
-function generateCode(): string {
+// ── Deterministic code generation ─────────────────────────────────────────
+// Same answers + loan type + scenario = same code every time.
+// Any difference in inputs (different person, different scenario) = different code.
+
+function sortedStringify(obj: Record<string, unknown>): string {
+  return JSON.stringify(Object.fromEntries(Object.entries(obj).sort()));
+}
+
+function generateDeterministicCode(seed: string): string {
   const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  const digits = "0123456789";
-  const rand = (pool: string, n: number) =>
-    Array.from({ length: n }, () => pool[Math.floor(Math.random() * pool.length)]).join("");
-  return `-${rand(letters, 4)}-${rand(digits, 4)}-${rand(letters, 4)}`;
+  const digits  = "0123456789";
+  // djb2 hash over seed
+  let h = 5381;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(h, 33) ^ seed.charCodeAt(i);
+  }
+  h = h >>> 0;
+  // LCG to derive more values
+  const next = () => { h = (Math.imul(h, 1664525) + 1013904223) >>> 0; return h; };
+  const pick = (pool: string) => pool[next() % pool.length];
+  const p1 = Array.from({ length: 4 }, () => pick(letters)).join("");
+  const p2 = Array.from({ length: 4 }, () => pick(digits)).join("");
+  const p3 = Array.from({ length: 4 }, () => pick(letters)).join("");
+  return `-${p1}-${p2}-${p3}`;
 }
 
 export default function Handoff() {
   const { selectedMortgageType, answers, estimateResult, scenarioAdjustments, chatHistory } = useMortgage();
   const [, setLocation] = useLocation();
   const [codeCopied, setCodeCopied] = useState(false);
-  const [code] = useState(() => {
-    try {
-      const saved = localStorage.getItem("lb_active_code");
-      if (saved) return saved;
-      const fresh = generateCode();
-      localStorage.setItem("lb_active_code", fresh);
-      return fresh;
-    } catch {
-      return generateCode();
-    }
-  });
+
+  // Derived deterministically — same questionnaire answers + loan type + scenario = same code.
+  const code = useMemo(() => {
+    const seed = [
+      selectedMortgageType ?? "",
+      sortedStringify(answers as unknown as Record<string, unknown>),
+      sortedStringify(scenarioAdjustments as unknown as Record<string, unknown>),
+    ].join("|");
+    return generateDeterministicCode(seed);
+  }, [selectedMortgageType, answers, scenarioAdjustments]);
   const [clientName, setClientName] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").name ?? "";
