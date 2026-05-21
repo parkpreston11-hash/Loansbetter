@@ -279,7 +279,7 @@ export default function NewHome() {
           <motion.div {...fadeUp(0)} className="text-center mb-12">
             <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-3">Why choose us</p>
             <h2 className="font-serif text-4xl md:text-5xl font-semibold leading-tight">
-              Why LoansBetter is different.
+              What makes LoansBetter better than other loan companies.
             </h2>
           </motion.div>
           <div className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
