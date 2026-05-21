@@ -144,6 +144,11 @@ export default function LookupBrief() {
   const [archiveCodeInput, setArchiveCodeInput]     = useState("");
   const [archiveCodeError, setArchiveCodeError]     = useState("");
 
+  // Reopen state
+  const [showReopenPanel, setShowReopenPanel]       = useState(false);
+  const [reopenCodeInput, setReopenCodeInput]       = useState("");
+  const [reopenCodeError, setReopenCodeError]       = useState("");
+
   // Doc gate state
   const [docsStatus, setDocsStatus] = useState<DocsStatus>({
     complete: false, totalRequired: 0, uploaded: 0, missing: [],
@@ -177,6 +182,9 @@ export default function LookupBrief() {
     setArchiveSaved(false);
     setArchiveCodeInput("");
     setArchiveCodeError("");
+    setShowReopenPanel(false);
+    setReopenCodeInput("");
+    setReopenCodeError("");
   };
 
   const handleLookup = () => {
@@ -289,6 +297,31 @@ export default function LookupBrief() {
       setArchiveConfirming(false);
       setArchiveCodeInput("");
       setArchiveCodeError("");
+    } catch {}
+  };
+
+  // ── Reopen closed file ────────────────────────────────────────────────────
+  const handleReopen = () => {
+    if (!result) return;
+    if (reopenCodeInput.trim().toUpperCase().replace(/[-\s]/g, "") !== LO_OVERRIDE_CODE) {
+      setReopenCodeError("Incorrect code. Please try again.");
+      return;
+    }
+    const updated: StoredStageData = {
+      ...stageData,
+      archived: false,
+      archiveReason: undefined,
+      archiveNote: undefined,
+      archiveOfficer: undefined,
+      archiveTimestamp: undefined,
+    };
+    try {
+      localStorage.setItem(STAGE_KEY_PREFIX + result.code, JSON.stringify(updated));
+      setStageData(updated);
+      setShowReopenPanel(false);
+      setReopenCodeInput("");
+      setReopenCodeError("");
+      setActiveTab("officer");
     } catch {}
   };
 
@@ -435,6 +468,72 @@ export default function LookupBrief() {
                   <Phone className="w-4 h-4" />
                   714-494-4172
                 </a>
+              </div>
+
+              {/* ── Loan Officer Tool ──────────────────────────────────── */}
+              <div className="border-t border-border pt-6 space-y-3">
+                <button
+                  onClick={() => { setShowReopenPanel(!showReopenPanel); setReopenCodeInput(""); setReopenCodeError(""); }}
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-amber-200 flex items-center justify-center shrink-0">
+                      {showReopenPanel
+                        ? <Unlock className="w-3.5 h-3.5 text-amber-700" />
+                        : <Lock className="w-3.5 h-3.5 text-amber-700" />}
+                    </div>
+                    <span className="text-sm font-semibold text-amber-800">Loan Officer Tool</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-amber-500 transition-transform ${showReopenPanel ? "rotate-180" : ""}`} />
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {showReopenPanel && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.22 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="space-y-3 pt-1 pb-1">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Enter your override code to reopen this file. All previous stages and history will be restored.
+                        </p>
+                        <div className="flex gap-2">
+                          <input
+                            type="password"
+                            value={reopenCodeInput}
+                            onChange={(e) => { setReopenCodeInput(e.target.value); setReopenCodeError(""); }}
+                            onKeyDown={(e) => e.key === "Enter" && handleReopen()}
+                            placeholder="Override code"
+                            className="flex-1 h-11 rounded-xl border border-border bg-secondary/50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition-all"
+                          />
+                          <Button
+                            onClick={handleReopen}
+                            disabled={!reopenCodeInput.trim()}
+                            className="h-11 px-5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
+                          >
+                            Reopen
+                          </Button>
+                        </div>
+                        <AnimatePresence>
+                          {reopenCodeError && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0 }}
+                              className="text-xs text-destructive flex items-center gap-1.5"
+                            >
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                              {reopenCodeError}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           ) : result && (
