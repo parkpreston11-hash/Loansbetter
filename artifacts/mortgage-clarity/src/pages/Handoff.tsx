@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useMortgage } from "@/context/MortgageContext";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound, Mail, Send, PartyPopper } from "lucide-react";
+import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound, Mail, Send, PartyPopper, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DocumentChecklist } from "@/components/DocumentChecklist";
 import { sendNotification } from "@/lib/notify";
@@ -33,6 +33,9 @@ export default function Handoff() {
     } catch {
       return generateCode();
     }
+  });
+  const [clientName, setClientName] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").name ?? ""; } catch { return ""; }
   });
   const [clientEmail, setClientEmail] = useState(() => {
     try { return JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").email ?? ""; } catch { return ""; }
@@ -124,9 +127,9 @@ export default function Handoff() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(CONTACT_KEY_PREFIX + code, JSON.stringify({ email: clientEmail, phone: clientPhone }));
+      localStorage.setItem(CONTACT_KEY_PREFIX + code, JSON.stringify({ name: clientName, email: clientEmail, phone: clientPhone }));
     } catch {}
-  }, [clientEmail, clientPhone, code]);
+  }, [clientName, clientEmail, clientPhone, code]);
 
   const profile = buildProfile();
   const scenarios = buildScenarios();
@@ -142,7 +145,7 @@ export default function Handoff() {
   const handleSummarySubmit = () => {
     void sendNotification({
       type: "profile",
-      name: answers.fullName || "Client",
+      name: clientName.trim() || answers.fullName || "Client",
       email: clientEmail.trim() || undefined,
       phone: clientPhone.trim() || undefined,
       code,
@@ -309,12 +312,22 @@ export default function Handoff() {
               <div>
                 <p className="font-semibold text-foreground text-sm">Send This Summary to Your Loan Officer</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Enter your email or phone and hit Submit — your full profile and code will be sent instantly.
+                  So your loan officer can reach you, provide your contact info below. At least one of email or phone is required — both is recommended.
                 </p>
               </div>
             </div>
 
             <div className="grid gap-2">
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="Your name (required)"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                />
+              </div>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                 <input
@@ -335,11 +348,12 @@ export default function Handoff() {
                   className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
                 />
               </div>
-              {!clientEmail.trim() && !clientPhone.trim() && (
-                <p className="text-xs text-muted-foreground">Add your email or phone — you'll receive a copy instantly.</p>
-              )}
-              {clientPhone.trim() && !clientEmail.trim() && (
-                <p className="text-xs text-primary/70">Phone only — you'll receive a text with your summary.</p>
+              {clientEmail.trim() && clientPhone.trim() ? null : (
+                <p className="text-xs text-muted-foreground">
+                  {!clientEmail.trim() && !clientPhone.trim()
+                    ? "At least one is required — providing both is recommended so your loan officer can reach you your way."
+                    : "Adding both email and phone is recommended so your loan officer can reach you your way."}
+                </p>
               )}
             </div>
 
@@ -363,13 +377,15 @@ export default function Handoff() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   onClick={handleSummarySubmit}
-                  disabled={!clientEmail.trim() && !clientPhone.trim()}
+                  disabled={!clientName.trim() || (!clientEmail.trim() && !clientPhone.trim())}
                   className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <Send className="w-4 h-4" />
-                  {!clientEmail.trim() && !clientPhone.trim()
-                    ? "Add email or phone to submit"
-                    : "Submit Summary to Loan Officer"}
+                  {!clientName.trim()
+                    ? "Enter your name to continue"
+                    : (!clientEmail.trim() && !clientPhone.trim())
+                      ? "Add email or phone to submit"
+                      : "Submit Summary to Loan Officer"}
                 </motion.button>
               )}
             </AnimatePresence>

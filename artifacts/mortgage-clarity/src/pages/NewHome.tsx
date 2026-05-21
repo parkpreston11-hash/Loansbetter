@@ -326,7 +326,7 @@ export default function NewHome() {
               {/* Pull quote overlaid on photo */}
               <div className="absolute bottom-8 left-8 right-8">
                 <p className="text-white font-serif text-2xl font-semibold leading-snug italic">
-                  "Informed borrowers close with fewer surprises."
+                  "We believe people deserve knowledge and confidence before commitment."
                 </p>
                 <p className="text-white/60 text-sm mt-3">— The LoansBetter principle</p>
               </div>
