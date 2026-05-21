@@ -204,15 +204,15 @@ export default function LookupBrief() {
     }
   };
 
-  // ── Save stage ────────────────────────────────────────────────────────────
-  const handleSaveStage = () => {
-    if (!result || pendingStage < 1) return;
+  // ── Save stage (accepts stage number directly) ────────────────────────────
+  const handleSaveStage = (stageN: number) => {
+    if (!result || stageN < 1) return;
     const stages = getStages(result.goal ?? "buy");
-    const stageLabel = stages.find(s => s.n === pendingStage)?.label ?? `Stage ${pendingStage}`;
+    const stageLabel = stages.find(s => s.n === stageN)?.label ?? `Stage ${stageN}`;
     const ts = buildTimestamp();
 
     const entry: StageHistoryEntry = {
-      stage: pendingStage,
+      stage: stageN,
       label: stageLabel,
       timestamp: ts,
       note: loNote.trim() || undefined,
@@ -220,7 +220,7 @@ export default function LookupBrief() {
     };
 
     const updated: StoredStageData = {
-      currentStage: pendingStage,
+      currentStage: stageN,
       loanType: result.goal ?? "buy",
       history: [...stageData.history, entry],
       updatedAt: ts,
@@ -521,35 +521,7 @@ export default function LookupBrief() {
                         ) : (
                           <motion.div key="unlocked" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
 
-                            {/* Stage picker */}
-                            <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto pr-1">
-                              {getStages(result.goal ?? "buy").map((stage) => (
-                                <button
-                                  key={stage.n}
-                                  onClick={() => setPendingStage(stage.n)}
-                                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all ${
-                                    pendingStage === stage.n
-                                      ? "border-primary bg-primary/5 shadow-sm"
-                                      : "border-border bg-secondary/40 hover:border-primary/40 hover:bg-secondary/80"
-                                  }`}
-                                >
-                                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                                    pendingStage === stage.n ? "bg-primary text-primary-foreground" : "bg-border text-muted-foreground"
-                                  }`}>
-                                    <stage.Icon className="w-3.5 h-3.5" />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className={`text-sm font-medium ${pendingStage === stage.n ? "text-primary" : "text-foreground"}`}>
-                                      {stage.n}. {stage.label}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">{stage.timeline}</p>
-                                  </div>
-                                  {pendingStage === stage.n && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />}
-                                </button>
-                              ))}
-                            </div>
-
-                            {/* Notes field */}
+                            {/* Optional note — typed before pressing ✓ */}
                             <div className="space-y-1.5">
                               <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 <MessageSquare className="w-3.5 h-3.5" />
@@ -558,41 +530,84 @@ export default function LookupBrief() {
                               <textarea
                                 value={loNote}
                                 onChange={(e) => setLoNote(e.target.value)}
-                                placeholder="e.g. All documents verified. Moving to underwriting review."
-                                rows={3}
+                                placeholder="e.g. Documents verified. Moving to underwriting."
+                                rows={2}
                                 className="w-full rounded-xl border border-border bg-secondary/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
                               />
+                              <p className="text-[11px] text-muted-foreground">
+                                Add a note above, then press ✓ on any stage to mark it current.
+                              </p>
                             </div>
 
-                            {/* Save / success */}
-                            <AnimatePresence mode="wait">
-                              {stageSaved ? (
+                            {/* Stage list — instant ✓ per row */}
+                            <div className="space-y-1.5">
+                              {getStages(result.goal ?? "buy").map((stage) => {
+                                const isCurrent = stageData.currentStage === stage.n;
+                                const isPast    = stageData.currentStage > stage.n;
+                                return (
+                                  <div
+                                    key={stage.n}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+                                      isCurrent
+                                        ? "border-emerald-300 bg-emerald-50"
+                                        : isPast
+                                          ? "border-emerald-100 bg-emerald-50/40"
+                                          : "border-border bg-secondary/30"
+                                    }`}
+                                  >
+                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                                      isCurrent ? "bg-emerald-500 text-white"
+                                      : isPast  ? "bg-emerald-300 text-white"
+                                      :           "bg-border text-muted-foreground"
+                                    }`}>
+                                      {(isCurrent || isPast)
+                                        ? <CheckCircle2 className="w-3.5 h-3.5" />
+                                        : <stage.Icon className="w-3.5 h-3.5" />}
+                                    </div>
+
+                                    <div className="flex-1 min-w-0">
+                                      <p className={`text-sm font-medium leading-snug ${
+                                        isCurrent ? "text-emerald-800"
+                                        : isPast  ? "text-emerald-700"
+                                        :           "text-foreground"
+                                      }`}>
+                                        {stage.n}. {stage.label}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">{stage.timeline}</p>
+                                    </div>
+
+                                    {/* Instant ✓ button */}
+                                    <button
+                                      onClick={() => handleSaveStage(stage.n)}
+                                      title="Mark as current stage"
+                                      className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all hover:scale-110 active:scale-95 ${
+                                        isCurrent
+                                          ? "bg-emerald-500 text-white shadow-sm"
+                                          : "bg-secondary border border-border text-muted-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                                      }`}
+                                    >
+                                      <CheckCircle2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            {/* Success flash */}
+                            <AnimatePresence>
+                              {stageSaved && (
                                 <motion.div
-                                  key="saved"
-                                  initial={{ opacity: 0, scale: 0.96 }}
-                                  animate={{ opacity: 1, scale: 1 }}
+                                  initial={{ opacity: 0, y: -4 }}
+                                  animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0 }}
                                   className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-4"
                                 >
                                   <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                                   <div>
                                     <p className="text-sm font-semibold text-emerald-800">Stage updated — timestamp logged</p>
-                                    <p className="text-xs text-emerald-700 mt-0.5">
-                                      Stage {pendingStage} set. History entry recorded with timestamp and note.
-                                    </p>
+                                    <p className="text-xs text-emerald-700 mt-0.5">{stageData.updatedAt}</p>
                                   </div>
                                 </motion.div>
-                              ) : (
-                                <motion.button
-                                  key="save-btn"
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  onClick={handleSaveStage}
-                                  className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.01] active:scale-[0.98]"
-                                >
-                                  <Save className="w-4 h-4" />
-                                  {`Save — Set to Stage ${pendingStage}: "${getStages(result.goal ?? "buy").find(s => s.n === pendingStage)?.label ?? ""}"`}
-                                </motion.button>
                               )}
                             </AnimatePresence>
                           </motion.div>

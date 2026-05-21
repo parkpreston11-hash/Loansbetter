@@ -239,7 +239,7 @@ export function LoanProgressTracker({ currentStage, loanType, history, updatedAt
           const isUpcoming  = stage.n > currentStage;
           const isExpanded  = expanded === stage.n;
           const isLast      = idx === stages.length - 1;
-          const clickable   = !isUpcoming;
+          const clickable   = true;
 
           // Find matching history entry for completed stages
           const histEntry = history.filter(h => h.stage === stage.n).pop();
@@ -249,17 +249,15 @@ export function LoanProgressTracker({ currentStage, loanType, history, updatedAt
               {/* Node + connector */}
               <div className="flex flex-col items-center">
                 <motion.div
-                  onClick={() => clickable && setExpanded(isExpanded ? null : stage.n)}
-                  whileHover={clickable ? { scale: 1.08 } : {}}
-                  whileTap={clickable ? { scale: 0.93 } : {}}
-                  className={`relative w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all select-none ${
-                    clickable ? "cursor-pointer" : "cursor-default"
-                  } ${
+                  onClick={() => setExpanded(isExpanded ? null : stage.n)}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.93 }}
+                  className={`relative w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all select-none cursor-pointer ${
                     isCompleted
                       ? "bg-emerald-500 text-white shadow-sm"
                       : isActive
                         ? "bg-primary text-primary-foreground shadow-md ring-4 ring-primary/20"
-                        : "bg-secondary border-2 border-border text-muted-foreground/40"
+                        : "bg-secondary border-2 border-border text-muted-foreground/50 hover:border-primary/40 hover:text-muted-foreground"
                   }`}
                 >
                   {isActive && (
@@ -283,9 +281,8 @@ export function LoanProgressTracker({ currentStage, loanType, history, updatedAt
               {/* Content */}
               <div className="flex-1 pb-5 pt-1">
                 <button
-                  onClick={() => clickable && setExpanded(isExpanded ? null : stage.n)}
-                  disabled={!clickable}
-                  className="w-full text-left disabled:cursor-default group"
+                  onClick={() => setExpanded(isExpanded ? null : stage.n)}
+                  className="w-full text-left group"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -293,7 +290,7 @@ export function LoanProgressTracker({ currentStage, loanType, history, updatedAt
                         <p className={`text-sm font-semibold leading-snug ${
                           isCompleted ? "text-emerald-700"
                           : isActive   ? "text-foreground"
-                          :              "text-muted-foreground/50"
+                          :              "text-muted-foreground/60"
                         }`}>
                           {stage.label}
                         </p>
@@ -307,6 +304,11 @@ export function LoanProgressTracker({ currentStage, loanType, history, updatedAt
                             ✓ Done
                           </span>
                         )}
+                        {isUpcoming && (
+                          <span className="text-[10px] font-bold uppercase tracking-widest bg-secondary text-muted-foreground/60 rounded-full px-2 py-0.5 leading-none shrink-0">
+                            Upcoming
+                          </span>
+                        )}
                       </div>
                       {/* Timestamp for completed stages */}
                       {isCompleted && histEntry && (
@@ -315,17 +317,17 @@ export function LoanProgressTracker({ currentStage, loanType, history, updatedAt
                           {histEntry.officerTag && ` · ${histEntry.officerTag}`}
                         </p>
                       )}
-                      {!isCompleted && !isUpcoming && (
+                      {/* Timeline shown for all non-completed stages */}
+                      {!isCompleted && (
                         <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
                           <Clock className="w-3 h-3" /> {stage.timeline}
                         </p>
                       )}
                     </div>
-                    {clickable && (
-                      isExpanded
-                        ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
-                        : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
-                    )}
+                    {isExpanded
+                      ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
+                      : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
+                    }
                   </div>
                 </button>
 
