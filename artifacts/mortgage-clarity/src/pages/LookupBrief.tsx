@@ -24,7 +24,7 @@ const CONTACT_KEY_PREFIX = "lb_contact_";
 const STAGE_KEY_PREFIX   = "lb_stage_";
 const DOCS_KEY_PREFIX    = "lb_docs_";
 
-const LO_OVERRIDE_CODE = "LBLO2025";
+const LO_OVERRIDE_CODE = "LOANS";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
