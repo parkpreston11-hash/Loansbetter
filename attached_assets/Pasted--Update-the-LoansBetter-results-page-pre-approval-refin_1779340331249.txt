@@ -1,0 +1,135 @@
+
+Update the LoansBetter results page (pre-approval / refinance results screen) into a simplified, high-conversion UI.
+
+The goal is to reduce cognitive overload while still maintaining strong financial clarity and trust.
+
+The design should feel like:
+- Stripe / Apple-level clean fintech UI
+- modern, minimal, and structured
+- easy to scan in under 10 seconds
+- mobile-first responsive
+
+DO NOT show too many sections at once.
+Use progressive disclosure (collapsed sections for advanced details).
+
+--------------------------------------------------
+1. MAIN RESULT CARD (PRIMARY FOCUS)
+--------------------------------------------------
+
+At the top, show a single clean result card:
+
+Title:
+“Refinancing could lower your monthly payment”
+
+Show:
+- Estimated monthly savings: $XXX – $XXX (large and prominent)
+- Simple explanation (1–2 lines max):
+
+“Your current rate is above today’s market average. Refinancing could reduce your monthly payment and lower total interest over time.”
+
+Keep this section very clean and easy to read.
+
+--------------------------------------------------
+2. DECISION CLARITY BADGE
+--------------------------------------------------
+
+Add a small indicator under the main result:
+
+“Decision Level: Low Complexity (1/3)”
+
+Subtext:
+“This is a relatively straightforward financial decision.”
+
+Use subtle styling (no aggressive colors).
+
+--------------------------------------------------
+3. KEY INSIGHT SECTION (MINIMAL)
+--------------------------------------------------
+
+Show only 2 bullet points:
+
+- You may save money by refinancing now
+- Closing costs are typically recovered within 18–24 months
+
+Keep it short and non-overwhelming.
+
+--------------------------------------------------
+4. OPTIONAL EXPANDABLE SECTION (COLLAPSED BY DEFAULT)
+--------------------------------------------------
+
+Add a button:
+“See detailed comparison”
+
+Inside expand:
+
+Show side-by-side options:
+
+Refinance now:
+- Lower monthly payment
+- Lock in current rate
+- Closing costs apply
+
+Wait for rates:
+- No fees now
+- Rates may or may not improve
+
+Cash-out refinance:
+- Access home equity
+- Higher loan balance
+
+Keep this hidden by default.
+
+--------------------------------------------------
+5. OPTIONAL TOOL SECTION (COLLAPSED)
+--------------------------------------------------
+
+Label:
+“What if I change my situation?”
+
+Allow sliders or inputs:
+- income change
+- debt change
+- credit improvement
+
+This should dynamically update estimated range.
+
+Keep this fully hidden unless opened.
+
+--------------------------------------------------
+6. BOTTOM CTA SECTION (CRITICAL)
+--------------------------------------------------
+
+At the bottom of the page ONLY include two primary actions:
+
+SECTION 1:
+Title: “Talk to a Loan Officer”
+Description: “Get a personalized breakdown from a licensed professional.”
+Button: “Talk to a Loan Officer”
+
+SECTION 2:
+Title: “Chat with AI Assistant”
+Description: “Ask questions and explore your options instantly.”
+Button: “Chat with AI Assistant”
+
+These must be the ONLY main actions on the page.
+
+--------------------------------------------------
+7. UX RULES
+--------------------------------------------------
+
+- One main idea per screen
+- Reduce visual clutter
+- Use progressive disclosure for advanced info
+- Keep typography clean and readable
+- Use soft shadows, rounded cards, and subtle animations
+- Avoid overwhelming users with too many numbers at once
+
+--------------------------------------------------
+FINAL GOAL
+--------------------------------------------------
+
+The user should be able to understand their result in under 10 seconds and feel:
+
+“This is simple, clear, and I know what to do next.”
+
+The interface should increase confidence and guide action without pressure.
