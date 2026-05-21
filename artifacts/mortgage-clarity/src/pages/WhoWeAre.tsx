@@ -167,7 +167,7 @@ export default function WhoWeAre() {
                 We're here to make sure you feel informed, confident, and
                 ready — long before you sign anything.
               </span>{" "}
-              There's no sales motive behind anything we show you — just honest guidance from people who know this industry.{" "}
+              Our team brings deep, real-world experience in the mortgage industry — and uses that knowledge to give you honest guidance and straightforward feedback.{" "}
               When you truly understand what you're getting into, you make better decisions, and that's a win for everyone.
             </p>
           </div>
