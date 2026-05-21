@@ -166,7 +166,9 @@ export default function WhoWeAre() {
               <span className="text-foreground font-medium">
                 We're here to make sure you feel informed, confident, and
                 ready — long before you sign anything.
-              </span>
+              </span>{" "}
+              There's no sales motive behind anything we show you — just honest guidance from people who know this industry.{" "}
+              When you truly understand what you're getting into, you make better decisions, and that's a win for everyone.
             </p>
           </div>
         </motion.div>
