@@ -174,6 +174,7 @@ export default function NewHome() {
           <div className="flex flex-wrap justify-center md:justify-between gap-5 text-sm text-muted-foreground">
             {[
               { icon: BadgeCheck, label: "Licensed & independent" },
+              { icon: Lock,       label: "We work for you" },
               { icon: Phone,      label: "714-494-4172" },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-2.5 font-medium">
