@@ -90,16 +90,6 @@ export default function NewHome() {
         {/* Content */}
         <div className="relative z-10 container mx-auto px-4 md:px-8 text-center py-24">
 
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 border border-white/25 bg-white/10 backdrop-blur-sm text-white text-xs font-semibold px-4 py-2 rounded-full mb-8"
-          >
-            <BadgeCheck className="w-3.5 h-3.5" />
-            Free · No credit check · No obligation
-          </motion.div>
-
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
