@@ -40,7 +40,7 @@ export default function Home() {
             </motion.h1>
 
             <motion.p {...fadeUp(0.12)} className="text-xl text-muted-foreground leading-relaxed mb-10 max-w-lg">
-              Explore your real mortgage options, understand every scenario, and
+              Explore your mortgage options, understand every scenario, and
               walk into any lender conversation already ahead — in under 2 minutes.
             </motion.p>
 
