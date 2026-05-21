@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 export function Footer() {
   const [legalOpen, setLegalOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [licensingOpen, setLicensingOpen] = useState(false);
 
   return (
     <footer className="border-t border-border bg-secondary/40 mt-auto">
@@ -98,6 +99,29 @@ export function Footer() {
                 <a href="mailto:info@loansbetter.com" className="text-primary hover:underline">info@loansbetter.com</a>.
               </p>
               <p>This website contains links to other sites. Please be aware that we are not responsible for the content or privacy practices of such other sites.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Licensing section */}
+        <div className="space-y-3 border-t border-border pt-4">
+          <button
+            onClick={() => setLicensingOpen(v => !v)}
+            className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+          >
+            {licensingOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            Licensing
+          </button>
+          {licensingOpen && (
+            <div className="text-xs text-muted-foreground leading-relaxed space-y-3 pl-6">
+              <p>Loansbetter.com, Inc. is licensed as a mortgage broker/lender in the state of California under the California Department of Financial Protection and Innovation (DFPI).</p>
+              <p>
+                <span className="font-semibold text-foreground">NMLS ID:</span> 2641696 &mdash; Verify our license at{" "}
+                <a href="https://www.nmlsconsumeraccess.org/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  www.nmlsconsumeraccess.org
+                </a>
+              </p>
+              <p>Licensing requirements vary by state. Not all products are available in all states. This is not a commitment to lend. All loans are subject to credit approval, underwriting guidelines, and applicable state and federal regulations.</p>
             </div>
           )}
         </div>
