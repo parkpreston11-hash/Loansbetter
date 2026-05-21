@@ -212,8 +212,8 @@ export default function WhoWeAre() {
 
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5">
           {[
-            { icon: BookOpen, title: "Independent platform", desc: "No lender relationships. No quotas. No incentives to point you anywhere." },
-            { icon: CheckCircle2, title: "No lending decisions", desc: "We are not a lender. We help you understand — you decide what to do with that." },
+            { icon: BookOpen, title: "We work for you", desc: "Our only goal is to make sure you have the clearest picture possible before you make any decision." },
+            { icon: CheckCircle2, title: "You decide", desc: "We help you understand — you decide what to do with that." },
             { icon: Shield, title: "No hidden agendas", desc: "There is nothing behind what you see. No upsells. No data selling. No surprises." },
             { icon: Eye, title: "Built for clarity", desc: "Every feature on this platform has one job: make something easier to understand." },
           ].map(({ icon: Icon, title, desc }, i) => (
