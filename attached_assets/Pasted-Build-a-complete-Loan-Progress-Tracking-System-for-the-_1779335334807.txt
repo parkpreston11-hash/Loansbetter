@@ -1,0 +1,295 @@
+Build a complete “Loan Progress Tracking System” for the LoansBetter platform.
+
+This system is a secure, modern fintech-style dashboard that allows borrowers to track their mortgage progress in real time while loan officers manage updates.
+
+The experience is inspired by:
+- USPS / FedEx package tracking (scan events + timestamps)
+- Uber ride progress tracking
+- Stripe / Apple-level clean UI
+- Modern fintech dashboards (Rocket Mortgage style)
+
+IMPORTANT:
+This is NOT a real bank system. It is a transparency and educational tracking system designed to improve clarity, trust, and user understanding of loan progress.
+
+--------------------------------------------------
+1. CORE SYSTEM OVERVIEW
+--------------------------------------------------
+
+Each loan must include:
+
+- Loan ID (unique)
+- Loan Type (Purchase / Refinance / Cash-Out / Reverse)
+- Current Stage
+- Progress Percentage (0–100%)
+- Estimated Completion Range (X to Y days)
+- Estimated Completion Window (date range)
+- Full Timeline History Log (with timestamps)
+
+There are TWO user roles:
+1. Borrower (view-only access)
+2. Loan Officer (can update loan progress)
+
+--------------------------------------------------
+2. ROLE-BASED ACCESS SYSTEM (SECURE CONTROL)
+--------------------------------------------------
+
+Implement authentication using a “Universal Loan Officer Key”.
+
+Loan Officers CAN:
+- update loan stage
+- modify estimates
+- add notes
+- log stage changes
+
+Borrowers CANNOT:
+- edit any data
+- access admin controls
+- modify timeline
+
+All updates must be securely restricted to authorized officers only.
+
+--------------------------------------------------
+3. IMPORTANT: LOAN TYPE SPECIFIC TIMELINES
+--------------------------------------------------
+
+Each loan type must use its own exact timeline structure.
+
+DO NOT mix steps between loan types.
+
+--------------------------------------------------
+
+A) HOME PURCHASE LOAN TIMELINE
+
+1. Application Submitted
+2. Initial Review
+3. Income + Credit Verification
+4. Pre-Approval Issued
+5. Home Search / Offer Stage
+6. Purchase Contract Signed
+7. Underwriting Review
+8. Home Appraisal Ordered
+9. Conditional Approval
+10. Final Approval (Clear to Close)
+11. Closing / Escrow Signing
+12. Funding Released
+
+Key characteristics:
+- Includes property purchase steps
+- Includes appraisal + contract stage
+- Longest and most complex workflow
+
+--------------------------------------------------
+
+B) REFINANCE (LOWER RATE) TIMELINE
+
+1. Application Submitted
+2. Credit + Income Review
+3. Property Valuation / Appraisal
+4. Rate Lock (optional)
+5. Underwriting Review
+6. Loan Approval
+7. Closing Disclosure Issued
+8. Signing / Closing
+9. Old Loan Paid Off
+10. New Loan Activated
+
+Key characteristics:
+- Focus on financial optimization
+- No home search or purchase steps
+- Faster than purchase loans
+
+--------------------------------------------------
+
+C) CASH-OUT REFINANCE TIMELINE
+
+1. Application Submitted
+2. Equity Evaluation
+3. Credit + Income Verification
+4. Home Appraisal (critical step)
+5. Underwriting Review
+6. Cash-Out Approval
+7. Closing Disclosure Issued
+8. Signing / Closing
+9. Existing Mortgage Paid Off
+10. Cash Funds Released
+
+Key characteristics:
+- Equity-driven process
+- Cash payout at end
+- Appraisal is critical
+
+--------------------------------------------------
+
+D) REVERSE MORTGAGE TIMELINE
+
+1. Eligibility Check (age + property requirements)
+2. Mandatory Counseling Step
+3. Application Submitted
+4. Home Appraisal
+5. Financial Review
+6. Underwriting Approval
+7. Loan Terms Finalized
+8. Closing Documents Signed
+9. Funds Disbursed
+
+Key characteristics:
+- Compliance-heavy process
+- Counseling required
+- Focus on long-term equity conversion
+
+--------------------------------------------------
+4. LIVE PROGRESS TRACKER UI (USPS STYLE)
+--------------------------------------------------
+
+Display each loan as a visual timeline:
+
+Status Rules:
+- Completed stages = green check + timestamp
+- Current stage = highlighted active state
+- Future stages = faded/locked
+
+Each stage must show:
+- Stage name
+- Short explanation
+- Status indicator
+- Timestamp (if completed)
+
+--------------------------------------------------
+5. STAGE TIMESTAMP SYSTEM (CRITICAL FEATURE — USPS STYLE)
+--------------------------------------------------
+
+Every time a stage is updated, the system MUST automatically log:
+
+- Exact date
+- Exact time
+- Time zone
+- Loan Officer ID (if available)
+- Optional note/comment
+
+This creates a full “scan history” like USPS tracking.
+
+--------------------------------------------------
+6. HOW TIMESTAMPS DISPLAY (BORROWER VIEW)
+--------------------------------------------------
+
+Each completed stage must show:
+
+Example:
+
+✔ Documents Signed
+- Status: Completed
+- Time: May 20, 2026 — 3:42 PM
+- Updated by: Loan Officer
+- Notes: “All required documents signed and submitted.”
+
+--------------------------------------------------
+7. ACTIVITY HISTORY FEED
+--------------------------------------------------
+
+Add a full chronological activity log:
+
+Example:
+
+- May 18, 10:14 AM — Application Submitted
+- May 18, 2:40 PM — Income Verification Started
+- May 19, 11:05 AM — Documents Reviewed
+- May 20, 3:42 PM — Documents Signed
+
+This must behave like a live tracking feed.
+
+--------------------------------------------------
+8. ESTIMATED COMPLETION SYSTEM (DYNAMIC)
+--------------------------------------------------
+
+Display:
+
+“Estimated time to completion: X to Y days”
+
+Rules:
+- Early stage → 15–30 days
+- Mid stage → 7–14 days
+- Late stage → 1–5 days
+
+Also display:
+“Estimated completion window: [Date Range]”
+
+IMPORTANT DISCLAIMER:
+“Estimates may vary depending on documentation, underwriting, and external processing factors.”
+
+DO NOT guarantee exact dates.
+
+--------------------------------------------------
+9. LOAN OFFICER DASHBOARD
+--------------------------------------------------
+
+Loan officers can:
+- update current stage
+- move timeline forward/backward
+- add notes to stages
+- trigger timestamp logging automatically
+
+All changes must:
+- be logged
+- include timestamp
+- include officer ID/action
+
+--------------------------------------------------
+10. BORROWER DASHBOARD
+--------------------------------------------------
+
+Borrowers can:
+- view full timeline
+- see current stage
+- view timestamps for completed steps
+- see “what happens next”
+- see estimated completion range
+
+Borrowers cannot modify anything.
+
+--------------------------------------------------
+11. CONTEXT PANEL FOR CURRENT STAGE
+--------------------------------------------------
+
+For every active stage show:
+
+“What’s happening now”
+- simple explanation
+
+“What happens next”
+- next stage explanation
+
+“What you should prepare”
+- documents or actions needed
+
+--------------------------------------------------
+12. DESIGN + UX REQUIREMENTS
+--------------------------------------------------
+
+Style:
+- Stripe / Apple / Rocket Mortgage inspired
+- Clean fintech dashboard UI
+- Soft shadows, rounded cards
+- Subtle blue/green accents
+- Smooth transitions
+- Minimal but premium feel
+- Mobile responsive
+
+Avoid:
+- clutter
+- aggressive colors
+- confusing layouts
+- overly complex UI
+
+--------------------------------------------------
+FINAL EXPERIENCE GOAL
+--------------------------------------------------
+
+Borrowers should feel:
+
+“I can clearly see what stage my loan is in, exactly when things happened, and what will happen next.”
+
+Loan officers should feel:
+
+“This system is easy to manage, secure, and keeps borrowers fully informed in real time.”
+
+The system should feel like a premium fintech tracking platform, not a bank portal.

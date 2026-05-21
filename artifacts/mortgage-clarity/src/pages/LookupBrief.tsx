@@ -4,11 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Search, Phone, ShieldCheck, BookOpen,
   AlertCircle, User, Briefcase, Mail, Lock, Unlock,
-  Activity, CheckCircle2, Save,
+  Activity, CheckCircle2, Save, MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DocumentChecklist } from "@/components/DocumentChecklist";
-import { LoanProgressTracker, LOAN_STAGES } from "@/components/LoanProgressTracker";
+import {
+  LoanProgressTracker,
+  getStages,
+  buildTimestamp,
+  type StageHistoryEntry,
+  type StoredStageData,
+} from "@/components/LoanProgressTracker";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -39,17 +45,28 @@ interface StoredContact {
   phone?: string;
 }
 
-interface StoredStage {
-  stage: number;
-  updatedAt: string;
-}
-
 function getTypeLabel(type: string) {
   if (type === "buy") return "Buy a Home";
   if (type === "refinance") return "Refinance";
   if (type === "cashout") return "Cash-Out Refinance";
   if (type === "reverse") return "Reverse Mortgage";
   return type;
+}
+
+function loadStageData(code: string): StoredStageData {
+  try {
+    const raw = localStorage.getItem(STAGE_KEY_PREFIX + code);
+    if (!raw) return { currentStage: 0, loanType: "buy", history: [], updatedAt: "" };
+    const parsed = JSON.parse(raw) as Partial<StoredStageData & { stage?: number }>;
+    return {
+      currentStage: parsed.currentStage ?? parsed.stage ?? 0,
+      loanType: parsed.loanType ?? "buy",
+      history: parsed.history ?? [],
+      updatedAt: parsed.updatedAt ?? "",
+    };
+  } catch {
+    return { currentStage: 0, loanType: "buy", history: [], updatedAt: "" };
+  }
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -63,18 +80,20 @@ export default function LookupBrief() {
   const [activeTab, setActiveTab] = useState<"officer" | "progress" | "client">("officer");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // ── Stage state ────────────────────────────────────────────────────────────
-  const [currentStage, setCurrentStage]   = useState(0);
-  const [stageUpdatedAt, setStageUpdatedAt] = useState("");
+  // Stage state
+  const [stageData, setStageData] = useState<StoredStageData>({
+    currentStage: 0, loanType: "buy", history: [], updatedAt: "",
+  });
 
-  // ── LO override state ──────────────────────────────────────────────────────
+  // LO override state
   const [loCodeInput, setLoCodeInput]   = useState("");
   const [loUnlocked, setLoUnlocked]     = useState(false);
   const [loError, setLoError]           = useState("");
   const [pendingStage, setPendingStage] = useState(0);
+  const [loNote, setLoNote]             = useState("");
   const [stageSaved, setStageSaved]     = useState(false);
 
-  // ── Code input ─────────────────────────────────────────────────────────────
+  // ── Code input ────────────────────────────────────────────────────────────
   const handleInput = (raw: string) => {
     const clean = raw.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 12);
     let formatted = "";
@@ -87,13 +106,13 @@ export default function LookupBrief() {
     setError("");
     setSearched(false);
     setResult(null);
-    setCurrentStage(0);
-    setStageUpdatedAt("");
+    setStageData({ currentStage: 0, loanType: "buy", history: [], updatedAt: "" });
     setLoUnlocked(false);
     setLoCodeInput("");
     setLoError("");
     setStageSaved(false);
     setPendingStage(0);
+    setLoNote("");
   };
 
   const handleLookup = () => {
@@ -110,61 +129,69 @@ export default function LookupBrief() {
       setError("No brief found for that code. Double-check the code and try again.");
     } else {
       try {
-        setResult(JSON.parse(stored) as StoredBrief);
+        const brief = JSON.parse(stored) as StoredBrief;
+        setResult(brief);
         setError("");
         try {
           const raw = localStorage.getItem(CONTACT_KEY_PREFIX + input);
           setContact(raw ? (JSON.parse(raw) as StoredContact) : null);
         } catch { setContact(null); }
-        try {
-          const rawStage = localStorage.getItem(STAGE_KEY_PREFIX + input);
-          if (rawStage) {
-            const s = JSON.parse(rawStage) as StoredStage;
-            setCurrentStage(s.stage ?? 0);
-            setStageUpdatedAt(s.updatedAt ?? "");
-            setPendingStage(s.stage ?? 0);
-          } else {
-            setCurrentStage(0);
-            setStageUpdatedAt("");
-            setPendingStage(0);
-          }
-        } catch { setCurrentStage(0); }
+
+        const sd = loadStageData(input);
+        // If loanType not stored yet, use the brief's goal
+        if (!sd.loanType || sd.loanType === "buy") sd.loanType = brief.goal ?? "buy";
+        setStageData(sd);
+        setPendingStage(sd.currentStage > 0 ? sd.currentStage : 1);
       } catch {
         setError("The brief data appears to be corrupted. Ask the client to generate a new code.");
       }
     }
   };
 
-  // ── LO override unlock ─────────────────────────────────────────────────────
+  // ── LO unlock ─────────────────────────────────────────────────────────────
   const handleLoUnlock = () => {
-    if (loCodeInput.trim().toUpperCase().replace(/-/g, "") === LO_OVERRIDE_CODE) {
+    if (loCodeInput.trim().toUpperCase().replace(/[-\s]/g, "") === LO_OVERRIDE_CODE) {
       setLoUnlocked(true);
       setLoError("");
-      setPendingStage(currentStage > 0 ? currentStage : 1);
+      if (stageData.currentStage > 0) setPendingStage(stageData.currentStage);
+      else setPendingStage(1);
     } else {
       setLoError("Incorrect override code. Please try again.");
     }
   };
 
-  // ── LO save stage ──────────────────────────────────────────────────────────
+  // ── Save stage ────────────────────────────────────────────────────────────
   const handleSaveStage = () => {
-    if (!result || pendingStage < 1 || pendingStage > 7) return;
-    const updatedAt = new Date().toLocaleDateString("en-US", {
-      month: "short", day: "numeric", year: "numeric",
-      hour: "numeric", minute: "2-digit",
-    });
-    const payload: StoredStage = { stage: pendingStage, updatedAt };
+    if (!result || pendingStage < 1) return;
+    const stages = getStages(result.goal ?? "buy");
+    const stageLabel = stages.find(s => s.n === pendingStage)?.label ?? `Stage ${pendingStage}`;
+    const ts = buildTimestamp();
+
+    const entry: StageHistoryEntry = {
+      stage: pendingStage,
+      label: stageLabel,
+      timestamp: ts,
+      note: loNote.trim() || undefined,
+      officerTag: "Loan Officer",
+    };
+
+    const updated: StoredStageData = {
+      currentStage: pendingStage,
+      loanType: result.goal ?? "buy",
+      history: [...stageData.history, entry],
+      updatedAt: ts,
+    };
+
     try {
-      localStorage.setItem(STAGE_KEY_PREFIX + result.code, JSON.stringify(payload));
-      setCurrentStage(pendingStage);
-      setStageUpdatedAt(updatedAt);
+      localStorage.setItem(STAGE_KEY_PREFIX + result.code, JSON.stringify(updated));
+      setStageData(updated);
       setStageSaved(true);
-      setTimeout(() => setStageSaved(false), 3000);
+      setLoNote("");
+      setTimeout(() => setStageSaved(false), 4000);
     } catch {}
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-[calc(100dvh-5rem)] bg-secondary/30 py-12 px-4">
       <div className="max-w-2xl mx-auto space-y-8">
@@ -244,47 +271,36 @@ export default function LookupBrief() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              {/* Tab switcher */}
+              {/* Tabs */}
               <div className="flex gap-2 bg-secondary rounded-2xl p-1.5">
-                <button
-                  onClick={() => setActiveTab("officer")}
-                  className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-semibold transition-all ${
-                    activeTab === "officer"
-                      ? "bg-card shadow-sm text-foreground border border-border"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Briefcase className="w-4 h-4" />
-                  <span className="hidden sm:inline">Loan Officer</span>
-                  <span className="sm:hidden">Officer</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("progress")}
-                  className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-semibold transition-all ${
-                    activeTab === "progress"
-                      ? "bg-card shadow-sm text-foreground border border-border"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Activity className="w-4 h-4" />
-                  Progress
-                </button>
-                <button
-                  onClick={() => setActiveTab("client")}
-                  className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-semibold transition-all ${
-                    activeTab === "client"
-                      ? "bg-card shadow-sm text-foreground border border-border"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <User className="w-4 h-4" />
-                  Documents
-                </button>
+                {(["officer", "progress", "client"] as const).map((tab) => {
+                  const labels: Record<string, { icon: React.ReactNode; label: string }> = {
+                    officer:  { icon: <Briefcase className="w-4 h-4" />,  label: "Loan Officer" },
+                    progress: { icon: <Activity className="w-4 h-4" />,   label: "Progress" },
+                    client:   { icon: <User className="w-4 h-4" />,       label: "Documents" },
+                  };
+                  const t = labels[tab];
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-semibold transition-all ${
+                        activeTab === tab
+                          ? "bg-card shadow-sm text-foreground border border-border"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t.icon}
+                      <span className="hidden sm:inline">{t.label}</span>
+                      <span className="sm:hidden">{tab === "officer" ? "Officer" : t.label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               <AnimatePresence mode="wait">
 
-                {/* ── Loan Officer Brief ───────────────────────────────────── */}
+                {/* ── Loan Officer Brief ─────────────────────────────── */}
                 {activeTab === "officer" && (
                   <motion.div
                     key="officer"
@@ -378,7 +394,7 @@ export default function LookupBrief() {
                       )}
                     </section>
 
-                    {/* Contact info */}
+                    {/* Contact */}
                     <div className="pt-4 border-t border-border space-y-4">
                       {(contact?.name || contact?.email || contact?.phone) && (
                         <div className="space-y-2">
@@ -391,19 +407,13 @@ export default function LookupBrief() {
                               </div>
                             )}
                             {contact?.email && (
-                              <a
-                                href={`mailto:${contact.email}`}
-                                className="inline-flex items-center gap-2 text-sm text-foreground font-medium hover:text-primary transition-colors"
-                              >
+                              <a href={`mailto:${contact.email}`} className="inline-flex items-center gap-2 text-sm text-foreground font-medium hover:text-primary transition-colors">
                                 <Mail className="w-4 h-4 text-muted-foreground shrink-0" />
                                 {contact.email}
                               </a>
                             )}
                             {contact?.phone && (
-                              <a
-                                href={`tel:${contact.phone.replace(/\D/g, "")}`}
-                                className="inline-flex items-center gap-2 text-sm text-foreground font-medium hover:text-primary transition-colors"
-                              >
+                              <a href={`tel:${contact.phone.replace(/\D/g, "")}`} className="inline-flex items-center gap-2 text-sm text-foreground font-medium hover:text-primary transition-colors">
                                 <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
                                 {contact.phone}
                               </a>
@@ -413,30 +423,26 @@ export default function LookupBrief() {
                       )}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-border/50">
                         <p className="text-sm text-muted-foreground">Get a hold of your loan officer</p>
-                        <a
-                          href="tel:7144944172"
-                          className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-6 h-11 font-medium text-sm hover:bg-primary/90 transition-all"
-                        >
+                        <a href="tel:7144944172" className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-6 h-11 font-medium text-sm hover:bg-primary/90 transition-all">
                           <Phone className="w-4 h-4" />
                           714-494-4172
                         </a>
                       </div>
                     </div>
 
-                    {/* ── LO: Update Loan Stage ─────────────────────────── */}
+                    {/* ── LO Controls ──────────────────────────────────── */}
                     <div className="border-t border-border pt-8 space-y-5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
                           {loUnlocked
                             ? <Unlock className="w-4 h-4 text-amber-700" />
-                            : <Lock className="w-4 h-4 text-amber-700" />
-                          }
+                            : <Lock className="w-4 h-4 text-amber-700" />}
                         </div>
                         <div>
                           <p className="font-semibold text-foreground text-sm">Loan Officer Controls</p>
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {loUnlocked
-                              ? "Override verified — select and save the current loan stage below."
+                              ? "Override verified — select a stage, add an optional note, and save."
                               : "Enter your override code to update this client's loan stage."}
                           </p>
                         </div>
@@ -444,13 +450,7 @@ export default function LookupBrief() {
 
                       <AnimatePresence mode="wait">
                         {!loUnlocked ? (
-                          <motion.div
-                            key="locked"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="space-y-3"
-                          >
+                          <motion.div key="locked" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
                             <div className="flex gap-2">
                               <input
                                 type="password"
@@ -469,25 +469,17 @@ export default function LookupBrief() {
                               </Button>
                             </div>
                             {loError && (
-                              <motion.p
-                                initial={{ opacity: 0, y: -4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="text-xs text-destructive flex items-center gap-1.5"
-                              >
+                              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-destructive flex items-center gap-1.5">
                                 <AlertCircle className="w-3.5 h-3.5" /> {loError}
                               </motion.p>
                             )}
                           </motion.div>
                         ) : (
-                          <motion.div
-                            key="unlocked"
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            className="space-y-4"
-                          >
-                            <div className="grid grid-cols-1 gap-2">
-                              {LOAN_STAGES.map((stage) => (
+                          <motion.div key="unlocked" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
+
+                            {/* Stage picker */}
+                            <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto pr-1">
+                              {getStages(result.goal ?? "buy").map((stage) => (
                                 <button
                                   key={stage.n}
                                   onClick={() => setPendingStage(stage.n)}
@@ -498,9 +490,7 @@ export default function LookupBrief() {
                                   }`}
                                 >
                                   <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                                    pendingStage === stage.n
-                                      ? "bg-primary text-primary-foreground"
-                                      : "bg-border text-muted-foreground"
+                                    pendingStage === stage.n ? "bg-primary text-primary-foreground" : "bg-border text-muted-foreground"
                                   }`}>
                                     <stage.Icon className="w-3.5 h-3.5" />
                                   </div>
@@ -510,13 +500,27 @@ export default function LookupBrief() {
                                     </p>
                                     <p className="text-xs text-muted-foreground">{stage.timeline}</p>
                                   </div>
-                                  {pendingStage === stage.n && (
-                                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                  )}
+                                  {pendingStage === stage.n && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />}
                                 </button>
                               ))}
                             </div>
 
+                            {/* Notes field */}
+                            <div className="space-y-1.5">
+                              <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                Note for client (optional)
+                              </label>
+                              <textarea
+                                value={loNote}
+                                onChange={(e) => setLoNote(e.target.value)}
+                                placeholder="e.g. All documents verified. Moving to underwriting review."
+                                rows={3}
+                                className="w-full rounded-xl border border-border bg-secondary/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+                              />
+                            </div>
+
+                            {/* Save / success */}
                             <AnimatePresence mode="wait">
                               {stageSaved ? (
                                 <motion.div
@@ -524,13 +528,13 @@ export default function LookupBrief() {
                                   initial={{ opacity: 0, scale: 0.96 }}
                                   animate={{ opacity: 1, scale: 1 }}
                                   exit={{ opacity: 0 }}
-                                  className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3.5"
+                                  className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-4"
                                 >
                                   <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                                   <div>
-                                    <p className="text-sm font-semibold text-emerald-800">Stage updated</p>
+                                    <p className="text-sm font-semibold text-emerald-800">Stage updated — timestamp logged</p>
                                     <p className="text-xs text-emerald-700 mt-0.5">
-                                      Stage {pendingStage} — {LOAN_STAGES.find(s => s.n === pendingStage)?.label}. Client will see this the next time they look up their code.
+                                      Stage {pendingStage} set. History entry recorded with timestamp and note.
                                     </p>
                                   </div>
                                 </motion.div>
@@ -540,13 +544,10 @@ export default function LookupBrief() {
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
                                   onClick={handleSaveStage}
-                                  disabled={pendingStage === currentStage && currentStage > 0}
-                                  className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                  className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.01] active:scale-[0.98]"
                                 >
                                   <Save className="w-4 h-4" />
-                                  {pendingStage === currentStage && currentStage > 0
-                                    ? "Already at this stage"
-                                    : `Save — Set Stage to "${LOAN_STAGES.find(s => s.n === pendingStage)?.label ?? ""}"`}
+                                  {`Save — Set to Stage ${pendingStage}: "${getStages(result.goal ?? "buy").find(s => s.n === pendingStage)?.label ?? ""}"`}
                                 </motion.button>
                               )}
                             </AnimatePresence>
@@ -557,7 +558,7 @@ export default function LookupBrief() {
                   </motion.div>
                 )}
 
-                {/* ── Loan Progress Tracker ─────────────────────────────── */}
+                {/* ── Progress Tracker ───────────────────────────────── */}
                 {activeTab === "progress" && (
                   <motion.div
                     key="progress"
@@ -574,24 +575,31 @@ export default function LookupBrief() {
                       <p className="text-muted-foreground text-sm mt-1.5">
                         Understand where you are in the process, what's happening now, and what to expect next.
                       </p>
-                      <div className="mt-4 flex items-center gap-2">
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
                         <span className="font-mono text-xs font-bold text-primary bg-primary/8 rounded-full px-3 py-1">
                           {result.code}
                         </span>
-                        {contact?.name && (
-                          <span className="text-xs text-muted-foreground">· {contact.name}</span>
+                        <span className="text-xs text-muted-foreground bg-secondary rounded-full px-3 py-1">
+                          {getTypeLabel(result.goal)}
+                        </span>
+                        {(contact?.name || result.fullName) && (
+                          <span className="text-xs text-muted-foreground">
+                            · {contact?.name || result.fullName}
+                          </span>
                         )}
                       </div>
                     </div>
 
                     <LoanProgressTracker
-                      currentStage={currentStage}
-                      updatedAt={stageUpdatedAt || undefined}
+                      currentStage={stageData.currentStage}
+                      loanType={stageData.loanType || result.goal}
+                      history={stageData.history}
+                      updatedAt={stageData.updatedAt || undefined}
                     />
                   </motion.div>
                 )}
 
-                {/* ── Client document upload ────────────────────────────── */}
+                {/* ── Document Upload ───────────────────────────────── */}
                 {activeTab === "client" && (
                   <motion.div
                     key="client"
