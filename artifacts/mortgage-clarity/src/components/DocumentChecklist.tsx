@@ -25,7 +25,7 @@ interface UploadedFile {
 
 // ─── Document lists ───────────────────────────────────────────────────────────
 
-function getDocList(
+export function getDocList(
   mortgageType: string,
   creditScore: string,
   employmentType: string
