@@ -84,7 +84,7 @@ export default function WhoWeAre() {
             {/* Floating quote */}
             <div className="absolute -bottom-5 -right-6 bg-card border border-border rounded-2xl shadow-lg p-5 max-w-[220px]">
               <p className="text-sm text-foreground font-medium leading-snug italic">
-                "Built for you, not for lenders."
+                "Understand your mortgage journey, step by step."
               </p>
               <p className="text-xs text-muted-foreground mt-2">— LoansBetter</p>
             </div>
