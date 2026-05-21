@@ -395,12 +395,12 @@ export default function LookupBrief() {
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
   const SLIDER_FIELDS: Record<string, { min: number; max: number; step: number; label: string }> = {
-    "Annual Income":    { min: 0,      max: 500000,   step: 5000,  label: "Annual Income" },
+    "Annual Income":    { min: 0,      max: 5000000,   step: 10000,  label: "Annual Income" },
     "Monthly Debt":     { min: 0,      max: 10000,    step: 100,   label: "Monthly Debt" },
-    "Down Payment":     { min: 0,      max: 500000,   step: 5000,  label: "Down Payment" },
-    "Target Home Price":{ min: 50000,  max: 2000000,  step: 10000, label: "Target Home Price" },
-    "Home Value":       { min: 50000,  max: 2000000,  step: 10000, label: "Home Value" },
-    "Mortgage Balance": { min: 0,      max: 1500000,  step: 10000, label: "Mortgage Balance" },
+    "Down Payment":     { min: 0,      max: 5000000,   step: 10000,  label: "Down Payment" },
+    "Target Home Price":{ min: 50000,  max: 30000000, step: 50000, label: "Target Home Price" },
+    "Home Value":       { min: 50000,  max: 30000000, step: 50000, label: "Home Value" },
+    "Mortgage Balance": { min: 0,      max: 20000000, step: 50000, label: "Mortgage Balance" },
   };
 
   const updateProfileNum = (key: string, num: number) => {
