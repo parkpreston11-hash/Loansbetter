@@ -59,6 +59,9 @@ export function Navbar() {
               <Link href="/about" className="text-lg font-medium text-foreground">
                 Who We Are
               </Link>
+              <Link href="/lookup" className="text-lg font-medium text-foreground">
+                Loan Lookup
+              </Link>
               <Link href="/start" className="inline-flex mt-4 items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-12 px-6">
                 Get Started
               </Link>
