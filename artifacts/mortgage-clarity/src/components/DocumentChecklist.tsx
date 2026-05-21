@@ -250,9 +250,12 @@ export function getDocList(
 
 // ─── Storage ──────────────────────────────────────────────────────────────────
 
+// Metadata in localStorage (no dataUrl — just presence/name/size for checkDocs)
 const DOCS_KEY_PREFIX = "lb_docs_";
 
-function loadDocStates(code: string): Record<string, UploadedFile | undefined> {
+type DocMeta = { name: string; size: number; type: string };
+
+function loadDocMeta(code: string): Record<string, DocMeta | undefined> {
   try {
     const raw = localStorage.getItem(DOCS_KEY_PREFIX + code);
     return raw ? JSON.parse(raw) : {};
@@ -261,10 +264,68 @@ function loadDocStates(code: string): Record<string, UploadedFile | undefined> {
   }
 }
 
-function saveDocStates(code: string, states: Record<string, UploadedFile | undefined>) {
+function saveDocMeta(code: string, states: Record<string, UploadedFile | undefined>) {
   try {
-    localStorage.setItem(DOCS_KEY_PREFIX + code, JSON.stringify(states));
+    const meta: Record<string, DocMeta | undefined> = {};
+    for (const [id, f] of Object.entries(states)) {
+      if (f) meta[id] = { name: f.name, size: f.size, type: f.type };
+    }
+    localStorage.setItem(DOCS_KEY_PREFIX + code, JSON.stringify(meta));
   } catch {}
+}
+
+// Full file data (including dataUrl) in IndexedDB — no practical size limit
+const IDB_DB    = "lb_docs_db";
+const IDB_STORE = "files";
+const IDB_VER   = 1;
+
+function openIDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_DB, IDB_VER);
+    req.onupgradeneeded = () => req.result.createObjectStore(IDB_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+async function idbSet(key: string, value: UploadedFile): Promise<void> {
+  const db = await openIDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror    = () => reject(tx.error);
+  });
+}
+
+async function idbDelete(key: string): Promise<void> {
+  const db = await openIDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror    = () => reject(tx.error);
+  });
+}
+
+async function idbLoadAll(
+  code: string,
+  docIds: string[]
+): Promise<Record<string, UploadedFile | undefined>> {
+  const db = await openIDB();
+  const result: Record<string, UploadedFile | undefined> = {};
+  await Promise.all(
+    docIds.map(
+      id =>
+        new Promise<void>((resolve, reject) => {
+          const tx  = db.transaction(IDB_STORE, "readonly");
+          const req = tx.objectStore(IDB_STORE).get(`${code}_${id}`);
+          req.onsuccess = () => { result[id] = req.result as UploadedFile | undefined; resolve(); };
+          req.onerror   = () => reject(req.error);
+        })
+    )
+  );
+  return result;
 }
 
 
@@ -437,9 +498,8 @@ export function DocumentChecklist({
   fullName,
 }: DocumentChecklistProps) {
   const [open, setOpen] = useState(false);
-  const [files, setFiles] = useState<Record<string, UploadedFile | undefined>>(() =>
-    loadDocStates(code)
-  );
+  const [files, setFiles] = useState<Record<string, UploadedFile | undefined>>({});
+  const [loaded, setLoaded] = useState(false);
   const [clientEmail, setClientEmail] = useState(() => loadContact(code).email);
   const [clientPhone, setClientPhone] = useState(() => loadContact(code).phone);
   const [docSubmitted, setDocSubmitted] = useState(false);
@@ -451,9 +511,19 @@ export function DocumentChecklist({
   const requiredDone = required.filter(d => files[d.id]).length;
   const allRequiredDone = requiredDone === required.length && required.length > 0;
 
+  // Load file data from IndexedDB on mount (async, no size limit)
   useEffect(() => {
-    saveDocStates(code, files);
-  }, [files, code]);
+    const allIds = docs.map(d => d.id);
+    idbLoadAll(code, allIds)
+      .then(loaded => { setFiles(loaded); setLoaded(true); })
+      .catch(() => setLoaded(true));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code]);
+
+  // Keep localStorage metadata in sync (no dataUrl — used by checkDocs)
+  useEffect(() => {
+    if (loaded) saveDocMeta(code, files);
+  }, [files, code, loaded]);
 
   useEffect(() => {
     saveContact(code, { email: clientEmail, phone: clientPhone });
@@ -472,12 +542,15 @@ export function DocumentChecklist({
   };
 
   const handleUpload = (id: string, file: UploadedFile) => {
+    // Save full file (with dataUrl) to IndexedDB
+    void idbSet(`${code}_${id}`, file);
     setFiles(prev => ({ ...prev, [id]: file }));
     const doc = docs.find(d => d.id === id);
     if (doc) triggerDocumentEmail(doc.title, file.name);
   };
 
   const handleRemove = (id: string) => {
+    void idbDelete(`${code}_${id}`);
     setFiles(prev => {
       const next = { ...prev };
       delete next[id];
