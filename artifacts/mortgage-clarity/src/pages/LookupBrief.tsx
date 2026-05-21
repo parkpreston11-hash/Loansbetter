@@ -141,6 +141,8 @@ export default function LookupBrief() {
   const [archiveCustomNote, setArchiveCustomNote]   = useState("");
   const [archiveConfirming, setArchiveConfirming]   = useState(false);
   const [archiveSaved, setArchiveSaved]             = useState(false);
+  const [archiveCodeInput, setArchiveCodeInput]     = useState("");
+  const [archiveCodeError, setArchiveCodeError]     = useState("");
 
   // Doc gate state
   const [docsStatus, setDocsStatus] = useState<DocsStatus>({
@@ -173,6 +175,8 @@ export default function LookupBrief() {
     setArchiveCustomNote("");
     setArchiveConfirming(false);
     setArchiveSaved(false);
+    setArchiveCodeInput("");
+    setArchiveCodeError("");
   };
 
   const handleLookup = () => {
@@ -264,6 +268,10 @@ export default function LookupBrief() {
 
   const handleArchive = () => {
     if (!result || !archiveReason) return;
+    if (archiveCodeInput.trim().toUpperCase().replace(/[-\s]/g, "") !== LO_OVERRIDE_CODE) {
+      setArchiveCodeError("Incorrect code. Please try again.");
+      return;
+    }
     const ts = buildTimestamp();
     const updated: StoredStageData = {
       ...stageData,
@@ -279,6 +287,8 @@ export default function LookupBrief() {
       setArchiveSaved(true);
       setShowArchivePanel(false);
       setArchiveConfirming(false);
+      setArchiveCodeInput("");
+      setArchiveCodeError("");
     } catch {}
   };
 
@@ -740,7 +750,7 @@ export default function LookupBrief() {
                                           {/* Confirm step */}
                                           {!archiveConfirming ? (
                                             <Button
-                                              onClick={() => setArchiveConfirming(true)}
+                                              onClick={() => { setArchiveConfirming(true); setArchiveCodeInput(""); setArchiveCodeError(""); }}
                                               disabled={!archiveReason}
                                               variant="outline"
                                               className="w-full border-slate-400 text-slate-700 hover:bg-slate-100"
@@ -752,17 +762,42 @@ export default function LookupBrief() {
                                             <motion.div
                                               initial={{ opacity: 0, y: 4 }}
                                               animate={{ opacity: 1, y: 0 }}
-                                              className="space-y-3 bg-red-50 border border-red-200 rounded-xl p-4"
+                                              className="space-y-4 bg-red-50 border border-red-200 rounded-xl p-4"
                                             >
-                                              <p className="text-sm font-semibold text-red-800">
-                                                Permanently close this file?
-                                              </p>
-                                              <p className="text-xs text-red-700/80 leading-relaxed">
-                                                Reason: <strong>{archiveReason}</strong>. This will mark the file CLOSED and stop all stage updates. The full history is preserved. This cannot be undone here.
-                                              </p>
-                                              <div className="flex gap-2 pt-1">
+                                              <div>
+                                                <p className="text-sm font-semibold text-red-800">
+                                                  Confirm closure — re-enter your officer code
+                                                </p>
+                                                <p className="text-xs text-red-700/80 leading-relaxed mt-1">
+                                                  Reason: <strong>{archiveReason}</strong>. This permanently marks the file CLOSED. To confirm, re-enter the override code below.
+                                                </p>
+                                              </div>
+                                              <div className="space-y-2">
+                                                <input
+                                                  type="password"
+                                                  value={archiveCodeInput}
+                                                  onChange={(e) => { setArchiveCodeInput(e.target.value); setArchiveCodeError(""); }}
+                                                  onKeyDown={(e) => e.key === "Enter" && handleArchive()}
+                                                  placeholder="Override code"
+                                                  className="w-full h-11 rounded-xl border border-red-300 bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-400 transition-all"
+                                                />
+                                                <AnimatePresence>
+                                                  {archiveCodeError && (
+                                                    <motion.p
+                                                      initial={{ opacity: 0, y: -4 }}
+                                                      animate={{ opacity: 1, y: 0 }}
+                                                      exit={{ opacity: 0 }}
+                                                      className="text-xs text-red-700 flex items-center gap-1.5"
+                                                    >
+                                                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                                                      {archiveCodeError}
+                                                    </motion.p>
+                                                  )}
+                                                </AnimatePresence>
+                                              </div>
+                                              <div className="flex gap-2">
                                                 <Button
-                                                  onClick={() => setArchiveConfirming(false)}
+                                                  onClick={() => { setArchiveConfirming(false); setArchiveCodeInput(""); setArchiveCodeError(""); }}
                                                   variant="outline"
                                                   size="sm"
                                                   className="flex-1"
@@ -772,9 +807,10 @@ export default function LookupBrief() {
                                                 <Button
                                                   onClick={handleArchive}
                                                   size="sm"
+                                                  disabled={!archiveCodeInput.trim()}
                                                   className="flex-1 bg-red-600 hover:bg-red-700 text-white"
                                                 >
-                                                  Yes, Close File
+                                                  Close File
                                                 </Button>
                                               </div>
                                             </motion.div>
