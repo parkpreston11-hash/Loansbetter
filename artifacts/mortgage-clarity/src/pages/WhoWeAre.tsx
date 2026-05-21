@@ -114,8 +114,8 @@ export default function WhoWeAre() {
                 delay: 0,
               },
               {
-                icon: Shield, title: "Transparency builds trust",
-                desc: "We have no hidden agendas, no lending relationships, and no reason to push you toward any particular outcome.",
+                icon: Shield, title: "Your clarity is our goal",
+                desc: "Every feature, every explanation, and every step is designed with one thing in mind — helping you feel confident about your mortgage decision.",
                 delay: 0.07,
               },
               {
@@ -135,7 +135,7 @@ export default function WhoWeAre() {
               },
               {
                 icon: Users, title: "Built for real people",
-                desc: "Not for finance professionals. Not for investors. For people making one of the most important financial decisions of their lives.",
+                desc: "Built for everyday homebuyers and homeowners making one of the most important financial decisions of their lives.",
                 delay: 0.21,
               },
             ].map(({ icon: Icon, title, desc, delay }) => (
