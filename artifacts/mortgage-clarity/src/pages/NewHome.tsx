@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import {
   ArrowRight, Home as HomeIcon, RefreshCw, DollarSign,
   BarChart3, BadgeCheck, Lock, Shield, Phone,
+  ShieldCheck, CreditCard, SlidersHorizontal, Info,
+  MessageCircle, HeartHandshake, Layers, Lightbulb,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -183,6 +185,34 @@ export default function NewHome() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
+          FEAR REMOVAL — Before you start
+      ══════════════════════════════════════════════════════════ */}
+      <section className="container mx-auto px-4 md:px-8 py-12">
+        <motion.div {...fadeUp(0)} className="bg-secondary/40 border border-border rounded-3xl p-8 md:p-12 max-w-3xl mx-auto">
+          <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-2">Before you start</p>
+          <h3 className="font-serif text-2xl font-semibold text-foreground mb-8">A few things worth knowing first.</h3>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {[
+              { icon: ShieldCheck, title: "No pressure to apply or commit", desc: "This is a tool for understanding, not a place where anyone will push you toward a decision." },
+              { icon: CreditCard, title: "Exploring does not affect your credit", desc: "No credit check runs here — ever. Your score is completely unaffected by using this tool." },
+              { icon: SlidersHorizontal, title: "You stay in full control", desc: "At every step, the next move is yours. Nothing happens without your explicit say-so." },
+              { icon: Info, title: "This is not a lender", desc: "LoansBetter is a clarity and information tool. We help you understand — not commit." },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex gap-4 p-4 rounded-2xl hover:bg-secondary/60 transition-colors duration-200">
+                <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground text-sm mb-1">{title}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
           PHOTO CARD GRID — 4 loan types as tall photo cards
       ══════════════════════════════════════════════════════════ */}
       <section className="container mx-auto px-4 md:px-8 py-24">
@@ -238,6 +268,36 @@ export default function NewHome() {
               </Link>
             </motion.div>
           ))}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          WHY DIFFERENT — 2×2 calm comparison cards
+      ══════════════════════════════════════════════════════════ */}
+      <section className="bg-secondary/20 border-y border-border py-20">
+        <div className="container mx-auto px-4 md:px-8">
+          <motion.div {...fadeUp(0)} className="text-center mb-12">
+            <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-3">Why choose us</p>
+            <h2 className="font-serif text-4xl md:text-5xl font-semibold leading-tight">
+              Why LoansBetter is different.
+            </h2>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
+            {[
+              { icon: MessageCircle, title: "No confusing financial jargon", desc: "Everything is written in plain language you can actually understand without a finance degree.", delay: 0 },
+              { icon: HeartHandshake, title: "No pushy sales process", desc: "No quotas, no pressure calls, no one chasing a commission. Just honest, clear information.", delay: 0.07 },
+              { icon: Layers, title: "Clear, step-by-step understanding", desc: "We break complex scenarios into simple steps so you always know exactly where you stand.", delay: 0.14 },
+              { icon: Lightbulb, title: "Built to help you decide before you act", desc: "Knowledge first, always. What you do with it is entirely and completely up to you.", delay: 0.21 },
+            ].map(({ icon: Icon, title, desc, delay }) => (
+              <motion.div key={title} {...fadeUp(delay)} className="group bg-card border border-border rounded-2xl p-7 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/8 hover:border-primary/25 transition-all duration-300">
+                <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary transition-colors duration-300">
+                  <Icon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">{title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -320,6 +380,25 @@ export default function NewHome() {
             </motion.div>
           </div>
         </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          SOFT EXIT CTA — "Just exploring?"
+      ══════════════════════════════════════════════════════════ */}
+      <section className="container mx-auto px-4 md:px-8 py-16">
+        <motion.div {...fadeUp(0)} className="max-w-2xl mx-auto text-center bg-secondary/30 border border-border rounded-3xl p-10 md:p-14">
+          <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">No commitment required</p>
+          <h3 className="font-serif text-3xl md:text-4xl font-semibold text-foreground mb-4">Just exploring?</h3>
+          <p className="text-muted-foreground text-lg leading-relaxed mb-8 max-w-md mx-auto">
+            You don't need to decide anything today. Start by simply understanding your options — no strings, no pressure.
+          </p>
+          <Button asChild variant="outline" size="lg" className="rounded-full h-13 px-10 font-medium border-border hover:border-primary/40 hover:bg-primary/5 transition-all">
+            <Link href="/how-it-works">
+              Explore without commitment
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Link>
+          </Button>
+        </motion.div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════

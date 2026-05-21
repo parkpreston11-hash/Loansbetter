@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useMortgage, LOAN_TERM_RATES } from "@/context/MortgageContext";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, FileText, Info, Save, Home, ExternalLink } from "lucide-react";
+import { MessageCircle, FileText, Info, Save, Home, ExternalLink, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Results() {
@@ -107,6 +107,53 @@ export default function Results() {
           </motion.div>
         </div>
       </section>
+
+      {/* Decision Clarity Indicator */}
+      {(() => {
+        const highTypes = ["cashout", "reverse"];
+        const modTypes = ["refi"];
+        const lowCredit = ["Below 580", "580–619"].includes(answers.creditScore ?? "");
+        const level = highTypes.includes(selectedMortgageType ?? "")
+          ? 3
+          : modTypes.includes(selectedMortgageType ?? "") || lowCredit
+          ? 2
+          : 1;
+        const levels = [
+          { label: "Low complexity", sub: "Simple decision", detail: "Your situation is relatively straightforward. A single lender conversation is likely all you need to move forward.", active: "bg-emerald-400", text: "text-emerald-700", badge: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+          { label: "Moderate complexity", sub: "Review options carefully", detail: "There are a few variables worth exploring before you commit. The scenario tool below can help clarify your path.", active: "bg-amber-400", text: "text-amber-700", badge: "bg-amber-50 text-amber-700 border-amber-200" },
+          { label: "High-impact decision", sub: "Explore scenarios before acting", detail: "This type of decision benefits from careful planning. Take your time, compare options, and feel free to ask questions — there's no rush.", active: "bg-sky-400", text: "text-sky-700", badge: "bg-sky-50 text-sky-700 border-sky-200" },
+        ];
+        const current = levels[level - 1];
+        return (
+          <section className="max-w-4xl mx-auto px-4 pt-12 pb-4">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="bg-card border border-border rounded-3xl p-8 shadow-sm">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                  <BarChart2 className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-semibold text-foreground">Decision Clarity Indicator</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">Understand how significant this decision is so you can move forward at the right pace.</p>
+                </div>
+              </div>
+              {/* Segmented bar */}
+              <div className="flex gap-2 mb-5">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className={`h-2.5 flex-1 rounded-full transition-all duration-500 ${n <= level ? current.active : "bg-secondary"}`} />
+                ))}
+              </div>
+              {/* Current level label */}
+              <div className="flex items-center gap-3 mb-3">
+                <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${current.badge}`}>
+                  Level {level} of 3 — {current.label}
+                </span>
+              </div>
+              <p className={`font-semibold mb-1 ${current.text}`}>{current.sub}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">{current.detail}</p>
+            </motion.div>
+          </section>
+        );
+      })()}
 
       {/* Scenario Explorer */}
       <section className="max-w-4xl mx-auto px-4 py-16">
