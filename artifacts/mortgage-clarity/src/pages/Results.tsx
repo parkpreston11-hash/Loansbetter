@@ -300,37 +300,6 @@ export default function Results() {
                     </div>
                   ))}
 
-                  {/* Buy-only: monthly payment by term */}
-                  {isBuy && answers.homeValue > 0 && (
-                    <div className="bg-secondary/30 border border-border rounded-2xl p-5">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs font-semibold uppercase tracking-widest text-primary">Monthly payment by loan term</p>
-                        {!ratesLoading && ratesUpdatedAt && ratesUpdatedAt !== "fallback" && (
-                          <p className="text-[10px] text-muted-foreground">Rates as of {ratesUpdatedAt}</p>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-4">Based on {fmt(answers.homeValue)} home price with {fmt(answers.downPayment)} down.</p>
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        {Object.entries(liveRates).map(([key, info]) => {
-                          const loan = Math.max(0, answers.homeValue - answers.downPayment);
-                          const mr = info.rate / 100 / 12;
-                          const n = key.startsWith("15") ? 180 : 360;
-                          const pmt = loan > 0 && mr > 0 ? loan * mr * Math.pow(1 + mr, n) / (Math.pow(1 + mr, n) - 1) : 0;
-                          const popular = key === "30-fixed";
-                          return (
-                            <div key={key} className={`relative bg-card border rounded-xl p-4 ${popular ? "border-primary ring-1 ring-primary/20" : "border-border"}`}>
-                              {popular && <span className="absolute -top-2.5 left-3 bg-primary text-primary-foreground text-[10px] font-semibold px-2.5 py-0.5 rounded-full">Most Popular</span>}
-                              <p className="font-semibold text-sm text-foreground mb-1">{info.label}</p>
-                              <p className="text-2xl font-bold text-primary">{fmt(Math.round(pmt))}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
-                              <p className="text-xs text-muted-foreground mt-1">{info.rate}% APR</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground mt-3">* Principal and interest only. Taxes, insurance, and HOA not included. Rates sourced from Freddie Mac via FRED.</p>
-                    </div>
-                  )}
-
                   {/* Buy-only: Zillow link */}
                   {isBuy && (
                     <div className="bg-secondary/30 border border-border rounded-2xl p-5">
@@ -482,6 +451,37 @@ export default function Results() {
             </div>
           </Link>
         </motion.div>
+
+        {/* Buy-only: monthly payment by loan term */}
+        {isBuy && answers.homeValue > 0 && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-6 bg-secondary/30 border border-border rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary">Monthly payment by loan term</p>
+              {!ratesLoading && ratesUpdatedAt && ratesUpdatedAt !== "fallback" && (
+                <p className="text-[10px] text-muted-foreground">Rates as of {ratesUpdatedAt}</p>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">Based on {fmt(answers.homeValue)} home price with {fmt(answers.downPayment)} down.</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {Object.entries(liveRates).map(([key, info]) => {
+                const loan = Math.max(0, answers.homeValue - answers.downPayment);
+                const mr = info.rate / 100 / 12;
+                const n = key.startsWith("15") ? 180 : 360;
+                const pmt = loan > 0 && mr > 0 ? loan * mr * Math.pow(1 + mr, n) / (Math.pow(1 + mr, n) - 1) : 0;
+                const popular = key === "30-fixed";
+                return (
+                  <div key={key} className={`relative bg-card border rounded-xl p-4 ${popular ? "border-primary ring-1 ring-primary/20" : "border-border"}`}>
+                    {popular && <span className="absolute -top-2.5 left-3 bg-primary text-primary-foreground text-[10px] font-semibold px-2.5 py-0.5 rounded-full">Most Popular</span>}
+                    <p className="font-semibold text-sm text-foreground mb-1">{info.label}</p>
+                    <p className="text-2xl font-bold text-primary">{fmt(Math.round(pmt))}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
+                    <p className="text-xs text-muted-foreground mt-1">{info.rate}% APR</p>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-3">* Principal and interest only. Taxes, insurance, and HOA not included. Rates sourced from Freddie Mac via FRED.</p>
+          </motion.div>
+        )}
 
         <motion.p
           initial={{ opacity: 0 }}
