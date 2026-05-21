@@ -5,7 +5,7 @@ import {
   ArrowLeft, Search, Phone, ShieldCheck, BookOpen,
   AlertCircle, User, Briefcase, Mail, Lock, Unlock,
   Activity, CheckCircle2, Save, MessageSquare,
-  FileX, ArrowRight, UploadCloud, Clock,
+  FileX, ArrowRight, UploadCloud, Clock, FolderX, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DocumentChecklist, getDocList } from "@/components/DocumentChecklist";
@@ -91,6 +91,11 @@ function loadStageData(code: string): StoredStageData {
       loanType: parsed.loanType ?? "buy",
       history: parsed.history ?? [],
       updatedAt: parsed.updatedAt ?? "",
+      archived: parsed.archived,
+      archiveReason: parsed.archiveReason,
+      archiveNote: parsed.archiveNote,
+      archiveOfficer: parsed.archiveOfficer,
+      archiveTimestamp: parsed.archiveTimestamp,
     };
   } catch {
     return { currentStage: 0, loanType: "buy", history: [], updatedAt: "" };
@@ -130,6 +135,13 @@ export default function LookupBrief() {
   const [loNote, setLoNote]             = useState("");
   const [stageSaved, setStageSaved]     = useState(false);
 
+  // Archive state
+  const [showArchivePanel, setShowArchivePanel]     = useState(false);
+  const [archiveReason, setArchiveReason]           = useState("");
+  const [archiveCustomNote, setArchiveCustomNote]   = useState("");
+  const [archiveConfirming, setArchiveConfirming]   = useState(false);
+  const [archiveSaved, setArchiveSaved]             = useState(false);
+
   // Doc gate state
   const [docsStatus, setDocsStatus] = useState<DocsStatus>({
     complete: false, totalRequired: 0, uploaded: 0, missing: [],
@@ -156,6 +168,11 @@ export default function LookupBrief() {
     setStageSaved(false);
     setPendingStage(0);
     setLoNote("");
+    setShowArchivePanel(false);
+    setArchiveReason("");
+    setArchiveCustomNote("");
+    setArchiveConfirming(false);
+    setArchiveSaved(false);
   };
 
   const handleLookup = () => {
@@ -233,6 +250,35 @@ export default function LookupBrief() {
       setStageSaved(true);
       setLoNote("");
       setTimeout(() => setStageSaved(false), 4000);
+    } catch {}
+  };
+
+  // ── Archive / close file ──────────────────────────────────────────────────
+  const ARCHIVE_REASONS = [
+    "Not qualified",
+    "No longer interested",
+    "Incomplete information",
+    "Duplicate application",
+    "Other (manual note)",
+  ];
+
+  const handleArchive = () => {
+    if (!result || !archiveReason) return;
+    const ts = buildTimestamp();
+    const updated: StoredStageData = {
+      ...stageData,
+      archived: true,
+      archiveReason,
+      archiveNote: archiveCustomNote.trim() || undefined,
+      archiveOfficer: "Loan Officer",
+      archiveTimestamp: ts,
+    };
+    try {
+      localStorage.setItem(STAGE_KEY_PREFIX + result.code, JSON.stringify(updated));
+      setStageData(updated);
+      setArchiveSaved(true);
+      setShowArchivePanel(false);
+      setArchiveConfirming(false);
     } catch {}
   };
 
@@ -611,6 +657,135 @@ export default function LookupBrief() {
                                 </motion.div>
                               )}
                             </AnimatePresence>
+
+                            {/* ── Client Status Control ──────────────── */}
+                            <div className="border-t border-border pt-6 space-y-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                                    <FolderX className="w-3.5 h-3.5 text-slate-500" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-semibold text-foreground">Client Status Control</p>
+                                    <p className="text-xs text-muted-foreground">Close or archive this client file permanently.</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {stageData.archived ? (
+                                <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+                                  <FolderX className="w-4 h-4 text-slate-500 shrink-0" />
+                                  <div>
+                                    <p className="text-sm font-medium text-slate-700">File closed — {stageData.archiveReason}</p>
+                                    <p className="text-xs text-slate-500 mt-0.5">{stageData.archiveTimestamp} · {stageData.archiveOfficer}</p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => setShowArchivePanel(!showArchivePanel)}
+                                    className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-slate-300 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+                                  >
+                                    <div className="flex items-center gap-2.5">
+                                      <FolderX className="w-4 h-4 text-slate-500" />
+                                      <span className="text-sm font-medium text-slate-700">End / Archive Client File</span>
+                                    </div>
+                                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showArchivePanel ? "rotate-180" : ""}`} />
+                                  </button>
+
+                                  <AnimatePresence initial={false}>
+                                    {showArchivePanel && (
+                                      <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        transition={{ duration: 0.22 }}
+                                        className="overflow-hidden"
+                                      >
+                                        <div className="space-y-4 pt-1 pb-1">
+                                          {/* Reason picker */}
+                                          <div>
+                                            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Reason for closing</p>
+                                            <div className="space-y-1.5">
+                                              {ARCHIVE_REASONS.map((reason) => (
+                                                <button
+                                                  key={reason}
+                                                  onClick={() => { setArchiveReason(reason); setArchiveConfirming(false); }}
+                                                  className={`w-full text-left px-4 py-2.5 rounded-xl text-sm border transition-all ${
+                                                    archiveReason === reason
+                                                      ? "bg-slate-700 text-white border-slate-700"
+                                                      : "bg-card border-border text-foreground hover:border-slate-400"
+                                                  }`}
+                                                >
+                                                  {reason}
+                                                </button>
+                                              ))}
+                                            </div>
+                                          </div>
+
+                                          {/* Optional manual note */}
+                                          <div>
+                                            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground block mb-1.5">
+                                              Officer note (optional)
+                                            </label>
+                                            <textarea
+                                              value={archiveCustomNote}
+                                              onChange={(e) => setArchiveCustomNote(e.target.value)}
+                                              placeholder="Add context for internal records…"
+                                              rows={2}
+                                              className="w-full rounded-xl border border-border bg-secondary/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 transition-all resize-none"
+                                            />
+                                          </div>
+
+                                          {/* Confirm step */}
+                                          {!archiveConfirming ? (
+                                            <Button
+                                              onClick={() => setArchiveConfirming(true)}
+                                              disabled={!archiveReason}
+                                              variant="outline"
+                                              className="w-full border-slate-400 text-slate-700 hover:bg-slate-100"
+                                            >
+                                              <FolderX className="w-4 h-4 mr-2" />
+                                              Continue to Close File
+                                            </Button>
+                                          ) : (
+                                            <motion.div
+                                              initial={{ opacity: 0, y: 4 }}
+                                              animate={{ opacity: 1, y: 0 }}
+                                              className="space-y-3 bg-red-50 border border-red-200 rounded-xl p-4"
+                                            >
+                                              <p className="text-sm font-semibold text-red-800">
+                                                Permanently close this file?
+                                              </p>
+                                              <p className="text-xs text-red-700/80 leading-relaxed">
+                                                Reason: <strong>{archiveReason}</strong>. This will mark the file CLOSED and stop all stage updates. The full history is preserved. This cannot be undone here.
+                                              </p>
+                                              <div className="flex gap-2 pt-1">
+                                                <Button
+                                                  onClick={() => setArchiveConfirming(false)}
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="flex-1"
+                                                >
+                                                  Cancel
+                                                </Button>
+                                                <Button
+                                                  onClick={handleArchive}
+                                                  size="sm"
+                                                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                                                >
+                                                  Yes, Close File
+                                                </Button>
+                                              </div>
+                                            </motion.div>
+                                          )}
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </>
+                              )}
+                            </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -650,12 +825,17 @@ export default function LookupBrief() {
                       </div>
                     </div>
 
-                    {stageData.currentStage > 0 ? (
+                    {(stageData.currentStage > 0 || stageData.archived) ? (
                       <LoanProgressTracker
                         currentStage={stageData.currentStage}
                         loanType={stageData.loanType || result.goal}
                         history={stageData.history}
                         updatedAt={stageData.updatedAt || undefined}
+                        archived={stageData.archived}
+                        archiveReason={stageData.archiveReason}
+                        archiveNote={stageData.archiveNote}
+                        archiveOfficer={stageData.archiveOfficer}
+                        archiveTimestamp={stageData.archiveTimestamp}
                       />
                     ) : docsStatus.uploaded > 0 ? (
                       /* ── Under review state ──────────────────────────── */

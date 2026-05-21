@@ -5,6 +5,7 @@ import {
   FileText, Building2, KeyRound, Sparkles, Lock,
   BookOpen, ShieldCheck, DollarSign, RefreshCcw, Calculator,
   Clock, ChevronDown, ChevronUp, ArrowRight, CalendarDays, Activity,
+  FolderX,
 } from "lucide-react";
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
@@ -22,6 +23,11 @@ export interface StoredStageData {
   loanType: string;
   history: StageHistoryEntry[];
   updatedAt: string;
+  archived?: boolean;
+  archiveReason?: string;
+  archiveNote?: string;
+  archiveOfficer?: string;
+  archiveTimestamp?: string;
 }
 
 export function buildTimestamp(): string {
@@ -162,9 +168,17 @@ interface Props {
   loanType: string;
   history: StageHistoryEntry[];
   updatedAt?: string;
+  archived?: boolean;
+  archiveReason?: string;
+  archiveNote?: string;
+  archiveOfficer?: string;
+  archiveTimestamp?: string;
 }
 
-export function LoanProgressTracker({ currentStage, loanType, history, updatedAt }: Props) {
+export function LoanProgressTracker({
+  currentStage, loanType, history, updatedAt,
+  archived, archiveReason, archiveNote, archiveOfficer, archiveTimestamp,
+}: Props) {
   const [expanded, setExpanded] = useState<number | null>(currentStage > 0 ? currentStage : null);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -172,6 +186,89 @@ export function LoanProgressTracker({ currentStage, loanType, history, updatedAt
   const total   = stages.length;
   const conf    = getConfidence(currentStage, total);
   const est     = getEstimate(currentStage, total);
+
+  // ── Archived / closed state ────────────────────────────────────────────────
+  if (archived) {
+    return (
+      <div className="space-y-5">
+        {/* Closed banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-4 bg-slate-50 border border-slate-200 rounded-2xl p-6"
+        >
+          <div className="w-11 h-11 rounded-xl bg-slate-200 flex items-center justify-center shrink-0">
+            <FolderX className="w-5 h-5 text-slate-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-slate-700 text-base">This application has been closed.</p>
+            <p className="text-sm text-slate-500 mt-1 leading-relaxed">
+              Your file has been closed by your loan officer. All previous progress and documents are safely on record.
+              If you have questions, please reach out directly.
+            </p>
+            {archiveReason && (
+              <span className="inline-block mt-3 text-xs font-semibold uppercase tracking-widest bg-slate-200 text-slate-600 rounded-full px-3 py-1">
+                {archiveReason}
+              </span>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Archive log (officer-visible detail) */}
+        {(archiveOfficer || archiveTimestamp || archiveNote) && (
+          <div className="bg-secondary/40 border border-border/60 rounded-xl px-5 py-4 space-y-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Closure Log</p>
+            {archiveTimestamp && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Clock className="w-3 h-3" /> {archiveTimestamp}
+              </p>
+            )}
+            {archiveOfficer && (
+              <p className="text-xs text-muted-foreground">Officer: {archiveOfficer}</p>
+            )}
+            {archiveNote && (
+              <p className="text-xs text-foreground/70 italic mt-1">"{archiveNote}"</p>
+            )}
+          </div>
+        )}
+
+        {/* History still shown if it exists */}
+        {history.length > 0 && (
+          <div className="border-t border-border pt-4 space-y-3">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+            >
+              <Activity className="w-4 h-4" />
+              Previous Activity ({history.length} update{history.length !== 1 ? "s" : ""})
+              {showHistory ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            </button>
+            <AnimatePresence initial={false}>
+              {showHistory && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.22 }} className="overflow-hidden">
+                  <div className="space-y-2 pt-1">
+                    {[...history].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((entry, i) => (
+                      <div key={i} className="flex gap-3 bg-secondary/40 border border-border/50 rounded-xl px-4 py-3">
+                        <div className="w-2 h-2 rounded-full bg-slate-400 mt-1.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm font-medium text-foreground">{entry.label}</p>
+                            <span className="text-[11px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600 rounded-full px-2 py-0.5 shrink-0">Stage {entry.stage}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">{entry.timestamp} · {entry.officerTag}</p>
+                          {entry.note && <p className="text-xs text-foreground/70 mt-1 italic">"{entry.note}"</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (currentStage === 0) {
     return (
