@@ -8,6 +8,7 @@ import {
   FileX, ArrowRight, UploadCloud, Clock, FolderX, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { DocumentChecklist, getDocList } from "@/components/DocumentChecklist";
 import {
   LoanProgressTracker,
@@ -151,6 +152,7 @@ export default function LookupBrief() {
   const [reopenUnlocked, setReopenUnlocked]         = useState(false);
   const [reopenMode, setReopenMode]                 = useState<"same" | "update" | null>(null);
   const [editableProfile, setEditableProfile]       = useState<Record<string, string>>({});
+  const [editableProfileNums, setEditableProfileNums] = useState<Record<string, number>>({});
   const [editableCreditScore, setEditableCreditScore] = useState("");
   const [editableEmploymentType, setEditableEmploymentType] = useState("");
   const [editableGoal, setEditableGoal]             = useState("");
@@ -339,6 +341,13 @@ export default function LookupBrief() {
     setEditableCreditScore(result.creditScore ?? "");
     setEditableEmploymentType(result.employmentType ?? "");
     setEditableGoal(result.goal ?? "buy");
+    // Parse dollar values for sliders
+    const nums: Record<string, number> = {};
+    Object.entries(result.profile).forEach(([k, v]) => {
+      const n = parseFloat(v.replace(/[$,\s]/g, "").replace(/[^0-9.]/g, ""));
+      if (!isNaN(n) && n > 0) nums[k] = n;
+    });
+    setEditableProfileNums(nums);
   };
 
   const handleReopenConfirm = () => {
@@ -356,14 +365,16 @@ export default function LookupBrief() {
       localStorage.setItem(STAGE_KEY_PREFIX + result.code, JSON.stringify(updatedStage));
       setStageData(updatedStage);
 
-      // If updating profile, save updated brief too
+      // If updating profile, save updated brief + recalculated estimate
       if (reopenMode === "update") {
+        const refreshedEstimate = computeLiveEstimate(editableGoal, editableCreditScore, editableProfileNums);
         const updatedBrief: StoredBrief = {
           ...result,
           creditScore: editableCreditScore,
           employmentType: editableEmploymentType,
           goal: editableGoal,
           profile: editableProfile,
+          estimate: { label: refreshedEstimate.label, low: refreshedEstimate.low, high: refreshedEstimate.high },
         };
         localStorage.setItem(BRIEF_KEY_PREFIX + result.code, JSON.stringify(updatedBrief));
         setResult(updatedBrief);
@@ -377,6 +388,77 @@ export default function LookupBrief() {
       setActiveTab("officer");
     } catch {}
   };
+
+  // ── Profile slider helpers ────────────────────────────────────────────────
+
+  const fmtCurrency = (n: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+
+  const SLIDER_FIELDS: Record<string, { min: number; max: number; step: number; label: string }> = {
+    "Annual Income":    { min: 0,      max: 500000,   step: 5000,  label: "Annual Income" },
+    "Monthly Debt":     { min: 0,      max: 10000,    step: 100,   label: "Monthly Debt" },
+    "Down Payment":     { min: 0,      max: 500000,   step: 5000,  label: "Down Payment" },
+    "Target Home Price":{ min: 50000,  max: 2000000,  step: 10000, label: "Target Home Price" },
+    "Home Value":       { min: 50000,  max: 2000000,  step: 10000, label: "Home Value" },
+    "Mortgage Balance": { min: 0,      max: 1500000,  step: 10000, label: "Mortgage Balance" },
+  };
+
+  const updateProfileNum = (key: string, num: number) => {
+    const formatted = SLIDER_FIELDS[key] ? fmtCurrency(num) : String(num);
+    setEditableProfileNums(prev => ({ ...prev, [key]: num }));
+    setEditableProfile(prev => ({ ...prev, [key]: formatted }));
+  };
+
+  const computeLiveEstimate = (
+    goal: string,
+    creditScore: string,
+    profileNums: Record<string, number>,
+  ): { label: string; low: string; high: string } => {
+    let cm = 1.0;
+    if (creditScore.startsWith("Poor"))      cm = 0.7;
+    else if (creditScore.startsWith("Fair")) cm = 0.8;
+    else if (creditScore.startsWith("Good")) cm = 0.9;
+    else if (creditScore.startsWith("Excellent")) cm = 1.1;
+
+    const income   = profileNums["Annual Income"]     ?? 0;
+    const debt     = profileNums["Monthly Debt"]      ?? 0;
+    const dp       = profileNums["Down Payment"]      ?? 0;
+    const hv       = profileNums["Target Home Price"] ?? profileNums["Home Value"] ?? 0;
+    const mb       = profileNums["Mortgage Balance"]  ?? 0;
+    const debtRed  = debt * 12 * 2;
+    const MARKET   = 6.75;
+
+    let label = "Estimate", low = 0, high = 0;
+    if (goal === "buy") {
+      const base = income * 3.5;
+      low  = Math.max(50000,  (base - debtRed + dp * 2) * cm * 0.9);
+      high = Math.max(60000,  (base - debtRed + dp * 2) * cm * 1.1);
+      label = "Estimated Affordability Range";
+    } else if (goal === "refinance") {
+      const rateDiff = Math.max(0, (7.5 - MARKET) / 100);
+      low  = Math.max(0, rateDiff * mb / 12 * 0.9);
+      high = Math.max(0, rateDiff * mb / 12 * 1.1);
+      label = "Estimated Monthly Savings";
+    } else if (goal === "cashout") {
+      high = Math.max(25000, hv * 0.8 - mb);
+      low  = 25000;
+      label = "Cash-Out Range";
+    } else if (goal === "reverse") {
+      high = Math.max(25000, hv * 0.5 - mb);
+      low  = 25000;
+      label = "Estimated Loan Proceeds Range";
+    } else if (goal === "second") {
+      const equity = Math.max(10000, hv * 0.85 - mb) * cm;
+      low  = equity * 0.5;
+      high = equity;
+      label = "Estimated HELOC/HELOAN Range";
+    }
+    return { label, low: fmtCurrency(low), high: fmtCurrency(high) };
+  };
+
+  const liveEstimate = reopenMode === "update" && reopenUnlocked
+    ? computeLiveEstimate(editableGoal, editableCreditScore, editableProfileNums)
+    : null;
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -674,21 +756,72 @@ export default function LookupBrief() {
                               </div>
                             </div>
 
-                            {/* Profile key/value pairs */}
+                            {/* Profile key/value pairs — sliders for dollar fields */}
                             {Object.keys(editableProfile).length > 0 && (
-                              <div className="space-y-2">
+                              <div className="space-y-4">
                                 <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Profile Details</label>
-                                {Object.entries(editableProfile).map(([label, value]) => (
-                                  <div key={label} className="flex items-center gap-3">
-                                    <span className="text-xs text-muted-foreground w-36 shrink-0">{label}</span>
-                                    <input
-                                      type="text"
-                                      value={value}
-                                      onChange={(e) => setEditableProfile(prev => ({ ...prev, [label]: e.target.value }))}
-                                      className="flex-1 h-9 rounded-lg border border-border bg-secondary/50 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                                    />
-                                  </div>
-                                ))}
+                                {Object.entries(editableProfile)
+                                  .filter(([lbl]) => lbl !== "Credit Score")
+                                  .map(([lbl, value]) => {
+                                    const cfg = SLIDER_FIELDS[lbl];
+                                    if (cfg) {
+                                      const num = editableProfileNums[lbl] ?? cfg.min;
+                                      return (
+                                        <div key={lbl} className="space-y-2">
+                                          <div className="flex items-center justify-between">
+                                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{lbl}</span>
+                                            <span className="text-base font-bold text-primary">{fmtCurrency(num)}</span>
+                                          </div>
+                                          <Slider
+                                            value={[Math.min(num, cfg.max)]}
+                                            min={cfg.min}
+                                            max={cfg.max}
+                                            step={cfg.step}
+                                            onValueChange={(v) => updateProfileNum(lbl, v[0])}
+                                          />
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs text-muted-foreground shrink-0">or type:</span>
+                                            <input
+                                              type="number"
+                                              value={num}
+                                              min={cfg.min}
+                                              max={cfg.max}
+                                              step={cfg.step}
+                                              onChange={(e) => {
+                                                const v = Math.max(cfg.min, Math.min(cfg.max, Number(e.target.value)));
+                                                updateProfileNum(lbl, v);
+                                              }}
+                                              className="w-36 h-8 rounded-lg border border-border bg-secondary/50 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                                            />
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                    // Non-dollar field (e.g. Age)
+                                    return (
+                                      <div key={lbl} className="flex items-center gap-3">
+                                        <span className="text-xs text-muted-foreground w-36 shrink-0">{lbl}</span>
+                                        <input
+                                          type="text"
+                                          value={value}
+                                          onChange={(e) => setEditableProfile(prev => ({ ...prev, [lbl]: e.target.value }))}
+                                          className="flex-1 h-9 rounded-lg border border-border bg-secondary/50 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                                        />
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            )}
+
+                            {/* Live estimate preview */}
+                            {liveEstimate && (
+                              <div className="bg-primary/5 border border-primary/15 rounded-xl px-4 py-3 space-y-1">
+                                <p className="text-xs font-semibold uppercase tracking-widest text-primary">Updated Estimate Preview</p>
+                                <div className="flex items-end justify-between gap-2">
+                                  <p className="text-xs text-muted-foreground">{liveEstimate.label}</p>
+                                  <p className="text-xl font-bold text-primary">{liveEstimate.low} – {liveEstimate.high}</p>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground">This estimate will be saved when you confirm reactivation.</p>
                               </div>
                             )}
 
