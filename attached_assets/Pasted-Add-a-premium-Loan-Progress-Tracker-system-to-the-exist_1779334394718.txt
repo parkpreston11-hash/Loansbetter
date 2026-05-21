@@ -1,0 +1,205 @@
+Add a premium “Loan Progress Tracker” system to the existing LoansBetter website inspired by the clarity and simplicity of USPS package tracking, Uber ride progress, and modern fintech dashboards.
+
+IMPORTANT:
+This is NOT meant to feel like a boring banking portal or outdated mortgage dashboard.
+
+The experience should feel:
+- modern
+- reassuring
+- transparent
+- easy to understand
+- calm and professional
+
+The goal is to reduce user anxiety during the mortgage process by clearly showing:
+- where they are
+- what is happening
+- what comes next
+- estimated timelines
+
+DO NOT redesign the whole site.
+Integrate this feature naturally into the current LoansBetter design system.
+
+OVERALL DESIGN STYLE:
+- Stripe / Apple / Rocket Mortgage inspired
+- Clean white and soft gray backgrounds
+- Rounded cards
+- Soft shadows
+- Smooth animations
+- Mobile-first responsive design
+- Subtle blue/green accent colors
+- Premium fintech aesthetic
+- Minimal but not flat or boring
+
+MAIN PAGE TITLE:
+“Track your mortgage progress with clarity.”
+
+SUBTEXT:
+“Understand where you are in the process, what’s happening now, and what to expect next.”
+
+--------------------------------------------------
+CORE FEATURE: INTERACTIVE LOAN TIMELINE
+--------------------------------------------------
+
+Create a modern horizontal or vertical progress tracker showing all major loan stages.
+
+STAGES:
+1. Application Submitted
+2. Documents Received
+3. Underwriting Review
+4. Conditional Approval
+5. Final Approval
+6. Escrow / Closing
+7. Funding Complete
+
+IMPORTANT:
+Each stage must:
+- visually light up when completed
+- show current active stage clearly
+- show locked/future stages subtly faded
+- include icons
+- have smooth transitions/animations
+
+CURRENT STAGE CARD:
+When user clicks or taps a stage, open a clean detailed card showing:
+
+1. Stage Name
+2. Simple explanation of what is happening
+3. Typical estimated timeline
+4. “What you can do now” section
+5. Reassurance message
+
+EXAMPLE:
+
+Stage:
+Underwriting Review
+
+What’s happening:
+“Your financial information and documents are currently being reviewed to verify eligibility and finalize loan details.”
+
+Typical timeline:
+“Usually completed within 2–5 business days.”
+
+What you can do now:
+“Keep requested documents accessible in case additional information is needed.”
+
+Reassurance:
+“This stage is a normal part of the mortgage process.”
+
+--------------------------------------------------
+ESTIMATED TIMELINE SYSTEM
+--------------------------------------------------
+
+Add a visual estimated completion section.
+
+Example:
+Estimated closing window:
+“May 28 – June 2”
+
+OR:
+Estimated time remaining:
+“3–5 business days”
+
+IMPORTANT:
+Include disclaimer text:
+“Timelines are estimates and may vary depending on documentation and lender processing.”
+
+Do NOT guarantee dates.
+
+--------------------------------------------------
+“WHAT HAPPENS NEXT” SECTION
+--------------------------------------------------
+
+Under every stage, include:
+
+“What happens next”
+
+Example:
+“Once underwriting review is completed, your application may move into conditional approval.”
+
+Purpose:
+Reduce uncertainty and increase user confidence.
+
+--------------------------------------------------
+PROGRESS CONFIDENCE INDICATOR
+--------------------------------------------------
+
+Add a small confidence/progress clarity indicator.
+
+Example:
+- Early Stage
+- Mid Process
+- Near Completion
+
+Include a short explanation:
+“You are progressing normally through the mortgage process.”
+
+IMPORTANT:
+Avoid red warning/error styles unless necessary.
+
+The experience should feel reassuring, not stressful.
+
+--------------------------------------------------
+MICRO INTERACTIONS
+--------------------------------------------------
+
+Add subtle premium interactions:
+- timeline nodes animate softly
+- hover effects on stages
+- smooth progress fill animation
+- fade-in details panel
+- soft card elevation on interaction
+
+DO NOT:
+- use flashy motion
+- use aggressive alerts
+- create a gaming-style interface
+
+Goal:
+Premium fintech experience.
+
+--------------------------------------------------
+OPTIONAL FEATURE: SAVE & RETURN
+--------------------------------------------------
+
+Add a small section:
+“Save your progress and revisit anytime.”
+
+Optional button:
+“Email my progress summary”
+
+Purpose:
+Increase return visits and user retention.
+
+--------------------------------------------------
+MOBILE EXPERIENCE (VERY IMPORTANT)
+--------------------------------------------------
+
+The tracker must work perfectly on phones.
+
+Mobile version should:
+- stack cleanly
+- remain readable
+- keep timeline intuitive
+- avoid clutter
+
+--------------------------------------------------
+FINAL USER EXPERIENCE GOAL
+--------------------------------------------------
+
+When users interact with this tracker, they should feel:
+
+“I understand exactly where I am, what’s happening, and what comes next.”
+
+The experience should reduce stress and build trust through clarity and transparency.
+
+The system should feel like:
+- a modern fintech product
+- not a confusing bank portal
+- not an outdated mortgage dashboard
+
+Focus on:
+- clarity
+- reassurance
+- simplicity
+- trust
+- guidance
