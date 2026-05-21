@@ -198,7 +198,7 @@ export default function NewHome() {
               { icon: ShieldCheck, title: "No pressure to apply or commit", desc: "This is a tool for understanding, not a place where anyone will push you toward a decision." },
               { icon: CreditCard, title: "We work for you", desc: "LoansBetter is independent. We help you understand your options clearly and give you the best option for your scenario." },
               { icon: SlidersHorizontal, title: "You stay in full control", desc: "At every step, the next move is yours. Nothing happens without your explicit say-so." },
-              { icon: Info, title: "This is a tool", desc: "LoansBetter is a clarity and information tool. We help you understand and give you the best option for your scenario." },
+              { icon: Info, title: "This is a tool", desc: "LoansBetter is a clarity and information tool. We use advanced scenario analysis to surface the mortgage options best matched to your financial profile." },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex gap-4 p-4 rounded-2xl hover:bg-secondary/60 transition-colors duration-200">
                 <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
