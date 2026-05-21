@@ -287,7 +287,7 @@ export default function NewHome() {
           <div className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
             {[
               { icon: MessageCircle, title: "No confusing financial jargon", desc: "Everything is written in plain language you can actually understand without a finance degree.", delay: 0 },
-              { icon: HeartHandshake, title: "No pushy sales process", desc: "No quotas, no pressure calls, no one chasing a commission. Just honest, clear information.", delay: 0.07 },
+              { icon: HeartHandshake, title: "No pushy sales process", desc: "No quotas, no pressure calls. Just honest, clear information.", delay: 0.07 },
               { icon: Layers, title: "Clear, step-by-step understanding", desc: "We break complex scenarios into simple steps so you always know exactly where you stand.", delay: 0.14 },
               { icon: Lightbulb, title: "Built to help you decide before you act", desc: "Knowledge first, always. What you do with it is entirely and completely up to you.", delay: 0.21 },
             ].map(({ icon: Icon, title, desc, delay }) => (
