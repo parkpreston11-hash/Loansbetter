@@ -1,7 +1,8 @@
 import { Link, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMortgage, LOAN_TERM_RATES } from "@/context/MortgageContext";
+import { useMortgage } from "@/context/MortgageContext";
+import { useMortgageRates } from "@/hooks/useMortgageRates";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import {
@@ -109,6 +110,7 @@ export default function Results() {
     scenarioAdjustments, setScenarioAdjustments,
   } = useMortgage();
 
+  const { rates: liveRates, updatedAt: ratesUpdatedAt, loading: ratesLoading } = useMortgageRates();
   const [adjustedEstimate, setAdjustedEstimate] = useState(estimateResult);
   const [showComparison, setShowComparison] = useState(false);
   const [showScenario, setShowScenario] = useState(false);
@@ -301,10 +303,15 @@ export default function Results() {
                   {/* Buy-only: monthly payment by term */}
                   {isBuy && answers.homeValue > 0 && (
                     <div className="bg-secondary/30 border border-border rounded-2xl p-5">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">Monthly payment by loan term</p>
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs font-semibold uppercase tracking-widest text-primary">Monthly payment by loan term</p>
+                        {!ratesLoading && ratesUpdatedAt && ratesUpdatedAt !== "fallback" && (
+                          <p className="text-[10px] text-muted-foreground">Rates as of {ratesUpdatedAt}</p>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground mb-4">Based on {fmt(answers.homeValue)} home price with {fmt(answers.downPayment)} down.</p>
                       <div className="grid sm:grid-cols-2 gap-3">
-                        {Object.entries(LOAN_TERM_RATES).map(([key, info]) => {
+                        {Object.entries(liveRates).map(([key, info]) => {
                           const loan = Math.max(0, answers.homeValue - answers.downPayment);
                           const mr = info.rate / 100 / 12;
                           const n = key.startsWith("15") ? 180 : 360;
@@ -320,7 +327,7 @@ export default function Results() {
                           );
                         })}
                       </div>
-                      <p className="text-[10px] text-muted-foreground mt-3">* Principal and interest only. Taxes, insurance, and HOA not included.</p>
+                      <p className="text-[10px] text-muted-foreground mt-3">* Principal and interest only. Taxes, insurance, and HOA not included. Rates sourced from Freddie Mac via FRED.</p>
                     </div>
                   )}
 
