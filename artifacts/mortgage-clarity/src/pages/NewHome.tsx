@@ -23,6 +23,7 @@ const LOAN_TYPES = [
     img: "/images/loan-buy.jpg",
     href: "/start",
     delay: 0,
+    wide: false,
   },
   {
     icon: RefreshCw,
@@ -31,6 +32,7 @@ const LOAN_TYPES = [
     img: "/images/loan-refi.jpg",
     href: "/start",
     delay: 0.07,
+    wide: false,
   },
   {
     icon: DollarSign,
@@ -39,6 +41,7 @@ const LOAN_TYPES = [
     img: "/images/loan-cashout.jpg",
     href: "/start",
     delay: 0.14,
+    wide: false,
   },
   {
     icon: BarChart3,
@@ -47,6 +50,16 @@ const LOAN_TYPES = [
     img: "/images/loan-reverse.jpg",
     href: "/start",
     delay: 0.21,
+    wide: false,
+  },
+  {
+    icon: Layers,
+    title: "2nd Mortgages",
+    sub: "Access your home equity with a HELOAN (fixed lump sum) or HELOC (flexible credit line) — without touching your first mortgage.",
+    img: "/images/lifestyle.jpg",
+    href: "/start",
+    delay: 0.28,
+    wide: true,
   },
 ];
 
@@ -230,10 +243,10 @@ export default function NewHome() {
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {LOAN_TYPES.map(({ icon: Icon, title, sub, img, href, delay }) => (
-            <motion.div key={title} {...fadeUp(delay)}>
+          {LOAN_TYPES.map(({ icon: Icon, title, sub, img, href, delay, wide }) => (
+            <motion.div key={title} {...fadeUp(delay)} className={wide ? "sm:col-span-2 lg:col-span-4" : ""}>
               <Link href={href}>
-                <div className="group relative rounded-3xl overflow-hidden h-[420px] cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500">
+                <div className={`group relative rounded-3xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 ${wide ? "h-[260px]" : "h-[420px]"}`}>
 
                   {/* Photo */}
                   <img

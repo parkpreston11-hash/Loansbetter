@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   ArrowRight, Shield, CheckCircle2, TrendingDown, Home as HomeIcon,
   RefreshCw, DollarSign, Users, Star, BarChart3, Clock, Lock,
-  ChevronRight, Sparkles, BadgeCheck,
+  ChevronRight, Sparkles, BadgeCheck, Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactDialog } from "@/components/ContactDialog";
@@ -168,25 +168,30 @@ export default function Home() {
             {
               icon: HomeIcon, title: "Buy a Home",
               desc: "See how much home you can afford and estimate your monthly payment before you ever talk to a lender.",
-              delay: 0,
+              delay: 0, wide: false,
             },
             {
               icon: RefreshCw, title: "Refinance",
               desc: "Find out if refinancing could lower your rate, shrink your payment, or help you pay off your home faster.",
-              delay: 0.07,
+              delay: 0.07, wide: false,
             },
             {
               icon: DollarSign, title: "Cash-Out Refi",
               desc: "Unlock the equity in your home to consolidate debt, fund renovations, or cover major expenses.",
-              delay: 0.14,
+              delay: 0.14, wide: false,
             },
             {
               icon: BarChart3, title: "Reverse Mortgage",
               desc: "Explore how homeowners 62+ can convert home equity into tax-free income — with zero monthly payments.",
-              delay: 0.21,
+              delay: 0.21, wide: false,
             },
-          ].map(({ icon: Icon, title, desc, delay }) => (
-            <motion.div key={title} {...fadeUp(delay)}>
+            {
+              icon: Layers, title: "2nd Mortgages",
+              desc: "Access your home equity with a HELOAN (fixed lump sum) or HELOC (flexible credit line) — without changing your first mortgage rate.",
+              delay: 0.28, wide: true,
+            },
+          ].map(({ icon: Icon, title, desc, delay, wide }) => (
+            <motion.div key={title} {...fadeUp(delay)} className={wide ? "sm:col-span-2 lg:col-span-4" : ""}>
               <Link href="/start">
                 <div className="group relative bg-card border border-border rounded-2xl p-7 h-full flex flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/8 hover:border-primary/30">
                   <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
