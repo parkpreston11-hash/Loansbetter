@@ -1,0 +1,109 @@
+Redesign ONLY the front page (homepage) of an existing website called “LoansBetter”.
+
+GOAL:
+Make the homepage feel extremely clean, modern, and trustworthy while increasing user confidence and engagement. The design should feel like a premium fintech product (Stripe / Apple / Rocket Mortgage level), but still simple and easy to understand.
+
+IMPORTANT:
+- Do NOT change backend logic or other pages
+- Only improve the homepage layout, styling, and content structure
+- Keep existing functionality intact
+- Focus on visual hierarchy, trust, and clarity
+
+DESIGN GOALS (PSYCHOLOGY-BASED):
+The homepage must instantly create:
+1. Trust (professional, credible, safe)
+2. Clarity (easy to understand in 3–5 seconds)
+3. Confidence (user feels “this is legitimate”)
+4. Engagement (user wants to click and explore)
+
+UI STYLE:
+- Clean modern fintech aesthetic
+- White / soft gray background with subtle gradients
+- Blue or green accent color (used sparingly for buttons and highlights)
+- Rounded corners, soft shadows (not flat design)
+- High-quality stock-style images (homes, families, modern housing, subtle abstract finance visuals)
+- Good spacing (whitespace is important)
+- Smooth hover animations and subtle motion effects
+
+HOMEPAGE STRUCTURE:
+
+1. HERO SECTION (MOST IMPORTANT)
+- Left aligned text, right side image OR soft background image overlay
+- Headline (large, bold, simple):
+  “Smarter mortgage decisions, made simple.”
+- Subheadline:
+  “Explore your mortgage options, understand real scenarios, and make confident financial decisions — all in one place.”
+- Buttons:
+  Primary button: “Get Started”
+  Secondary button: “Explore Tools”
+
+VISUAL:
+- Add a soft, professional image (not cheesy stock photo)
+  Examples: modern home exterior, calm family home scene, abstract financial UI mockup
+- Add subtle gradient overlay so text is readable
+
+2. TRUST STRIP (DIRECTLY UNDER HERO)
+Small icons + short text:
+- “Independent mortgage tools platform”
+- “No pressure or obligation”
+- “Clear, data-driven insights”
+- “Designed for homeowners & buyers”
+
+Make this section visually light but very polished.
+
+3. FEATURE PREVIEW CARDS (IMPORTANT FOR DEPTH)
+Create 3 modern cards with icons:
+
+- Refinance Insights
+- Purchase Planning
+- Cash-Out Scenarios
+
+Each card:
+- subtle shadow
+- hover lift effect
+- short description (1–2 lines max)
+
+4. HOW IT WORKS SECTION (SIMPLE + VISUAL)
+Use 3 steps with icons:
+1. Enter your information
+2. Explore mortgage scenarios
+3. Make confident decisions
+
+Add simple horizontal flow line or arrows between steps for visual guidance.
+
+5. SOCIAL PROOF / TRUST SECTION
+Add a clean section:
+- “Built to help users understand mortgage decisions clearly”
+- Optional placeholder for reviews/testimonials (if none exist yet, use generic placeholders like “User feedback coming soon” — do NOT fabricate real reviews)
+
+6. FINAL CTA SECTION (STRONG BUT CLEAN)
+Headline:
+“Ready to explore your mortgage options with clarity?”
+
+Button:
+“Start Exploring”
+
+Make background slightly darker or gradient to separate it visually.
+
+7. FOOTER
+Minimal:
+- Privacy Policy
+- Terms
+- Contact
+
+DESIGN DETAILS:
+- Use modern font (Inter or similar)
+- Strong spacing system (do not crowd content)
+- Subtle animations (fade-in on scroll, hover effects)
+- Ensure mobile responsiveness is perfect
+- Avoid flat/boring design — everything should feel slightly elevated and premium
+
+OVERALL FEEL:
+- Premium fintech product
+- Calm and trustworthy
+- Simple but not empty
+- Visually engaging without clutter
+
+FINAL RESULT:
+A first-time visitor should immediately think:
+“This looks like a real financial platform. It’s clean, trustworthy, and easy to use.”

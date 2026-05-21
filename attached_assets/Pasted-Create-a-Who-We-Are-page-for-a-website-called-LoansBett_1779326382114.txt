@@ -1,0 +1,104 @@
+Create a “Who We Are” page for a website called “LoansBetter”.
+
+GOAL:
+This page should build deep trust, credibility, and emotional confidence in users. It should make visitors feel like LoansBetter is a calm, independent, and helpful platform designed to simplify mortgage decisions.
+
+The tone should feel like a mix of Stripe (trustworthy fintech), Apple (minimal and premium), and a financial education platform (clear and grounded).
+
+IMPORTANT DESIGN RULES:
+- Clean, modern layout with lots of whitespace
+- Simple typography (Inter or similar)
+- Soft neutral colors (white, light gray, subtle blue accents)
+- No aggressive marketing language
+- No hype, no sales pressure
+- Mobile-first responsive design
+- Subtle animations (fade-in sections, soft hover effects)
+- Professional but warm tone
+
+PSYCHOLOGICAL GOAL:
+The page should create:
+1. Trust (this feels legitimate and safe)
+2. Transparency (nothing hidden, everything clear)
+3. Calm confidence (no pressure or manipulation)
+4. Relatability (built for real people making big decisions)
+
+PAGE STRUCTURE:
+
+1. HERO SECTION
+Headline:
+“Built to make mortgage decisions clearer.”
+
+Subheadline:
+“LoansBetter is an independent platform designed to help people understand their mortgage options through simple tools, clear explanations, and scenario-based insights.”
+
+Visual:
+- Soft abstract background or calm image (modern home, sunlight, neutral tones)
+- Minimal and professional
+
+2. “WHO WE ARE” SECTION
+Write in simple, human tone:
+
+“We built LoansBetter because mortgage decisions are often overwhelming and unclear. Too many people are forced to rely on confusing explanations, complicated numbers, or rushed decisions.”
+
+“Our goal is simple: to make mortgage understanding more accessible, transparent, and calm.”
+
+3. “WHAT WE BELIEVE” SECTION (IMPORTANT FOR TRUST)
+
+Use 3–5 belief cards:
+
+- Clarity over complexity
+- Transparency builds trust
+- Informed decisions lead to better outcomes
+- No pressure, no confusion
+- Tools should empower, not overwhelm
+
+Each belief should have a short 1–2 sentence explanation.
+
+4. “WHAT WE DO” SECTION
+
+Explain clearly:
+
+“LoansBetter provides simple tools that help users explore mortgage scenarios, understand financial tradeoffs, and make more confident decisions.”
+
+“We do not issue loans or act as a bank. We focus on helping users understand their options clearly before making financial commitments.”
+
+5. “WHY IT EXISTS” SECTION (EMOTIONAL TRUST BUILDER)
+
+Write:
+
+“Most financial decisions are made under stress, confusion, or time pressure. We believe people deserve better clarity before making one of the most important financial choices of their lives.”
+
+“This platform exists to reduce confusion, not add to it.”
+
+6. TRUST & TRANSPARENCY SECTION
+
+Simple statement:
+- Independent platform
+- No lending decisions
+- No hidden agendas
+- Built for education and clarity
+
+Keep tone calm, not defensive.
+
+7. FINAL CLOSING SECTION (VERY IMPORTANT)
+
+Headline:
+“Clarity leads to confidence.”
+
+Short message:
+“When people understand their options clearly, they make better decisions. That is the foundation of LoansBetter.”
+
+Button:
+“Explore Tools”
+
+DESIGN STYLE:
+- Minimal, premium fintech layout
+- Section-based scrolling (clear separation between ideas)
+- Subtle background variations per section (light gray / white)
+- Soft shadows on cards
+- Smooth fade-in animations
+- High readability
+
+OVERALL FEEL:
+A visitor should leave this page thinking:
+“This is not a sales site. This is a calm, trustworthy platform that actually helps people understand mortgages.”

@@ -6,6 +6,7 @@ import { MortgageProvider } from "@/context/MortgageContext";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import Home from "@/pages/Home";
 import Landing from "@/pages/Landing";
 import Start from "@/pages/Start";
 import Questions from "@/pages/Questions";
@@ -24,7 +25,8 @@ function Router() {
       <Navbar />
       <main className="flex-1">
         <Switch>
-          <Route path="/" component={Landing} />
+          <Route path="/" component={Home} />
+          <Route path="/overview" component={Landing} />
           <Route path="/start" component={Start} />
           <Route path="/questions" component={Questions} />
           <Route path="/results" component={Results} />
