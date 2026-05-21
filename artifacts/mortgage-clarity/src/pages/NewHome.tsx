@@ -196,7 +196,7 @@ export default function NewHome() {
           <div className="grid sm:grid-cols-2 gap-4">
             {[
               { icon: ShieldCheck, title: "No pressure to apply or commit", desc: "This is a tool for understanding, not a place where anyone will push you toward a decision." },
-              { icon: CreditCard, title: "Your information stays private", desc: "What you share here is only used to help you. We never sell your data or share it without your permission." },
+              { icon: CreditCard, title: "We work for you, not lenders", desc: "LoansBetter is independent. We help you understand your options clearly — not steer you toward any particular product or lender." },
               { icon: SlidersHorizontal, title: "You stay in full control", desc: "At every step, the next move is yours. Nothing happens without your explicit say-so." },
               { icon: Info, title: "This is a tool", desc: "LoansBetter is a clarity and information tool. We help you understand — not commit." },
             ].map(({ icon: Icon, title, desc }) => (
