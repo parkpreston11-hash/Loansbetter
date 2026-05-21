@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMortgage, CreditScoreRange, EmploymentType, LoanType, RefiGoal, PropertyType, LoanPurpose, CURRENT_MARKET_RATE } from "@/context/MortgageContext";
+import { useMortgage, CreditScoreRange, EmploymentType, LoanType, RefiGoal, PropertyType, LoanPurpose, SecondMortgageType, CURRENT_MARKET_RATE } from "@/context/MortgageContext";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -67,9 +67,23 @@ export default function Questions() {
   const isReverse = selectedMortgageType === "reverse";
   const isCashout = selectedMortgageType === "cashout";
   const isRefi = selectedMortgageType === "refinance";
-  const totalSteps = isRefi || isReverse ? 9 : isCashout ? 8 : 7;
+  const isSecond = selectedMortgageType === "second";
+  const totalSteps = isRefi || isReverse ? 9 : isCashout ? 8 : isSecond ? 8 : 7;
 
   const isStepComplete = (s: number): boolean => {
+    if (isSecond) {
+      switch (s) {
+        case 0: return (answers.fullName ?? "").trim().length > 0;
+        case 1: return !!answers.secondType;
+        case 2: return answers.income > 0;
+        case 3: return true; // monthly debt $0 valid
+        case 4: return !!answers.creditScore;
+        case 5: return answers.homeValue > 0;
+        case 6: return true; // balance can be $0
+        case 7: return !!answers.employmentType;
+        default: return true;
+      }
+    }
     switch (s) {
       case 0:
         return (answers.fullName ?? "").trim().length > 0;
@@ -120,7 +134,9 @@ export default function Questions() {
     }
 
     // Credit score gate (all loan types EXCEPT reverse mortgage)
-    if (step === 3 && answers.creditScore === "500 or below" && !isReverse) {
+    // For second mortgages, credit score is at step 4
+    const creditStep = isSecond ? 4 : 3;
+    if (step === creditStep && answers.creditScore === "500 or below" && !isReverse) {
       setDisqualReason(
         "Unfortunately we're unable to assist with a credit score of 500 or below. Most loan programs require a minimum score of 501. Consider working with a credit counselor to improve your score, then come back — we'd love to help."
       );
@@ -154,6 +170,18 @@ export default function Questions() {
         const pct = answers.loanType === "va" ? "90%" : "80%";
         setDisqualReason(
           `Based on your home value (${fmt.format(answers.homeValue)}) and mortgage balance (${fmt.format(answers.mortgageBalance)}), your maximum cash-out would be ${fmt.format(Math.max(0, maxCashOut))} (${pct} LTV) — below our $25,000 minimum. Unfortunately we can't help with this scenario.`
+        );
+        return;
+      }
+    }
+
+    // 2nd mortgage equity gate: after mortgage balance entered (step 6 for second)
+    if (step === 6 && isSecond) {
+      const equity = answers.homeValue * 0.85 - answers.mortgageBalance;
+      if (equity < 10000) {
+        const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+        setDisqualReason(
+          `Based on your home value (${fmt.format(answers.homeValue)}) and mortgage balance (${fmt.format(answers.mortgageBalance)}), your available equity is approximately ${fmt.format(Math.max(0, equity))} — below the minimum needed for a second mortgage. You'll need at least 15% equity to qualify.`
         );
         return;
       }
@@ -215,6 +243,39 @@ export default function Questions() {
         );
 
       case 1:
+        if (isSecond) {
+          const secondOpts: { value: SecondMortgageType; label: string; sub: string; detail: string }[] = [
+            { value: "heloan", label: "HELOAN", sub: "Home Equity Loan — Fixed Rate", detail: "Receive a one-time lump sum at a fixed interest rate. Predictable payments, great for large one-time expenses like home improvements or debt consolidation." },
+            { value: "heloc",  label: "HELOC",  sub: "Home Equity Line of Credit — Flexible", detail: "Revolving credit line you draw from as needed. Variable rate, works like a credit card backed by your home equity — ideal for ongoing or unpredictable expenses." },
+          ];
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                Which type of second mortgage interests you?
+              </h2>
+              <p className="text-muted-foreground">Both use your home equity — the difference is how you receive and repay the funds.</p>
+              <div className="flex flex-col gap-4 py-4">
+                {secondOpts.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => updateAnswer("secondType", opt.value)}
+                    className={`w-full p-5 rounded-2xl border text-left transition-all ${
+                      answers.secondType === opt.value
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border bg-card hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="font-bold text-xl text-foreground">{opt.label}</span>
+                      <span className="text-sm font-medium text-primary bg-primary/10 rounded-full px-2.5 py-0.5">{opt.sub}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{opt.detail}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        }
         if (isReverse) {
           return (
             <div className="space-y-8">
@@ -265,6 +326,28 @@ export default function Questions() {
         );
 
       case 2:
+        if (isSecond) {
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                What's your approximate annual household income?
+              </h2>
+              <div className="py-4 space-y-6">
+                <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.income)}</div>
+                <CurrencyInput value={answers.income} onChange={(v) => updateAnswer("income", v)} />
+                <Slider
+                  value={[Math.min(answers.income, 15000000)]}
+                  min={0} max={15000000} step={50000}
+                  onValueChange={(val) => updateAnswer("income", val[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>$0</span><span>$15M+</span>
+                </div>
+              </div>
+            </div>
+          );
+        }
         if (isReverse) {
           return (
             <div className="space-y-8">
@@ -316,6 +399,29 @@ export default function Questions() {
         );
 
       case 3: {
+        if (isSecond) {
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                What are your current monthly debt payments?
+              </h2>
+              <p className="text-muted-foreground">Include car loans, student loans, and credit card minimums.</p>
+              <div className="py-4 space-y-6">
+                <div className="text-4xl font-bold text-primary text-center">{formatCurrency(answers.monthlyDebt)}</div>
+                <CurrencyInput value={answers.monthlyDebt} onChange={(v) => updateAnswer("monthlyDebt", v)} />
+                <Slider
+                  value={[Math.min(answers.monthlyDebt, 500000)]}
+                  min={0} max={500000} step={500}
+                  onValueChange={(val) => updateAnswer("monthlyDebt", val[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>$0</span><span>$500k+</span>
+                </div>
+              </div>
+            </div>
+          );
+        }
         const ranges: CreditScoreRange[] = ["500 or below", "501–579", "580–619", "620–679", "680–739", "740 or above"];
         return (
           <div className="space-y-8">
@@ -351,6 +457,40 @@ export default function Questions() {
       }
 
       case 4:
+        if (isSecond) {
+          const ranges4: CreditScoreRange[] = ["500 or below", "501–579", "580–619", "620–679", "680–739", "740 or above"];
+          return (
+            <div className="space-y-8">
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
+                What is your credit score range?
+              </h2>
+              <div className="inline-flex items-center gap-2 text-xs text-muted-foreground bg-secondary/60 rounded-full px-4 py-2">
+                <svg className="w-3.5 h-3.5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 01.75 12c0 6.627 5.373 12 12 12s12-5.373 12-12c0-2.461-.741-4.748-2.01-6.647" /></svg>
+                No credit check happens here — ever. This is for estimation only.
+              </div>
+              <div className="flex flex-col gap-3 py-4">
+                {ranges4.map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => updateAnswer("creditScore", range)}
+                    className={`w-full p-4 rounded-xl border text-left text-lg transition-all ${
+                      answers.creditScore === range
+                        ? range === "500 or below"
+                          ? "border-destructive bg-destructive/5 ring-1 ring-destructive"
+                          : "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border bg-card hover:border-primary/50"
+                    }`}
+                  >
+                    {range}
+                    {range === "500 or below" && (
+                      <span className="ml-2 text-sm text-destructive font-normal">(minimum not met)</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        }
         if (isReverse) {
           return (
             <div className="space-y-8">
@@ -455,11 +595,11 @@ export default function Questions() {
         );
 
       case 5:
-        if (isBuy || isCashout) {
+        if (isBuy || isCashout || isSecond) {
           return (
             <div className="space-y-8">
               <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
-                {isCashout ? "What is your home currently worth?" : "What home price range are you targeting?"}
+                {isBuy ? "What home price range are you targeting?" : "What is your home currently worth?"}
               </h2>
               {isCashout && <p className="text-muted-foreground">Use your best estimate — a recent appraisal or online estimate works great.</p>}
               <div className="py-4 space-y-6">
@@ -598,8 +738,8 @@ export default function Questions() {
         );
 
       case 6: {
-        // Cashout: mortgage balance; Refi: home value; Reverse: property type; Buy: employment (final)
-        if (isCashout) {
+        // Second: mortgage balance; Cashout: mortgage balance; Refi: home value; Reverse: property type; Buy: employment (final)
+        if (isSecond || isCashout) {
           return (
             <div className="space-y-8">
               <h2 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
@@ -722,8 +862,8 @@ export default function Questions() {
       }
 
       case 7: {
-        // Buy/Cashout: employment; Refi: refi goal; Reverse: loan purpose
-        if (isCashout) {
+        // Second/Buy/Cashout: employment; Refi: refi goal; Reverse: loan purpose
+        if (isSecond || isCashout) {
           const empOpts: { value: EmploymentType; label: string; sub: string; icon: React.ReactNode }[] = [
             { value: "employed",      label: "Employed",      sub: "I receive a W-2 from an employer.",                   icon: <Briefcase className="w-6 h-6" /> },
             { value: "self-employed", label: "Self-Employed", sub: "I own a business, freelance, or receive 1099 income.", icon: <Building2 className="w-6 h-6" /> },

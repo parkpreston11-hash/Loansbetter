@@ -52,6 +52,7 @@ function getTypeLabel(type: string) {
   if (type === "refinance") return "Refinance";
   if (type === "cashout") return "Cash-Out Refinance";
   if (type === "reverse") return "Reverse Mortgage";
+  if (type === "second") return "2nd Mortgage";
   return type;
 }
 

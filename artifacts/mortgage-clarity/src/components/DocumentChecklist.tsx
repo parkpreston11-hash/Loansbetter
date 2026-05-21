@@ -164,6 +164,53 @@ export function getDocList(
     return [...base, ...refiDocs];
   }
 
+  if (mortgageType === "second") {
+    return [
+      {
+        id: "photo-id",
+        title: "Government-Issued Photo ID",
+        desc: "Driver's license, passport, or state ID.",
+        required: true,
+        tip: "Both sides if it's a driver's license.",
+      },
+      ...coreIncomeDocs,
+      ...selfEmployedDocs,
+      {
+        id: "bank-statements",
+        title: "Bank Statements (Last 2 Months)",
+        desc: "2 months of statements for all accounts — checking, savings, investments.",
+        required: true,
+        tip: "All pages, even blank ones.",
+      },
+      {
+        id: "mortgage-statement",
+        title: "Most Recent Mortgage Statement",
+        desc: "Your most recent first mortgage statement showing balance and payment history.",
+        required: true,
+        tip: "This is the statement from your first mortgage lender.",
+      },
+      {
+        id: "insurance-dec",
+        title: "Homeowner's Insurance Declaration Page",
+        desc: "The 'dec page' from your current homeowner's insurance policy.",
+        required: true,
+      },
+      {
+        id: "property-tax",
+        title: "Property Tax Bill",
+        desc: "Most recent property tax bill or statement.",
+        required: true,
+      },
+      {
+        id: "heloc-purpose",
+        title: "Statement of Intended Use of Funds",
+        desc: "A brief description of what you plan to use the funds for.",
+        required: false,
+        tip: "Not always required but helps the loan officer tailor your options.",
+      },
+    ];
+  }
+
   if (mortgageType === "reverse") {
     return [
       {

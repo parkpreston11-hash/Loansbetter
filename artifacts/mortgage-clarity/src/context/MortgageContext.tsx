@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-export type MortgageType = "buy" | "refinance" | "cashout" | "reverse" | null;
+export type MortgageType = "buy" | "refinance" | "cashout" | "reverse" | "second" | null;
 export type CreditScoreRange = "500 or below" | "501–579" | "580–619" | "620–679" | "680–739" | "740 or above";
 
 export type EmploymentType = "employed" | "self-employed" | "retired" | "";
@@ -16,6 +16,8 @@ export const LOAN_TERM_RATES: Record<string, { rate: number; label: string; desc
   "15-fixed": { rate: 6.125, label: "15-Year Fixed",     description: "Pay off faster and save on interest. Higher monthly payment." },
   "15-arm":   { rate: 5.875, label: "15-Year ARM",       description: "Lowest starting rate. Adjusts after initial fixed period." },
 };
+
+export type SecondMortgageType = "heloan" | "heloc" | "";
 
 export interface Answers {
   fullName: string;
@@ -34,6 +36,7 @@ export interface Answers {
   refiGoal: RefiGoal;
   propertyType: PropertyType;
   loanPurpose: LoanPurpose;
+  secondType: SecondMortgageType;
 }
 
 export const CURRENT_MARKET_RATE = 6.875;
@@ -100,6 +103,7 @@ const defaultAnswers: Answers = {
   refiGoal: "",
   propertyType: "",
   loanPurpose: "",
+  secondType: "",
 };
 
 const defaultAdjustments: ScenarioAdjustments = {
@@ -237,6 +241,13 @@ export function MortgageProvider({ children }: { children: ReactNode }) {
     } else if (selectedMortgageType === "reverse") {
       const maxCashOut = Math.max(25000, homeValue * 0.5 - mortgageBalance);
       setEstimateResult({ low: 25000, high: maxCashOut, type: "Estimated Loan Proceeds Range" });
+    } else if (selectedMortgageType === "second") {
+      const equity = Math.max(10000, homeValue * 0.85 - mortgageBalance) * creditMultiplier;
+      if (answers.secondType === "heloc") {
+        setEstimateResult({ low: equity * 0.5, high: equity, type: "Estimated HELOC Credit Line" });
+      } else {
+        setEstimateResult({ low: equity * 0.7, high: equity, type: "Estimated HELOAN Amount" });
+      }
     }
   };
 

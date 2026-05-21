@@ -97,11 +97,23 @@ const REVERSE_STAGES: StageDef[] = [
   { n: 9,  label: "Funds Disbursed",             Icon: Sparkles,      description: "Your reverse mortgage funds have been disbursed as selected — lump sum, line of credit, or monthly payments.", timeline: "Complete ✓", action: "Continue paying property taxes, homeowner's insurance, and maintenance as required by your loan agreement.", reassurance: "Congratulations — your reverse mortgage is complete. Your home is working for you.", next: "No monthly mortgage payment is required while you live in the home as your primary residence." },
 ];
 
+const SECOND_STAGES: StageDef[] = [
+  { n: 1,  label: "Application Submitted",        Icon: ClipboardList, description: "Your second mortgage application (HELOAN/HELOC) has been received and is being reviewed.", timeline: "1–2 business days", action: "Confirm all application details are accurate. Watch for any follow-up requests via email.", reassurance: "You've started the process — your file is in the system.", next: "Your credit and income will be formally reviewed." },
+  { n: 2,  label: "Income + Credit Verification", Icon: BadgeCheck,    description: "Your income, employment, and credit history are being verified to confirm qualification for a second mortgage.", timeline: "2–3 business days", action: "Have your pay stubs, W-2s, and bank statements ready for upload if requested.", reassurance: "Verification is standard and moves quickly for most borrowers.", next: "A property appraisal may be ordered to confirm available equity." },
+  { n: 3,  label: "Property Appraisal",           Icon: Building2,     description: "A licensed appraiser is assessing your property's current market value to confirm your available equity.", timeline: "3–7 business days", action: "Ensure your home is accessible and presentable for the appraiser's visit.", reassurance: "The appraisal confirms how much equity you can access.", next: "With appraisal complete, your full file moves to underwriting." },
+  { n: 4,  label: "Underwriting Review",          Icon: Search,        description: "An underwriter is reviewing your complete file — income, credit, property value, and equity position.", timeline: "2–5 business days", action: "Respond promptly to any conditions or document requests to avoid delays.", reassurance: "Underwriting is thorough by design. Most second mortgage files move through without major issues.", next: "Upon underwriting completion, your loan approval will be issued." },
+  { n: 5,  label: "Loan Approval",                Icon: CheckCircle2,  description: "Your second mortgage has been approved. The loan amount and terms are confirmed.", timeline: "1–2 business days", action: "Review your final loan terms. Confirm the approved amount with your loan officer.", reassurance: "Approval means your equity access is confirmed — you're nearly there.", next: "Your Closing Disclosure will be issued with final terms and costs." },
+  { n: 6,  label: "Closing Disclosure Issued",    Icon: FileText,      description: "Your official Closing Disclosure details all final loan terms, interest rate, and closing costs.", timeline: "3 business days (required)", action: "Review your Closing Disclosure carefully. Confirm all terms and flag any questions for your loan officer.", reassurance: "You have 3 days to review before signing — take your time.", next: "You will sign your closing documents to finalize the loan." },
+  { n: 7,  label: "Signing / Closing",            Icon: KeyRound,      description: "You are signing your second mortgage closing documents, formally establishing the loan.", timeline: "Same day", action: "Bring a valid government-issued ID. Review every document before signing.", reassurance: "Closing is guided and professionally managed — your team will walk you through it.", next: "After a 3-day right of rescission, your funds will be released." },
+  { n: 8,  label: "Funds Released / Line Active", Icon: DollarSign,    description: "Your HELOAN funds have been disbursed, or your HELOC line of credit is now open and available to draw.", timeline: "Complete ✓", action: "For HELOAN: confirm fund receipt in your account. For HELOC: review your draw terms and available credit limit.", reassurance: "Congratulations — your home equity is now working for you.", next: "Make payments according to your new loan terms. Your first payment is typically due within 30–60 days." },
+];
+
 export const STAGE_MAP: Record<string, StageDef[]> = {
   buy:       BUY_STAGES,
   refinance: REFINANCE_STAGES,
   cashout:   CASHOUT_STAGES,
   reverse:   REVERSE_STAGES,
+  second:    SECOND_STAGES,
 };
 
 export function getStages(loanType: string): StageDef[] {

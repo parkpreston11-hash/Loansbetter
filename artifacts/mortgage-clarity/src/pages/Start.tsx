@@ -1,7 +1,7 @@
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { useMortgage, MortgageType } from "@/context/MortgageContext";
-import { Home, TrendingDown, HandCoins, Building2, Phone } from "lucide-react";
+import { Home, TrendingDown, HandCoins, Building2, Phone, Layers } from "lucide-react";
 import { ContactDialog } from "@/components/ContactDialog";
 
 export default function Start() {
@@ -123,6 +123,21 @@ export default function Start() {
             </div>
             <h3 className="text-2xl font-semibold mb-2">Reverse Mortgage</h3>
             <p className="text-muted-foreground">For homeowners 62+ looking to convert home equity into tax-free income.</p>
+          </motion.button>
+
+          <motion.button
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.35 }}
+            onClick={() => handleSelect("second")}
+            data-testid="button-second-mortgage"
+            className="group relative flex flex-col p-8 bg-card border border-border hover:border-primary/50 hover:shadow-md rounded-2xl text-left transition-all hover:-translate-y-1 md:col-span-2"
+          >
+            <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <Layers className="w-6 h-6" />
+            </div>
+            <h3 className="text-2xl font-semibold mb-2">2nd Mortgages</h3>
+            <p className="text-muted-foreground">Access your home equity with a HELOAN (fixed lump sum) or HELOC (flexible credit line) — without touching your first mortgage.</p>
           </motion.button>
         </div>
 
