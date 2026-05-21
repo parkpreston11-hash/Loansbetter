@@ -107,6 +107,15 @@ export default function LookupBrief() {
   const [activeTab, setActiveTab] = useState<"officer" | "progress" | "client">("officer");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Always re-read localStorage when switching to Progress so partial uploads
+  // made in the same or a previous session are reflected immediately.
+  const switchTab = (tab: "officer" | "progress" | "client") => {
+    if (tab === "progress" && result) {
+      setDocsStatus(checkDocs(result.code, result.goal ?? "buy", result.creditScore ?? "", result.employmentType ?? ""));
+    }
+    setActiveTab(tab);
+  };
+
   // Stage state
   const [stageData, setStageData] = useState<StoredStageData>({
     currentStage: 0, loanType: "buy", history: [], updatedAt: "",
@@ -318,7 +327,7 @@ export default function LookupBrief() {
                   return (
                     <button
                       key={tab}
-                      onClick={() => setActiveTab(tab)}
+                      onClick={() => switchTab(tab)}
                       className={`flex-1 flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-semibold transition-all ${
                         activeTab === tab
                           ? "bg-card shadow-sm text-foreground border border-border"
@@ -695,7 +704,7 @@ export default function LookupBrief() {
 
                         {/* CTA */}
                         <button
-                          onClick={() => setActiveTab("client")}
+                          onClick={() => switchTab("client")}
                           className="w-full h-14 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.01] active:scale-[0.98]"
                         >
                           <UploadCloud className="w-5 h-5" />
