@@ -220,17 +220,17 @@ export default function Landing() {
             >
               <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-4">Why LoansBetter</p>
               <h2 className="font-serif text-4xl md:text-5xl font-semibold text-foreground mb-6 leading-tight">
-                Not a bank.<br />Not a lead generator.
+                On your side,<br />before you sign.
               </h2>
               <p className="text-lg text-muted-foreground mb-12 leading-relaxed">
-                The mortgage process is intentionally complex. We built LoansBetter to give you back the advantage — real knowledge, before the conversation starts.
+                Most people enter the mortgage process at a disadvantage — and lenders know it. LoansBetter changes that. We give you the numbers, the knowledge, and the confidence to walk into any conversation already ahead.
               </p>
 
               <div className="space-y-8">
                 {[
-                  { icon: Shield, title: "Private by design", desc: "No data sold, no spam calls. Your information stays with you." },
-                  { icon: CheckCircle2, title: "Plain English, always", desc: "Every term, every number explained the way a trusted friend would." },
-                  { icon: HeartHandshake, title: "Your guide, not a salesperson", desc: "We're here to educate. You decide when and who to talk to." },
+                  { icon: Shield, title: "You stay in control", desc: "No data sold. No spam calls. No pressure. Your information never leaves without your permission." },
+                  { icon: CheckCircle2, title: "Clarity that leads to better outcomes", desc: "Informed borrowers get better rates, better terms, and fewer surprises at closing. That's the advantage we're here to give you." },
+                  { icon: HeartHandshake, title: "Real guidance, zero obligation", desc: "We help you understand your options completely before you ever speak to a lender. You decide the next step — always." },
                 ].map((item, i) => (
                   <motion.div
                     key={i}
