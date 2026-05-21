@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload, CheckCircle2, Clock, ChevronDown, ChevronUp,
-  FileImage, X, Eye, Folder, Send, PartyPopper
+  FileImage, X, Eye, Folder, Send, PartyPopper, Phone
 } from "lucide-react";
 import { sendNotification } from "../lib/notify";
 
@@ -629,13 +629,24 @@ export function DocumentChecklist({
                       key="done"
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3"
+                      className="space-y-3"
                     >
-                      <PartyPopper className="w-5 h-5 text-green-600 shrink-0" />
-                      <div>
-                        <p className="text-sm font-semibold text-green-800">Documents sent to your loan officer!</p>
-                        <p className="text-xs text-green-700 mt-0.5">They'll follow up with next steps.</p>
+                      <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                        <PartyPopper className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-semibold text-green-800">Documents submitted successfully!</p>
+                          <p className="text-xs text-green-700 mt-0.5 leading-relaxed">
+                            Talk to a loan officer who will review your paperwork and activate your progress tracker. They'll use their code to confirm receipt and begin your file.
+                          </p>
+                        </div>
                       </div>
+                      <a
+                        href="tel:7144944172"
+                        className="flex items-center justify-center gap-2 w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        <Phone className="w-4 h-4" />
+                        Call Loan Officer — 714-494-4172
+                      </a>
                     </motion.div>
                   ) : (
                     <motion.button

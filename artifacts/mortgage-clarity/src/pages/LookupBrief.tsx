@@ -5,7 +5,7 @@ import {
   ArrowLeft, Search, Phone, ShieldCheck, BookOpen,
   AlertCircle, User, Briefcase, Mail, Lock, Unlock,
   Activity, CheckCircle2, Save, MessageSquare,
-  FileX, ArrowRight, UploadCloud,
+  FileX, ArrowRight, UploadCloud, Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DocumentChecklist, getDocList } from "@/components/DocumentChecklist";
@@ -649,75 +649,97 @@ export default function LookupBrief() {
                       </div>
                     </div>
 
-                    {docsStatus.complete ? (
+                    {stageData.currentStage > 0 ? (
                       <LoanProgressTracker
                         currentStage={stageData.currentStage}
                         loanType={stageData.loanType || result.goal}
                         history={stageData.history}
                         updatedAt={stageData.updatedAt || undefined}
                       />
-                    ) : (
-                      /* ── Document gate ───────────────────────────────── */
+                    ) : docsStatus.uploaded > 0 ? (
+                      /* ── Under review state ──────────────────────────── */
                       <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="space-y-6"
                       >
-                        {/* Lock hero */}
                         <div className="flex flex-col items-center text-center py-6 space-y-4">
-                          <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center">
-                            <Lock className="w-7 h-7 text-amber-600" />
+                          <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center">
+                            <Clock className="w-7 h-7 text-blue-600" />
                           </div>
                           <div className="space-y-2 max-w-sm">
                             <p className="font-semibold text-lg text-foreground">
-                              Progress tracking unlocks after documents are received
+                              Documents received — under review
                             </p>
                             <p className="text-sm text-muted-foreground leading-relaxed">
-                              Your loan officer needs all required documents on file before your loan progress timeline begins. Upload your documents to unlock this section.
+                              Talk to a loan officer who will review your paperwork and activate your progress tracker. Your loan officer will use their code to confirm receipt and begin your file.
                             </p>
                           </div>
                         </div>
 
-                        {/* Progress bar */}
-                        {docsStatus.totalRequired > 0 && (
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium text-foreground">Required documents received</span>
-                              <span className={`font-bold ${docsStatus.uploaded === docsStatus.totalRequired ? "text-emerald-600" : "text-amber-600"}`}>
-                                {docsStatus.uploaded} / {docsStatus.totalRequired}
-                              </span>
-                            </div>
-                            <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${(docsStatus.uploaded / docsStatus.totalRequired) * 100}%` }}
-                                transition={{ duration: 0.7, ease: "easeOut" }}
-                                className="h-full bg-amber-500 rounded-full"
-                              />
-                            </div>
+                        {/* Doc summary */}
+                        <div className="bg-blue-50/60 border border-blue-200/60 rounded-2xl p-5 space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-foreground">Documents submitted</span>
+                            <span className="font-bold text-blue-700">
+                              {docsStatus.uploaded} / {docsStatus.totalRequired} required
+                            </span>
                           </div>
-                        )}
-
-                        {/* Missing docs list */}
-                        {docsStatus.missing.length > 0 && (
-                          <div className="border border-border rounded-2xl overflow-hidden">
-                            <div className="bg-secondary/60 px-5 py-3 border-b border-border">
-                              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                                Still needed ({docsStatus.missing.length})
-                              </p>
-                            </div>
-                            <ul className="divide-y divide-border/50">
-                              {docsStatus.missing.map((name) => (
-                                <li key={name} className="flex items-center gap-3 px-5 py-3">
-                                  <FileX className="w-4 h-4 text-amber-500 shrink-0" />
-                                  <span className="text-sm text-foreground">{name}</span>
-                                </li>
-                              ))}
-                            </ul>
+                          <div className="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${docsStatus.totalRequired > 0 ? (docsStatus.uploaded / docsStatus.totalRequired) * 100 : 100}%` }}
+                              transition={{ duration: 0.7, ease: "easeOut" }}
+                              className="h-full bg-blue-500 rounded-full"
+                            />
                           </div>
-                        )}
+                          <p className="text-xs text-blue-700/80">
+                            Your loan officer will confirm all documents on their end.
+                          </p>
+                        </div>
 
-                        {/* CTA */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <button
+                            onClick={() => switchTab("client")}
+                            className="flex-1 h-12 rounded-full border border-border bg-card font-medium text-sm flex items-center justify-center gap-2 hover:bg-secondary transition-colors"
+                          >
+                            <UploadCloud className="w-4 h-4" />
+                            Add More Documents
+                          </button>
+                          <a
+                            href="tel:7144944172"
+                            className="flex-1 h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.01] active:scale-[0.98]"
+                          >
+                            <Phone className="w-4 h-4" />
+                            Call Loan Officer
+                          </a>
+                        </div>
+
+                        <p className="text-xs text-center text-muted-foreground">
+                          Your loan officer will activate your progress tracker after reviewing your submission.
+                        </p>
+                      </motion.div>
+                    ) : (
+                      /* ── No docs yet ─────────────────────────────────── */
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="space-y-6"
+                      >
+                        <div className="flex flex-col items-center text-center py-6 space-y-4">
+                          <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center">
+                            <Lock className="w-7 h-7 text-muted-foreground" />
+                          </div>
+                          <div className="space-y-2 max-w-sm">
+                            <p className="font-semibold text-lg text-foreground">
+                              Upload your documents to get started
+                            </p>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              Submit your documents, then a loan officer will review them and activate your progress tracker.
+                            </p>
+                          </div>
+                        </div>
+
                         <button
                           onClick={() => switchTab("client")}
                           className="w-full h-14 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.01] active:scale-[0.98]"
@@ -726,10 +748,6 @@ export default function LookupBrief() {
                           Upload Documents
                           <ArrowRight className="w-4 h-4" />
                         </button>
-
-                        <p className="text-xs text-center text-muted-foreground">
-                          Optional documents are not required. Once all required documents are uploaded, your progress tracker will unlock automatically.
-                        </p>
                       </motion.div>
                     )}
                   </motion.div>
