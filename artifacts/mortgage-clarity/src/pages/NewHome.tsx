@@ -175,7 +175,6 @@ export default function NewHome() {
             {[
               { icon: BadgeCheck, label: "Licensed & independent" },
               { icon: Lock,       label: "No data sold — ever" },
-              { icon: Shield,     label: "No credit pull required" },
               { icon: Phone,      label: "714-494-4172" },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-2.5 font-medium">
