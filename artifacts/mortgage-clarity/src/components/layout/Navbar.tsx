@@ -16,7 +16,7 @@ export function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
-          <Link href="/overview" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             How it works
           </Link>
           <Link href="/questions" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
@@ -24,6 +24,9 @@ export function Navbar() {
           </Link>
           <Link href="/learn" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Learn
+          </Link>
+          <Link href="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            Who We Are
           </Link>
         </div>
 
@@ -44,14 +47,17 @@ export function Navbar() {
           </SheetTrigger>
           <SheetContent side="right">
             <div className="flex flex-col gap-6 mt-8">
-              <Link href="/overview" className="text-lg font-medium text-foreground">
+              <Link href="/how-it-works" className="text-lg font-medium text-foreground">
                 How it works
               </Link>
               <Link href="/questions" className="text-lg font-medium text-foreground">
                 Calculate
               </Link>
-              <Link href="/start" className="text-lg font-medium text-foreground">
+              <Link href="/learn" className="text-lg font-medium text-foreground">
                 Learn
+              </Link>
+              <Link href="/about" className="text-lg font-medium text-foreground">
+                Who We Are
               </Link>
               <Link href="/start" className="inline-flex mt-4 items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-12 px-6">
                 Get Started
