@@ -35,13 +35,25 @@ export default function Handoff() {
     }
   });
   const [clientName, setClientName] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").name ?? ""; } catch { return ""; }
+    try {
+      const saved = JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").name ?? "";
+      if (saved) return saved;
+      return JSON.parse(localStorage.getItem("lb_pending_contact") ?? "{}").name ?? "";
+    } catch { return ""; }
   });
   const [clientEmail, setClientEmail] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").email ?? ""; } catch { return ""; }
+    try {
+      const saved = JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").email ?? "";
+      if (saved) return saved;
+      return JSON.parse(localStorage.getItem("lb_pending_contact") ?? "{}").email ?? "";
+    } catch { return ""; }
   });
   const [clientPhone, setClientPhone] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").phone ?? ""; } catch { return ""; }
+    try {
+      const saved = JSON.parse(localStorage.getItem(CONTACT_KEY_PREFIX + code) ?? "{}").phone ?? "";
+      if (saved) return saved;
+      return JSON.parse(localStorage.getItem("lb_pending_contact") ?? "{}").phone ?? "";
+    } catch { return ""; }
   });
   const [summarySubmitted, setSummarySubmitted] = useState(false);
 
