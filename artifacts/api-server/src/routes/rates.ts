@@ -16,7 +16,7 @@ interface RatesPayload {
 }
 
 let cache: { data: RatesPayload; fetchedAt: number } | null = null;
-const CACHE_TTL_MS = 6 * 24 * 60 * 60 * 1000; // 6 days
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours — picks up new FRED data same day it publishes
 
 const FALLBACK: RatesPayload = {
   rates: {

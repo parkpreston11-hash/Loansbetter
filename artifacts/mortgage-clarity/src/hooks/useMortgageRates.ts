@@ -22,7 +22,7 @@ const FALLBACK_RATES: Record<string, RateEntry> = {
 };
 
 const CACHE_KEY = "lb_rates_cache";
-const CACHE_TTL_MS = 6 * 24 * 60 * 60 * 1000;
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 function loadLocalCache(): { rates: Record<string, RateEntry>; updatedAt: string; source: string } | null {
   try {
