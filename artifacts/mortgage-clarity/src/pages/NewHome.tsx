@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import {
   ArrowRight, Home as HomeIcon, RefreshCw, DollarSign,
-  BarChart3, BadgeCheck, Lock, Shield, Users, ChevronRight,
+  BarChart3, BadgeCheck, Lock, Shield, Users, ChevronRight, Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -18,55 +18,102 @@ export default function NewHome() {
     <div className="bg-background text-foreground overflow-x-hidden">
 
       {/* ─── HERO ─────────────────────────────────────────────────── */}
-      <section className="relative min-h-[88vh] flex items-center">
-        {/* subtle gradient blobs */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/4 via-background to-background pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[700px] h-[500px] bg-primary/6 rounded-full blur-3xl pointer-events-none translate-x-1/4 -translate-y-1/3" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-primary/4 rounded-full blur-3xl pointer-events-none -translate-x-1/3 translate-y-1/3" />
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/4 via-background to-background pointer-events-none" />
 
-        <div className="relative container mx-auto px-4 md:px-8 py-24 text-center">
-          <motion.div {...fadeUp(0)} className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 text-primary text-xs font-semibold px-4 py-2 rounded-full mb-8">
-            <BadgeCheck className="w-3.5 h-3.5" />
-            Free · No credit check · No obligation
-          </motion.div>
+        <div className="relative container mx-auto px-4 md:px-8 py-20 grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-          <motion.h1 {...fadeUp(0.07)} className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.04] tracking-tight mb-7 max-w-4xl mx-auto">
-            Smarter mortgage decisions,{" "}
-            <span className="text-primary italic">made simple.</span>
-          </motion.h1>
+          {/* Left — copy */}
+          <div>
+            <motion.div {...fadeUp(0)} className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 text-primary text-xs font-semibold px-4 py-2 rounded-full mb-8">
+              <BadgeCheck className="w-3.5 h-3.5" />
+              Free · No credit check · No obligation
+            </motion.div>
 
-          <motion.p {...fadeUp(0.14)} className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-12 max-w-2xl mx-auto">
-            Explore your mortgage options, understand real scenarios, and make confident
-            financial decisions — all in one place.
-          </motion.p>
+            <motion.h1 {...fadeUp(0.07)} className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.04] tracking-tight mb-7">
+              Smarter mortgage decisions,{" "}
+              <span className="text-primary italic">made simple.</span>
+            </motion.h1>
 
-          <motion.div {...fadeUp(0.21)} className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button asChild size="lg" className="rounded-full h-14 px-12 text-base font-semibold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">
-              <Link href="/start">
-                Get Started
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="rounded-full h-14 px-10 text-base font-medium border-border hover:border-primary/40 hover:bg-primary/4 transition-all">
-              <Link href="/learn">
-                Explore Tools
-              </Link>
-            </Button>
-          </motion.div>
+            <motion.p {...fadeUp(0.14)} className="text-xl text-muted-foreground leading-relaxed mb-10 max-w-lg">
+              Explore your mortgage options, understand real scenarios, and make confident
+              financial decisions — all in one place.
+            </motion.p>
 
-          {/* Quick stats */}
-          <motion.div {...fadeUp(0.28)} className="flex flex-wrap gap-8 md:gap-16 justify-center text-center">
-            {[
-              { val: "< 10", label: "Questions to your estimate" },
-              { val: "$0", label: "Cost, ever" },
-              { val: "0%", label: "Pressure or obligation" },
-            ].map((s) => (
-              <div key={s.label}>
-                <p className="font-serif text-3xl font-bold text-primary mb-1">{s.val}</p>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">{s.label}</p>
+            <motion.div {...fadeUp(0.21)} className="flex flex-col sm:flex-row gap-4 mb-12">
+              <Button asChild size="lg" className="rounded-full h-14 px-10 text-base font-semibold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-transform">
+                <Link href="/start">
+                  Get Started
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="rounded-full h-14 px-9 text-base font-medium border-border hover:border-primary/40 hover:bg-primary/4 transition-all">
+                <Link href="/learn">Explore Tools</Link>
+              </Button>
+            </motion.div>
+
+            <motion.div {...fadeUp(0.28)} className="flex flex-wrap gap-8">
+              {[
+                { val: "< 10", label: "Questions to your estimate" },
+                { val: "$0", label: "Cost, ever" },
+                { val: "0%", label: "Pressure or obligation" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <p className="font-serif text-2xl font-bold text-primary mb-0.5">{s.val}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{s.label}</p>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Right — real photo with floating details */}
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
+            className="hidden md:block relative"
+          >
+            {/* Photo container */}
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[580px]">
+              <img
+                src="/images/hero-home.jpg"
+                alt="Beautiful modern home"
+                className="w-full h-full object-cover"
+              />
+              {/* Gradient overlay — bottom fade for text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/5 to-transparent" />
+              {/* Bottom overlay text */}
+              <div className="absolute bottom-0 left-0 right-0 p-8">
+                <p className="text-white/70 text-xs uppercase tracking-widest mb-1">Serving Orange County, CA</p>
+                <p className="text-white font-semibold text-lg">714-494-4172</p>
               </div>
-            ))}
+            </div>
+
+            {/* Accent stripe on right edge */}
+            <div className="absolute top-10 -right-1.5 w-1.5 h-24 bg-primary rounded-full opacity-80" />
+
+            {/* Floating badge — top right */}
+            <div className="absolute -top-4 right-6 bg-primary text-primary-foreground rounded-2xl px-4 py-2.5 shadow-lg flex items-center gap-2 text-sm font-semibold">
+              <Clock className="w-3.5 h-3.5" />
+              Est. in 2 min
+            </div>
+
+            {/* Floating qualify card — bottom left */}
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              className="absolute -bottom-6 -left-8 bg-card border border-border rounded-2xl shadow-xl px-5 py-4 flex items-center gap-3"
+            >
+              <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
+                <BadgeCheck className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Based on your profile</p>
+                <p className="text-sm font-bold text-foreground">Likely to qualify</p>
+              </div>
+            </motion.div>
           </motion.div>
+
         </div>
       </section>
 

@@ -72,60 +72,59 @@ export default function Home() {
             </motion.div>
           </div>
 
-          {/* Right — floating estimate card */}
+          {/* Right — real photo + floating estimate card */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
             className="hidden md:block relative"
           >
-            {/* Main card */}
-            <div className="relative bg-card border border-border rounded-3xl shadow-2xl p-8">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <p className="text-xs font-semibold tracking-widest text-primary uppercase">Your Estimate</p>
-                  <p className="text-4xl font-bold text-foreground mt-1">$2,847<span className="text-lg font-normal text-muted-foreground">/mo</span></p>
-                  <p className="text-sm text-muted-foreground mt-1">30-Year Fixed · 6.75% APR</p>
-                </div>
-                <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center">
-                  <HomeIcon className="w-7 h-7 text-primary" />
-                </div>
-              </div>
+            {/* Background photo */}
+            <div className="relative rounded-3xl overflow-hidden h-[520px] shadow-2xl">
+              <img
+                src="/images/how-it-works-bg.jpg"
+                alt="Modern neighborhood"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            </div>
 
-              <div className="space-y-3 mb-6">
+            {/* Floating estimate card — centered on photo */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[60%] w-[280px] bg-card/95 backdrop-blur-sm border border-border rounded-3xl shadow-2xl p-6">
+              <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-1">Your Estimate</p>
+              <p className="text-3xl font-bold text-foreground">$2,847<span className="text-base font-normal text-muted-foreground">/mo</span></p>
+              <p className="text-xs text-muted-foreground mt-0.5 mb-4">30-Year Fixed · 6.75% APR</p>
+              <div className="space-y-2.5 mb-4">
                 {[
                   ["Home Price", "$450,000"],
                   ["Down Payment", "$90,000 (20%)"],
                   ["Loan Amount", "$360,000"],
                 ].map(([label, val]) => (
-                  <div key={label} className="flex justify-between text-sm">
+                  <div key={label} className="flex justify-between text-xs">
                     <span className="text-muted-foreground">{label}</span>
                     <span className="font-semibold text-foreground">{val}</span>
                   </div>
                 ))}
               </div>
-
-              <div className="border-t border-border pt-5">
-                <div className="flex items-center gap-2 text-emerald-600 text-sm font-semibold">
-                  <BadgeCheck className="w-4 h-4" />
-                  Likely to qualify based on your profile
-                </div>
+              <div className="border-t border-border pt-4 flex items-center gap-2 text-emerald-600 text-xs font-semibold">
+                <BadgeCheck className="w-3.5 h-3.5" />
+                Likely to qualify
               </div>
             </div>
 
-            {/* Floating badge */}
+            {/* Floating badge top */}
             <div className="absolute -top-4 -right-4 bg-primary text-primary-foreground rounded-2xl px-4 py-2.5 text-sm font-semibold shadow-lg flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" />
               Est. in 2 min
             </div>
 
-            {/* Second mini card */}
+            {/* Floating "save" card bottom */}
             <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              className="absolute -bottom-6 -left-8 bg-card border border-border rounded-2xl shadow-lg px-5 py-4 flex items-center gap-3"
+              className="absolute -bottom-6 -left-8 bg-card border border-border rounded-2xl shadow-xl px-5 py-4 flex items-center gap-3"
             >
-              <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center">
+              <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
                 <TrendingDown className="w-5 h-5 text-emerald-600" />
               </div>
               <div>

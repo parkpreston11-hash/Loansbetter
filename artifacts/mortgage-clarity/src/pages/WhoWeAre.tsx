@@ -38,26 +38,59 @@ export default function WhoWeAre() {
       </section>
 
       {/* ─── WHO WE ARE ───────────────────────────────────────────── */}
-      <section className="container mx-auto px-4 md:px-8 py-20 max-w-3xl">
-        <motion.div {...fadeUp(0)} className="space-y-6 text-lg text-foreground leading-relaxed">
-          <p>
-            We built LoansBetter because mortgage decisions are often overwhelming and
-            unclear. Too many people are forced to rely on confusing explanations,
-            complicated numbers, or rushed conversations with people who have a
-            financial incentive to close as fast as possible.
-          </p>
-          <p className="text-muted-foreground">
-            Most people walk into the mortgage process at a disadvantage — and they
-            know it. That feeling of not fully understanding something before signing
-            your name to it is exactly what we're here to change.
-          </p>
-          <p>
-            Our goal is simple:{" "}
-            <span className="font-semibold text-primary">
-              make mortgage understanding more accessible, transparent, and calm.
-            </span>
-          </p>
-        </motion.div>
+      <section className="container mx-auto px-4 md:px-8 py-20">
+        <div className="grid md:grid-cols-2 gap-16 items-center max-w-5xl mx-auto">
+
+          {/* Left — story */}
+          <motion.div {...fadeUp(0)} className="space-y-6 text-lg text-foreground leading-relaxed">
+            <p className="text-xs font-semibold tracking-widest text-primary uppercase">Our story</p>
+            <p>
+              We built LoansBetter because mortgage decisions are often overwhelming and
+              unclear. Too many people are forced to rely on confusing explanations,
+              complicated numbers, or rushed conversations with people who have a
+              financial incentive to close as fast as possible.
+            </p>
+            <p className="text-muted-foreground">
+              Most people walk into the mortgage process at a disadvantage — and they
+              know it. That feeling of not fully understanding something before signing
+              your name to it is exactly what we're here to change.
+            </p>
+            <p>
+              Our goal is simple:{" "}
+              <span className="font-semibold text-primary">
+                make mortgage understanding more accessible, transparent, and calm.
+              </span>
+            </p>
+          </motion.div>
+
+          {/* Right — photo */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="relative hidden md:block"
+          >
+            <div className="relative rounded-3xl overflow-hidden h-[440px] shadow-xl">
+              <img
+                src="/images/who-we-are.jpg"
+                alt="Homeowners feeling confident about their decision"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+            </div>
+            {/* Accent strip on left edge */}
+            <div className="absolute top-12 -left-1.5 w-1.5 h-20 bg-primary rounded-full opacity-70" />
+            {/* Floating quote */}
+            <div className="absolute -bottom-5 -right-6 bg-card border border-border rounded-2xl shadow-lg p-5 max-w-[220px]">
+              <p className="text-sm text-foreground font-medium leading-snug italic">
+                "Built for you, not for lenders."
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">— LoansBetter</p>
+            </div>
+          </motion.div>
+
+        </div>
       </section>
 
       {/* ─── DIVIDER ──────────────────────────────────────────────── */}
