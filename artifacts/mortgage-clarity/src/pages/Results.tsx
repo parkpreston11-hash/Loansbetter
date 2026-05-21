@@ -463,7 +463,7 @@ export default function Results() {
             </div>
             <p className="text-xs text-muted-foreground mb-4">Based on {fmt(answers.homeValue)} home price with {fmt(answers.downPayment)} down.</p>
             <div className="grid sm:grid-cols-2 gap-3">
-              {Object.entries(liveRates).map(([key, info]) => {
+              {Object.entries(liveRates).filter(([key]) => key.endsWith("-fixed")).map(([key, info]) => {
                 const loan = Math.max(0, answers.homeValue - answers.downPayment);
                 const mr = info.rate / 100 / 12;
                 const n = key.startsWith("15") ? 180 : 360;
