@@ -122,7 +122,7 @@ export default function NewHome() {
               className="rounded-full h-14 px-10 text-base font-semibold bg-white text-primary hover:bg-white/95 shadow-2xl hover:scale-[1.02] transition-transform"
             >
               <Link href="/start">
-                Get Started Free
+                Free Pre-Approval
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
             </Button>
@@ -145,7 +145,7 @@ export default function NewHome() {
           >
             {[
               { val: "< 10", label: "Questions to your estimate" },
-              { val: "$0", label: "Cost Pre-Approval" },
+              { val: "$0", label: "No Cost Option" },
               { val: "0%", label: "Pressure or obligation" },
             ].map((s) => (
               <div key={s.label} className="text-center">
