@@ -148,6 +148,12 @@ export default function LookupBrief() {
   const [showReopenPanel, setShowReopenPanel]       = useState(false);
   const [reopenCodeInput, setReopenCodeInput]       = useState("");
   const [reopenCodeError, setReopenCodeError]       = useState("");
+  const [reopenUnlocked, setReopenUnlocked]         = useState(false);
+  const [reopenMode, setReopenMode]                 = useState<"same" | "update" | null>(null);
+  const [editableProfile, setEditableProfile]       = useState<Record<string, string>>({});
+  const [editableCreditScore, setEditableCreditScore] = useState("");
+  const [editableEmploymentType, setEditableEmploymentType] = useState("");
+  const [editableGoal, setEditableGoal]             = useState("");
 
   // Doc gate state
   const [docsStatus, setDocsStatus] = useState<DocsStatus>({
@@ -185,6 +191,12 @@ export default function LookupBrief() {
     setShowReopenPanel(false);
     setReopenCodeInput("");
     setReopenCodeError("");
+    setReopenUnlocked(false);
+    setReopenMode(null);
+    setEditableProfile({});
+    setEditableCreditScore("");
+    setEditableEmploymentType("");
+    setEditableGoal("");
   };
 
   const handleLookup = () => {
@@ -301,13 +313,38 @@ export default function LookupBrief() {
   };
 
   // ── Reopen closed file ────────────────────────────────────────────────────
-  const handleReopen = () => {
+  const CREDIT_OPTIONS = [
+    "Poor (below 580)", "Fair (580–669)", "Good (670–739)",
+    "Very Good (740–799)", "Excellent (800+)",
+  ];
+  const EMPLOYMENT_OPTIONS = ["employed", "self-employed", "retired", "other"];
+  const GOAL_OPTIONS = [
+    { value: "buy",       label: "Buy a Home" },
+    { value: "refinance", label: "Refinance" },
+    { value: "cashout",   label: "Cash-Out Refinance" },
+    { value: "reverse",   label: "Reverse Mortgage" },
+    { value: "second",    label: "2nd Mortgage" },
+  ];
+
+  const handleReopenUnlock = () => {
     if (!result) return;
     if (reopenCodeInput.trim().toUpperCase().replace(/[-\s]/g, "") !== LO_OVERRIDE_CODE) {
       setReopenCodeError("Incorrect code. Please try again.");
       return;
     }
-    const updated: StoredStageData = {
+    setReopenUnlocked(true);
+    setReopenCodeError("");
+    // Pre-fill editable fields from existing brief
+    setEditableProfile({ ...result.profile });
+    setEditableCreditScore(result.creditScore ?? "");
+    setEditableEmploymentType(result.employmentType ?? "");
+    setEditableGoal(result.goal ?? "buy");
+  };
+
+  const handleReopenConfirm = () => {
+    if (!result) return;
+    // Reopen stage data
+    const updatedStage: StoredStageData = {
       ...stageData,
       archived: false,
       archiveReason: undefined,
@@ -316,9 +353,25 @@ export default function LookupBrief() {
       archiveTimestamp: undefined,
     };
     try {
-      localStorage.setItem(STAGE_KEY_PREFIX + result.code, JSON.stringify(updated));
-      setStageData(updated);
+      localStorage.setItem(STAGE_KEY_PREFIX + result.code, JSON.stringify(updatedStage));
+      setStageData(updatedStage);
+
+      // If updating profile, save updated brief too
+      if (reopenMode === "update") {
+        const updatedBrief: StoredBrief = {
+          ...result,
+          creditScore: editableCreditScore,
+          employmentType: editableEmploymentType,
+          goal: editableGoal,
+          profile: editableProfile,
+        };
+        localStorage.setItem(BRIEF_KEY_PREFIX + result.code, JSON.stringify(updatedBrief));
+        setResult(updatedBrief);
+      }
+
       setShowReopenPanel(false);
+      setReopenUnlocked(false);
+      setReopenMode(null);
       setReopenCodeInput("");
       setReopenCodeError("");
       setActiveTab("officer");
@@ -473,12 +526,16 @@ export default function LookupBrief() {
               {/* ── Loan Officer Tool ──────────────────────────────────── */}
               <div className="border-t border-border pt-6 space-y-3">
                 <button
-                  onClick={() => { setShowReopenPanel(!showReopenPanel); setReopenCodeInput(""); setReopenCodeError(""); }}
+                  onClick={() => {
+                    const next = !showReopenPanel;
+                    setShowReopenPanel(next);
+                    if (!next) { setReopenUnlocked(false); setReopenMode(null); setReopenCodeInput(""); setReopenCodeError(""); }
+                  }}
                   className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 transition-colors text-left"
                 >
                   <div className="flex items-center gap-2.5">
                     <div className="w-6 h-6 rounded-full bg-amber-200 flex items-center justify-center shrink-0">
-                      {showReopenPanel
+                      {reopenUnlocked
                         ? <Unlock className="w-3.5 h-3.5 text-amber-700" />
                         : <Lock className="w-3.5 h-3.5 text-amber-700" />}
                     </div>
@@ -496,40 +553,154 @@ export default function LookupBrief() {
                       transition={{ duration: 0.22 }}
                       className="overflow-hidden"
                     >
-                      <div className="space-y-3 pt-1 pb-1">
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          Enter your override code to reopen this file. All previous stages and history will be restored.
-                        </p>
-                        <div className="flex gap-2">
-                          <input
-                            type="password"
-                            value={reopenCodeInput}
-                            onChange={(e) => { setReopenCodeInput(e.target.value); setReopenCodeError(""); }}
-                            onKeyDown={(e) => e.key === "Enter" && handleReopen()}
-                            placeholder="Override code"
-                            className="flex-1 h-11 rounded-xl border border-border bg-secondary/50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition-all"
-                          />
-                          <Button
-                            onClick={handleReopen}
-                            disabled={!reopenCodeInput.trim()}
-                            className="h-11 px-5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
-                          >
-                            Reopen
-                          </Button>
-                        </div>
-                        <AnimatePresence>
-                          {reopenCodeError && (
-                            <motion.p
-                              initial={{ opacity: 0, y: -4 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0 }}
-                              className="text-xs text-destructive flex items-center gap-1.5"
+                      <div className="space-y-4 pt-1 pb-1">
+
+                        {/* ── Step 1: Code entry ── */}
+                        {!reopenUnlocked && (
+                          <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground">Enter your override code to unlock reactivation options.</p>
+                            <div className="flex gap-2">
+                              <input
+                                type="password"
+                                value={reopenCodeInput}
+                                onChange={(e) => { setReopenCodeInput(e.target.value); setReopenCodeError(""); }}
+                                onKeyDown={(e) => e.key === "Enter" && handleReopenUnlock()}
+                                placeholder="Override code"
+                                className="flex-1 h-11 rounded-xl border border-border bg-secondary/50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition-all"
+                              />
+                              <Button
+                                onClick={handleReopenUnlock}
+                                disabled={!reopenCodeInput.trim()}
+                                className="h-11 px-5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
+                              >
+                                Unlock
+                              </Button>
+                            </div>
+                            <AnimatePresence>
+                              {reopenCodeError && (
+                                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                                  className="text-xs text-destructive flex items-center gap-1.5">
+                                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />{reopenCodeError}
+                                </motion.p>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+
+                        {/* ── Step 2: Choose reactivation mode ── */}
+                        {reopenUnlocked && reopenMode === null && (
+                          <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+                            <div className="flex items-center gap-2 text-amber-700 mb-1">
+                              <Unlock className="w-4 h-4" />
+                              <p className="text-sm font-semibold">Override verified — choose how to reactivate</p>
+                            </div>
+                            <button
+                              onClick={() => setReopenMode("same")}
+                              className="w-full text-left px-4 py-4 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 transition-colors space-y-0.5"
                             >
-                              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                              {reopenCodeError}
-                            </motion.p>
-                          )}
-                        </AnimatePresence>
+                              <p className="text-sm font-semibold text-emerald-800">Reactivate — Keep Current Profile</p>
+                              <p className="text-xs text-emerald-700/80">Restore the file exactly as-is. All existing stages and history are preserved.</p>
+                            </button>
+                            <button
+                              onClick={() => setReopenMode("update")}
+                              className="w-full text-left px-4 py-4 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 transition-colors space-y-0.5"
+                            >
+                              <p className="text-sm font-semibold text-amber-800">Reactivate — Update Client Profile</p>
+                              <p className="text-xs text-amber-700/80">Reopen and update the client's qualifications before reactivating (e.g. credit improved, new loan type).</p>
+                            </button>
+                          </motion.div>
+                        )}
+
+                        {/* ── Step 3a: Same profile confirm ── */}
+                        {reopenUnlocked && reopenMode === "same" && (
+                          <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                            <p className="text-sm font-semibold text-emerald-800">Reactivate with current profile?</p>
+                            <p className="text-xs text-emerald-700/80 leading-relaxed">
+                              The file will be reopened. All previous stages and history remain intact. No profile data is changed.
+                            </p>
+                            <div className="flex gap-2 pt-1">
+                              <Button onClick={() => setReopenMode(null)} variant="outline" size="sm" className="flex-1">Back</Button>
+                              <Button onClick={handleReopenConfirm} size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                Confirm Reactivation
+                              </Button>
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {/* ── Step 3b: Update profile form ── */}
+                        {reopenUnlocked && reopenMode === "update" && (
+                          <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                              <p className="text-xs font-semibold text-amber-800 uppercase tracking-widest mb-0.5">Update Client Profile</p>
+                              <p className="text-xs text-amber-700/80">Edit the fields that have changed. These will overwrite the existing brief on reactivation.</p>
+                            </div>
+
+                            {/* Loan type */}
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Loan Type</label>
+                              <div className="grid grid-cols-2 gap-2">
+                                {GOAL_OPTIONS.map(opt => (
+                                  <button key={opt.value} onClick={() => setEditableGoal(opt.value)}
+                                    className={`px-3 py-2.5 rounded-xl text-sm border transition-all text-left ${editableGoal === opt.value ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:border-primary/50"}`}>
+                                    {opt.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Credit score */}
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Credit Score</label>
+                              <div className="space-y-1.5">
+                                {CREDIT_OPTIONS.map(opt => (
+                                  <button key={opt} onClick={() => setEditableCreditScore(opt)}
+                                    className={`w-full text-left px-4 py-2.5 rounded-xl text-sm border transition-all ${editableCreditScore === opt ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:border-primary/50"}`}>
+                                    {opt}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Employment type */}
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Employment</label>
+                              <div className="grid grid-cols-2 gap-2">
+                                {EMPLOYMENT_OPTIONS.map(opt => (
+                                  <button key={opt} onClick={() => setEditableEmploymentType(opt)}
+                                    className={`px-3 py-2.5 rounded-xl text-sm border transition-all capitalize ${editableEmploymentType === opt ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:border-primary/50"}`}>
+                                    {opt}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Profile key/value pairs */}
+                            {Object.keys(editableProfile).length > 0 && (
+                              <div className="space-y-2">
+                                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Profile Details</label>
+                                {Object.entries(editableProfile).map(([label, value]) => (
+                                  <div key={label} className="flex items-center gap-3">
+                                    <span className="text-xs text-muted-foreground w-36 shrink-0">{label}</span>
+                                    <input
+                                      type="text"
+                                      value={value}
+                                      onChange={(e) => setEditableProfile(prev => ({ ...prev, [label]: e.target.value }))}
+                                      className="flex-1 h-9 rounded-lg border border-border bg-secondary/50 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="flex gap-2 pt-2 border-t border-border">
+                              <Button onClick={() => setReopenMode(null)} variant="outline" size="sm" className="flex-1">Back</Button>
+                              <Button onClick={handleReopenConfirm} size="sm" className="flex-1 bg-amber-600 hover:bg-amber-700 text-white">
+                                Save & Reactivate
+                              </Button>
+                            </div>
+                          </motion.div>
+                        )}
+
                       </div>
                     </motion.div>
                   )}
