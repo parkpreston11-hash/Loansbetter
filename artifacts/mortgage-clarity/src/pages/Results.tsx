@@ -486,6 +486,46 @@ export default function Results() {
         </motion.p>
       </section>
 
+      {/* ── ZILLOW (Buy only) ────────────────────────────────── */}
+      {isBuy && (
+        <section className="max-w-2xl mx-auto px-4 pt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.95 }}
+            className="bg-secondary/40 border border-border rounded-2xl p-6"
+          >
+            <div className="flex items-center gap-2.5 mb-1">
+              <Home className="w-4 h-4 text-primary" />
+              <p className="font-semibold text-foreground">Browse homes in your price range</p>
+            </div>
+            <p className="text-sm text-muted-foreground mb-5">
+              Explore homes for sale in the {fmt(adjustedEstimate.low)} – {fmt(adjustedEstimate.high)} range on Zillow.
+            </p>
+            {!showZillow ? (
+              <Button variant="outline" onClick={() => setShowZillow(true)} className="border-primary text-primary hover:bg-primary/5 rounded-full">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Browse Homes on Zillow
+              </Button>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Input
+                  placeholder="Enter city, state or ZIP (e.g. Austin, TX)"
+                  value={zillowLocation}
+                  onChange={(e) => setZillowLocation(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && openZillow()}
+                  className="flex-1 max-w-sm"
+                />
+                <Button onClick={openZillow} disabled={!zillowLocation.trim()} className="rounded-full">
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Search Zillow
+                </Button>
+              </div>
+            )}
+          </motion.div>
+        </section>
+      )}
+
       {/* ── INTENT BANNER ───────────────────────────────────── */}
       <AnimatePresence>
         {intentBannerVisible && !intentDismissed && (
