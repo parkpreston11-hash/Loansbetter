@@ -286,8 +286,8 @@ export default function Home() {
           <motion.div {...fadeUp(0.1)} className="space-y-5">
             {[
               {
-                icon: Lock, title: "Your data stays yours — always",
-                desc: "We never sell your information or share it with lenders without your permission. No spam. No pressure calls.",
+                icon: Lock, title: "Move at your own pace",
+                desc: "There's no clock, no pushy follow-ups, and no commitment required. Get the clarity you need, then decide what to do with it.",
               },
               {
                 icon: BarChart3, title: "Know before you owe",

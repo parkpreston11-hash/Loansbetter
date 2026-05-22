@@ -344,8 +344,8 @@ export default function NewHome() {
               <div className="space-y-7">
                 {[
                   {
-                    title: "Your data stays yours — always",
-                    desc: "We never sell your information or share it with lenders without your permission. No spam. No pressure calls.",
+                    title: "Move at your own pace",
+                    desc: "There's no clock, no pushy follow-ups, and no commitment required. Get the clarity you need, then decide what to do with it.",
                   },
                   {
                     title: "Know before you owe",
