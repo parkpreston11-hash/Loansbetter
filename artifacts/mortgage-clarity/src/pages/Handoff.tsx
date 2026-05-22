@@ -73,6 +73,10 @@ export default function Handoff() {
     } catch { return ""; }
   });
   const [summarySubmitted, setSummarySubmitted] = useState(false);
+  const [consentChecked, setConsentChecked]     = useState(false);
+
+  const DISCLOSURE_VERSION = "1.0";
+  const CONSENT_KEY_PREFIX = "lb_consent_";
 
   if (!selectedMortgageType || !estimateResult) {
     setLocation("/start");
@@ -172,6 +176,18 @@ export default function Handoff() {
   };
 
   const handleSummarySubmit = () => {
+    // Store consent audit record
+    const consentRecord = {
+      timestamp: new Date().toISOString(),
+      consentGiven: true,
+      disclosureVersion: DISCLOSURE_VERSION,
+      sourcePage: "/handoff",
+      userAgent: navigator.userAgent,
+    };
+    try {
+      localStorage.setItem(CONSENT_KEY_PREFIX + code, JSON.stringify(consentRecord));
+    } catch {}
+
     void sendNotification({
       type: "profile",
       name: clientName.trim() || answers.fullName || "Client",
@@ -386,6 +402,27 @@ export default function Handoff() {
               )}
             </div>
 
+            {/* TCPA Consent */}
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={consentChecked}
+                  onChange={(e) => setConsentChecked(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                />
+                <span className="text-xs text-amber-900 leading-relaxed">
+                  By submitting this form, I agree that LoansBetter and its approved lending or marketing partners may contact me by phone, text message, or email regarding mortgage-related products and services using the information I provided.{" "}
+                  <strong>Consent is not a condition of purchase.</strong>{" "}
+                  See our{" "}
+                  <Link href="/privacy" className="text-primary hover:underline font-medium">Privacy Policy</Link>
+                  {" "}and{" "}
+                  <Link href="/terms" className="text-primary hover:underline font-medium">Terms of Service</Link>.
+                </span>
+              </label>
+              <p className="text-[10px] text-amber-700 pl-7">You may opt out at any time by contacting us at info@loansbetter.com or 714-494-4172.</p>
+            </div>
+
             <AnimatePresence mode="wait">
               {summarySubmitted ? (
                 <motion.div
@@ -406,7 +443,7 @@ export default function Handoff() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   onClick={handleSummarySubmit}
-                  disabled={!clientName.trim() || (!clientEmail.trim() && !clientPhone.trim())}
+                  disabled={!clientName.trim() || (!clientEmail.trim() && !clientPhone.trim()) || !consentChecked}
                   className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <Send className="w-4 h-4" />
@@ -414,7 +451,9 @@ export default function Handoff() {
                     ? "Enter your name to continue"
                     : (!clientEmail.trim() && !clientPhone.trim())
                       ? "Add email or phone to submit"
-                      : "Submit Summary to Loan Officer"}
+                      : !consentChecked
+                        ? "Please accept the consent above"
+                        : "Submit Summary to Loan Officer"}
                 </motion.button>
               )}
             </AnimatePresence>

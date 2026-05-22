@@ -20,6 +20,8 @@ import Chat from "@/pages/Chat";
 import Handoff from "@/pages/Handoff";
 import LookupBrief from "@/pages/LookupBrief";
 import Learn from "@/pages/Learn";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -125,6 +127,8 @@ function Router() {
           <Route path="/handoff" component={Handoff} />
           <Route path="/lookup" component={LookupBrief} />
           <Route path="/learn" component={Learn} />
+          <Route path="/privacy" component={PrivacyPolicy} />
+          <Route path="/terms" component={TermsOfService} />
           <Route component={NotFound} />
         </Switch>
       </main>

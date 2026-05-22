@@ -1,0 +1,138 @@
+Add a full Consent, Privacy, and Compliance System to the lead CRM and marketplace platform.
+
+IMPORTANT:
+This platform handles mortgage and financial inquiry leads. The system must be designed to collect clear user consent before any lead sharing, transfer, or partner distribution occurs.
+
+The platform should feel legitimate, transparent, and compliant.
+
+--------------------------------------------------
+1. LEAD FORM CONSENT SYSTEM
+--------------------------------------------------
+
+On every lead submission form, add:
+
+- clear consent disclosure text
+- required checkbox
+- links to:
+  - Privacy Policy
+  - Terms of Service
+
+Checkbox must NOT be pre-checked.
+
+Users must manually agree before submission.
+
+--------------------------------------------------
+2. CONSENT DISCLOSURE TEXT
+--------------------------------------------------
+
+Display the following type of disclosure near submit button:
+
+“By submitting this form, you agree that LoansBetter and its approved lending or marketing partners may contact you by phone, text message, or email regarding mortgage-related products and services using the information provided. Consent is not a condition of purchase.”
+
+Style this professionally and clearly.
+
+--------------------------------------------------
+3. CONSENT RECORD STORAGE
+--------------------------------------------------
+
+For every submitted lead, automatically store:
+
+- timestamp
+- IP address
+- consent status
+- exact disclosure version accepted
+- source page/form
+
+Store this in secure audit logs.
+
+--------------------------------------------------
+4. PRIVACY POLICY PAGE
+--------------------------------------------------
+
+Create a professional Privacy Policy page explaining:
+- what information is collected
+- how information is used
+- how leads may be shared with approved partners
+- opt-out process
+- data retention practices
+
+Use clean professional formatting.
+
+--------------------------------------------------
+5. TERMS OF SERVICE PAGE
+--------------------------------------------------
+
+Create a Terms of Service page covering:
+- platform usage
+- user responsibilities
+- limitations of liability
+- lead handling policies
+- compliance expectations
+
+--------------------------------------------------
+6. LEAD SHARING / TRANSFER RULES
+--------------------------------------------------
+
+IMPORTANT SYSTEM RULE:
+
+Only leads with verified consent for partner sharing may be:
+- transferred
+- redistributed
+- assigned to external lending partners
+
+If consent does NOT allow partner sharing:
+- disable transfer option automatically
+
+--------------------------------------------------
+7. MARKETPLACE COMPLIANCE CHECK
+--------------------------------------------------
+
+Before any lead transfer:
+- verify consent status
+- verify approved buyer account
+- log transfer history
+- save timestamp and company receiving lead
+
+--------------------------------------------------
+8. USER OPT-OUT SYSTEM
+--------------------------------------------------
+
+Add ability for users to:
+- request removal
+- opt out of communications
+- revoke consent
+
+System should flag opted-out leads automatically.
+
+--------------------------------------------------
+9. ADMIN COMPLIANCE DASHBOARD
+--------------------------------------------------
+
+Admins should be able to:
+- view consent logs
+- view transfer history
+- monitor opt-outs
+- audit lead activity
+- verify compliance status
+
+--------------------------------------------------
+10. UI / DESIGN
+--------------------------------------------------
+
+Design should feel:
+- professional fintech platform
+- trustworthy
+- transparent
+- legally organized
+- modern SaaS style
+
+--------------------------------------------------
+FINAL GOAL
+--------------------------------------------------
+
+Create a legitimate, consent-based mortgage lead platform with:
+- clear opt-in disclosures
+- audit logging
+- compliant lead transfer workflows
+- privacy and terms pages
+- transparent user consent handling
