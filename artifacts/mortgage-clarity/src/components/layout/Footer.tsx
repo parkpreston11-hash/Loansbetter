@@ -84,7 +84,7 @@ export function Footer() {
               <p>This privacy notice discloses the privacy practices for Loansbetter.com, Inc. (www.loansbetter.com). This privacy notice applies solely to information collected by this website.</p>
 
               <p className="font-semibold text-foreground">Information Collection, Use, and Sharing</p>
-              <p>We are the sole owners of the information collected on this site. We only have access to/collect information that you voluntarily give us via email or other direct contact from you. We will not sell or rent this information to anyone.</p>
+              <p>We are the sole owners of the information collected on this site. We only have access to/collect information that you voluntarily give us via email or other direct contact from you.</p>
               <p>We will use your information to respond to you, regarding the reason you contacted us. We will not share your information with any third party outside of our organization, other than as necessary to fulfill your request.</p>
               <p>Unless you ask us not to, we may contact you via email in the future to tell you about specials, new products or services, or changes to this privacy policy.</p>
 
