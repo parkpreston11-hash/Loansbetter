@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "wouter";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 export function Footer() {
@@ -167,12 +166,6 @@ export function Footer() {
               </p>
             </div>
           )}
-        </div>
-
-        {/* Quick links */}
-        <div className="border-t border-border pt-4 flex flex-wrap gap-x-6 gap-y-1">
-          <Link href="/privacy" className="text-xs text-primary hover:underline">Privacy Policy</Link>
-          <Link href="/terms" className="text-xs text-primary hover:underline">Terms of Service</Link>
         </div>
 
         {/* Copyright */}
