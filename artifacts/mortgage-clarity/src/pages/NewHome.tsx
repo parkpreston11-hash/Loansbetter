@@ -345,7 +345,7 @@ export default function NewHome() {
                 {[
                   {
                     title: "Move at your own pace",
-                    desc: "There's no clock, no pushy follow-ups, and no commitment required. Get the clarity you need, then decide what to do with it.",
+                    desc: "There's no clock and no commitment required. Get the clarity you need, then decide what to do with it.",
                   },
                   {
                     title: "Know before you owe",
