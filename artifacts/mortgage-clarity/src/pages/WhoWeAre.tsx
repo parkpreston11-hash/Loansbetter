@@ -214,7 +214,7 @@ export default function WhoWeAre() {
           {[
             { icon: BookOpen, title: "We work for you", desc: "Our goal is to make sure you have the clearest picture possible before you make any decision." },
             { icon: CheckCircle2, title: "You decide", desc: "We help you understand — you decide what to do with that." },
-            { icon: Shield, title: "No hidden agendas", desc: "There is nothing behind what you see. No upsells. No data selling. No surprises." },
+            { icon: Shield, title: "No hidden agendas", desc: "There is nothing behind what you see. No upsells. No surprises." },
             { icon: Eye, title: "Built for clarity", desc: "Every feature on this platform has one job: make something easier to understand." },
           ].map(({ icon: Icon, title, desc }, i) => (
             <motion.div key={title} {...fadeUp(i * 0.08)} className="text-center px-4 py-8 bg-card border border-border rounded-2xl hover:shadow-md hover:border-primary/20 transition-all duration-300">

@@ -142,8 +142,6 @@ export default function Home() {
           <div className="flex flex-wrap justify-center md:justify-between gap-6 text-sm text-muted-foreground">
             {[
               { icon: BadgeCheck, label: "Licensed & independent" },
-              { icon: Lock,        label: "No data sold — ever" },
-              { icon: Shield,      label: "No credit pull required" },
               { icon: Users,       label: "Built for buyers & homeowners" },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-2.5 font-medium">

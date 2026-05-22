@@ -228,7 +228,6 @@ export default function Landing() {
 
               <div className="space-y-8">
                 {[
-                  { icon: Shield, title: "Your data stays yours — always", desc: "We never sell your information or share it with lenders without your say-so. No spam. No pressure calls. Your trust is the only thing we're asking for." },
                   { icon: CheckCircle2, title: "Know before you owe", desc: "Most borrowers leave money on the table because they didn't know their position going in. Two minutes with LoansBetter changes that — your personalized estimate is ready instantly." },
                   { icon: HeartHandshake, title: "You stay in the driver's seat", desc: "No obligation, ever. When you're ready, a loan officer who already knows your full picture is one step away. Until then, the next move is always yours." },
                 ].map((item, i) => (
