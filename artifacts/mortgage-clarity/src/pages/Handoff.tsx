@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useMortgage } from "@/context/MortgageContext";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound, Mail, Send, PartyPopper, User } from "lucide-react";
+import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound, Mail, Send, PartyPopper, User, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DocumentChecklist } from "@/components/DocumentChecklist";
 import { sendNotification } from "@/lib/notify";
@@ -339,9 +339,9 @@ export default function Handoff() {
                 <Send className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <p className="font-semibold text-foreground text-sm">Send This Summary to Your Loan Officer</p>
+                <p className="font-semibold text-foreground text-sm">How can we contact you?</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  So your loan officer can reach you, provide your contact info below. At least one of email or phone is required — both is recommended.
+                  Leave your contact info so we can follow up. At least one of email or phone is required — both is recommended.
                 </p>
               </div>
             </div>
@@ -392,13 +392,21 @@ export default function Handoff() {
                   key="done"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4"
+                  className="space-y-3"
                 >
-                  <PartyPopper className="w-5 h-5 text-green-600 shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-green-800">Summary sent!</p>
-                    <p className="text-xs text-green-700 mt-0.5">Your loan officer has your profile and code. They'll follow up with next steps.</p>
+                  <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
+                    <PartyPopper className="w-5 h-5 text-green-600 shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-green-800">Contact info saved!</p>
+                      <p className="text-xs text-green-700 mt-0.5">We'll be in touch. Use Loan Lookup anytime to track your file.</p>
+                    </div>
                   </div>
+                  <Link href={`/lookup?code=${encodeURIComponent(code)}`}>
+                    <button className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                      <Search className="w-4 h-4" />
+                      Loan Lookup
+                    </button>
+                  </Link>
                 </motion.div>
               ) : (
                 <motion.button
@@ -414,7 +422,7 @@ export default function Handoff() {
                     ? "Enter your name to continue"
                     : (!clientEmail.trim() && !clientPhone.trim())
                       ? "Add email or phone to submit"
-                      : "Submit Summary to Loan Officer"}
+                      : "Save Contact Info"}
                 </motion.button>
               )}
             </AnimatePresence>
