@@ -27,10 +27,26 @@ const queryClient = new QueryClient();
 // Pages that are part of the active flow — don't show the banner there
 const FLOW_PATHS = new Set(["/start", "/questions", "/results", "/chat", "/handoff"]);
 
+// Pages worth saving as the resume point (exclude /start and /questions
+// since those are the beginning, not "where they left off")
+const RESUME_PATHS = new Set(["/results", "/chat", "/handoff", "/lookup"]);
+const LAST_PATH_KEY = "lb_last_path";
+
 function ScrollToTop() {
   const [location] = useLocation();
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
+  }, [location]);
+  return null;
+}
+
+function LocationTracker() {
+  const [location] = useLocation();
+  useEffect(() => {
+    const base = location.split("?")[0];
+    if (RESUME_PATHS.has(base)) {
+      try { localStorage.setItem(LAST_PATH_KEY, location); } catch {}
+    }
   }, [location]);
   return null;
 }
@@ -111,6 +127,7 @@ function Router() {
   return (
     <div className="flex flex-col min-h-screen">
       <ScrollToTop />
+      <LocationTracker />
       <Navbar />
       <main className="flex-1">
         <Switch>

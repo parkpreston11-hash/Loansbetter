@@ -6,13 +6,16 @@ import { Home, TrendingDown, HandCoins, Building2, Phone, Layers, ArrowRight } f
 import { ContactDialog } from "@/components/ContactDialog";
 
 const BRIEF_KEY_PREFIX = "lb_brief_";
+const LAST_PATH_KEY    = "lb_last_path";
 
 export default function Start() {
   const [, setLocation] = useLocation();
   const { setSelectedMortgageType } = useMortgage();
-  const [savedCode, setSavedCode] = useState<string | null>(null);
+  const [savedCode, setSavedCode]   = useState<string | null>(null);
+  const [resumePath, setResumePath] = useState<string | null>(null);
 
   useEffect(() => {
+    // Find the most recent saved brief code
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key?.startsWith(BRIEF_KEY_PREFIX)) {
@@ -22,6 +25,9 @@ export default function Start() {
         } catch {}
       }
     }
+    // Use the last-visited path if available, otherwise fall back to lookup
+    const last = localStorage.getItem(LAST_PATH_KEY);
+    if (last) setResumePath(last);
   }, []);
 
   const handleSelect = (type: MortgageType) => {
@@ -63,7 +69,7 @@ export default function Start() {
               <p className="text-xs text-muted-foreground mt-0.5">Pick up where you left off — your estimate and details are ready.</p>
             </div>
             <Link
-              href={`/lookup?code=${encodeURIComponent(savedCode)}`}
+              href={resumePath ?? `/lookup?code=${encodeURIComponent(savedCode)}`}
               className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold px-4 h-9 hover:bg-primary/90 transition-colors"
             >
               Continue <ArrowRight className="w-3.5 h-3.5" />
