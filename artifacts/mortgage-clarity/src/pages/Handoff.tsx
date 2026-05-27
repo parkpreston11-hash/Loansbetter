@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useMortgage } from "@/context/MortgageContext";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound, Mail, Send, PartyPopper, User, Search, UserCheck, Save, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound, Mail, Send, PartyPopper, Search, UserCheck, Save, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { sendNotification } from "@/lib/notify";
 
@@ -285,16 +285,6 @@ export default function Handoff() {
 
           <div className="grid gap-2">
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <input
-                type="text"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                placeholder="Your name (required)"
-                className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-              />
-            </div>
-            <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <input
                 type="email"
@@ -393,15 +383,13 @@ export default function Handoff() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 onClick={handleSummarySubmit}
-                disabled={!clientName.trim() || (!clientEmail.trim() && !clientPhone.trim())}
+                disabled={!clientEmail.trim() && !clientPhone.trim()}
                 className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <Send className="w-4 h-4" />
-                {!clientName.trim()
-                  ? "Enter your name to continue"
-                  : (!clientEmail.trim() && !clientPhone.trim())
-                    ? "Add email or phone to submit"
-                    : "Save Contact Info"}
+                {(!clientEmail.trim() && !clientPhone.trim())
+                  ? "Add email or phone to submit"
+                  : "Save Contact Info"}
               </motion.button>
             )}
           </AnimatePresence>
