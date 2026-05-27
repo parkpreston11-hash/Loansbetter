@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Search, Phone, ShieldCheck, BookOpen,
@@ -130,9 +130,12 @@ export default function LookupBrief() {
   const [activeTab, setActiveTab] = useState<"officer" | "progress" | "client">("officer");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-lookup when a ?code= query param is present (e.g. from the "Continue" banner)
+  // Reactive query string — re-runs the effect whenever ?code= changes (e.g. "Open File" in setter dashboard)
+  const search = useSearch();
+
+  // Auto-lookup when a ?code= query param is present (e.g. from the "Continue" banner or setter dashboard)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(search);
     const codeParam = params.get("code");
     if (!codeParam) return;
     const clean = codeParam.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 12);
@@ -143,6 +146,10 @@ export default function LookupBrief() {
       formatted += clean[i];
       if (i === 3 || i === 7) formatted += "-";
     }
+    // Reset state before loading the new file
+    setError("");
+    setResult(null);
+    setContact(null);
     setInput(formatted);
     const stored = localStorage.getItem(BRIEF_KEY_PREFIX + formatted);
     setSearched(true);
@@ -167,7 +174,7 @@ export default function LookupBrief() {
         setError("The brief data appears to be corrupted. Ask the client to generate a new code.");
       }
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Always re-read localStorage when switching to Progress so partial uploads
   // made in the same or a previous session are reflected immediately.
