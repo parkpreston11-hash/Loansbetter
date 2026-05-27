@@ -122,6 +122,9 @@ export function Footer() {
                   www.nmlsconsumeraccess.org
                 </a>
               </p>
+              <p>
+                <span className="font-semibold text-foreground">California Bureau of Real Estate Corporation License:</span> 01780370
+              </p>
               <p>Licensing requirements vary by state. Not all products are available in all states. This is not a commitment to lend. All loans are subject to credit approval, underwriting guidelines, and applicable state and federal regulations.</p>
             </div>
           )}
