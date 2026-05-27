@@ -6,6 +6,7 @@ import {
   AlertCircle, User, Briefcase, Mail, Lock, Unlock,
   Activity, CheckCircle2, Save, MessageSquare,
   FileX, ArrowRight, UploadCloud, Clock, FolderX, ChevronDown,
+  UserCheck, ClipboardList, Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -25,7 +26,9 @@ const CONTACT_KEY_PREFIX = "lb_contact_";
 const STAGE_KEY_PREFIX   = "lb_stage_";
 const DOCS_KEY_PREFIX    = "lb_docs_";
 
-const LO_OVERRIDE_CODE = "LOANS";
+const LO_OVERRIDE_CODE  = "LOANS";
+const LO_ASSIGN_PREFIX  = "lb_lo_";
+const SETTER_CODE       = "APPT";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -46,6 +49,19 @@ interface StoredContact {
   name?: string;
   email?: string;
   phone?: string;
+}
+
+interface LoAssignment {
+  loName: string;
+  assignedAt: string;
+  borrowerName?: string;
+}
+
+interface SetterRecord {
+  code: string;
+  loName: string;
+  assignedAt: string;
+  borrowerName?: string;
 }
 
 function getTypeLabel(type: string) {
@@ -140,6 +156,13 @@ export default function LookupBrief() {
         if (contactRaw) setContact(JSON.parse(contactRaw) as StoredContact);
         setStageData(loadStageData(formatted));
         setDocsStatus(checkDocs(brief.code, brief.goal ?? "buy", brief.creditScore ?? "", brief.employmentType ?? ""));
+        // Load LO assignment
+        try {
+          const loRaw = localStorage.getItem(LO_ASSIGN_PREFIX + formatted);
+          const lo = loRaw ? (JSON.parse(loRaw) as LoAssignment) : null;
+          setLoAssignedName(lo?.loName ?? "");
+          setLoNameInput(lo?.loName ?? "");
+        } catch { setLoAssignedName(""); }
       } catch {
         setError("The brief data appears to be corrupted. Ask the client to generate a new code.");
       }
@@ -194,6 +217,17 @@ export default function LookupBrief() {
     complete: false, totalRequired: 0, uploaded: 0, missing: [],
   });
 
+  // Loan Officer assignment state
+  const [loAssignedName, setLoAssignedName] = useState("");
+  const [loNameInput, setLoNameInput]       = useState("");
+  const [loNameSaved, setLoNameSaved]       = useState(false);
+
+  // Appointment setter state
+  const [setterKeyInput, setSetterKeyInput] = useState("");
+  const [setterUnlocked, setSetterUnlocked] = useState(false);
+  const [setterError, setSetterError]       = useState("");
+  const [setterRecords, setSetterRecords]   = useState<SetterRecord[]>([]);
+
   // ── Code input ────────────────────────────────────────────────────────────
   const handleInput = (raw: string) => {
     const clean = raw.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 12);
@@ -231,6 +265,9 @@ export default function LookupBrief() {
     setEditableCreditScore("");
     setEditableEmploymentType("");
     setEditableGoal("");
+    setLoAssignedName("");
+    setLoNameInput("");
+    setLoNameSaved(false);
   };
 
   const handleLookup = () => {
@@ -262,9 +299,56 @@ export default function LookupBrief() {
 
         // Check required documents
         setDocsStatus(checkDocs(input, brief.goal ?? "buy", brief.creditScore ?? "", brief.employmentType ?? ""));
+
+        // Load LO assignment
+        try {
+          const loRaw = localStorage.getItem(LO_ASSIGN_PREFIX + input);
+          const lo = loRaw ? (JSON.parse(loRaw) as LoAssignment) : null;
+          setLoAssignedName(lo?.loName ?? "");
+          setLoNameInput(lo?.loName ?? "");
+        } catch { setLoAssignedName(""); }
       } catch {
         setError("The brief data appears to be corrupted. Ask the client to generate a new code.");
       }
+    }
+  };
+
+  // ── LO name assignment ────────────────────────────────────────────────────
+  const handleSaveLoName = () => {
+    if (!result || !loNameInput.trim()) return;
+    const assignment: LoAssignment = {
+      loName: loNameInput.trim(),
+      assignedAt: new Date().toISOString(),
+      borrowerName: contact?.name || result.fullName || undefined,
+    };
+    try {
+      localStorage.setItem(LO_ASSIGN_PREFIX + result.code, JSON.stringify(assignment));
+      setLoAssignedName(loNameInput.trim());
+      setLoNameSaved(true);
+      setTimeout(() => setLoNameSaved(false), 3000);
+    } catch {}
+  };
+
+  // ── Appointment setter unlock ─────────────────────────────────────────────
+  const handleSetterUnlock = () => {
+    if (setterKeyInput.trim().toUpperCase().replace(/[-\s]/g, "") === SETTER_CODE) {
+      const records: SetterRecord[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith(LO_ASSIGN_PREFIX)) {
+          try {
+            const lo = JSON.parse(localStorage.getItem(key) ?? "{}") as LoAssignment;
+            const code = key.slice(LO_ASSIGN_PREFIX.length);
+            records.push({ code, loName: lo.loName, assignedAt: lo.assignedAt, borrowerName: lo.borrowerName });
+          } catch {}
+        }
+      }
+      records.sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
+      setSetterRecords(records);
+      setSetterUnlocked(true);
+      setSetterError("");
+    } else {
+      setSetterError("Incorrect code. Please try again.");
     }
   };
 
@@ -1452,28 +1536,72 @@ export default function LookupBrief() {
                         animate={{ opacity: 1, scale: 1 }}
                         className="space-y-6"
                       >
-                        <div className="flex flex-col items-center text-center py-6 space-y-4">
-                          <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center">
-                            <Lock className="w-7 h-7 text-muted-foreground" />
+                        {!loAssignedName ? (
+                          /* ── LO name gate ─────────────────────────── */
+                          <div className="space-y-5">
+                            <div className="flex flex-col items-center text-center py-4 space-y-3">
+                              <div className="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center">
+                                <UserCheck className="w-6 h-6 text-amber-600" />
+                              </div>
+                              <div className="space-y-1.5 max-w-sm">
+                                <p className="font-semibold text-lg text-foreground">One step before uploading</p>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                  Enter the name of the loan officer you spoke with. This is required before submitting documents.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="block text-xs font-semibold text-foreground uppercase tracking-wide">Loan Officer Name <span className="text-red-500">*</span></label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={loNameInput}
+                                  onChange={(e) => setLoNameInput(e.target.value)}
+                                  onKeyDown={(e) => e.key === "Enter" && handleSaveLoName()}
+                                  placeholder="e.g. John Smith"
+                                  className="flex-1 h-11 rounded-xl border border-border bg-secondary/50 px-4 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                                />
+                                <button
+                                  onClick={handleSaveLoName}
+                                  disabled={!loNameInput.trim()}
+                                  className="h-11 px-5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-1.5 hover:bg-primary/90 transition-colors disabled:opacity-40"
+                                >
+                                  <Save className="w-4 h-4" /> Save
+                                </button>
+                              </div>
+                            </div>
                           </div>
-                          <div className="space-y-2 max-w-sm">
-                            <p className="font-semibold text-lg text-foreground">
-                              Upload your documents to get started
-                            </p>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                              Submit your documents, then a loan officer will review them and activate your progress tracker.
-                            </p>
+                        ) : (
+                          /* ── LO assigned → allow upload ───────────── */
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                              <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
+                              <div>
+                                <p className="text-sm font-semibold text-green-800">Loan Officer: {loAssignedName}</p>
+                                <p className="text-xs text-green-700 mt-0.5">Your file is linked to this loan officer.</p>
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-center text-center py-2 space-y-3">
+                              <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center">
+                                <Lock className="w-6 h-6 text-muted-foreground" />
+                              </div>
+                              <div className="space-y-1.5 max-w-sm">
+                                <p className="font-semibold text-lg text-foreground">Upload your documents to get started</p>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                  Submit your documents, then {loAssignedName} will review them and activate your progress tracker.
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => switchTab("client")}
+                              className="w-full h-14 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.01] active:scale-[0.98]"
+                            >
+                              <UploadCloud className="w-5 h-5" />
+                              Upload Documents
+                              <ArrowRight className="w-4 h-4" />
+                            </button>
                           </div>
-                        </div>
-
-                        <button
-                          onClick={() => switchTab("client")}
-                          className="w-full h-14 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.01] active:scale-[0.98]"
-                        >
-                          <UploadCloud className="w-5 h-5" />
-                          Upload Documents
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
+                        )}
                       </motion.div>
                     )}
                   </motion.div>
@@ -1488,18 +1616,68 @@ export default function LookupBrief() {
                     exit={{ opacity: 0, x: -12 }}
                     transition={{ duration: 0.2 }}
                   >
+                    {/* ── Loan Officer Name (required before docs) ── */}
+                    <div className="mb-5 space-y-3">
+                      {loAssignedName ? (
+                        <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                          <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-green-800">Loan Officer: {loAssignedName}</p>
+                          </div>
+                          <button
+                            onClick={() => { setLoAssignedName(""); setLoNameInput(""); }}
+                            className="text-xs text-green-700 hover:underline shrink-0"
+                          >
+                            Change
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+                          <p className="text-sm font-semibold text-amber-900 flex items-center gap-2">
+                            <UserCheck className="w-4 h-4" />
+                            Required: Loan Officer Name
+                          </p>
+                          <p className="text-xs text-amber-800">Enter the loan officer you spoke with before uploading documents.</p>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={loNameInput}
+                              onChange={(e) => setLoNameInput(e.target.value)}
+                              onKeyDown={(e) => e.key === "Enter" && handleSaveLoName()}
+                              placeholder="e.g. John Smith"
+                              className="flex-1 h-10 rounded-lg border border-amber-300 bg-white px-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                            />
+                            <button
+                              onClick={handleSaveLoName}
+                              disabled={!loNameInput.trim()}
+                              className="h-10 px-4 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+                            >
+                              <Save className="w-3.5 h-3.5" /> Save
+                            </button>
+                          </div>
+                          {loNameSaved && (
+                            <p className="text-xs text-green-700 flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> Saved!
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {loAssignedName && (
                     <div className="bg-secondary/60 rounded-2xl p-5 mb-4">
                       <p className="text-sm text-foreground leading-relaxed">
                         Didn't finish uploading your documents? No problem — your checklist progress is saved to your code. Upload or add more files below, then hit <strong>Submit to Loan Officer</strong> when you're ready.
                       </p>
                     </div>
-                    <DocumentChecklist
+                    )}
+                    {loAssignedName && <DocumentChecklist
                       mortgageType={result.goal}
                       creditScore={result.creditScore ?? ""}
                       employmentType={result.employmentType ?? ""}
                       code={result.code}
                       fullName={result.fullName ?? ""}
-                    />
+                    />}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -1510,6 +1688,79 @@ export default function LookupBrief() {
         {searched && !result && !error && (
           <p className="text-center text-muted-foreground text-sm">Searching…</p>
         )}
+
+        {/* ── Appointment Setter Access ─────────────────────────────────── */}
+        <div className="bg-card border border-border rounded-3xl shadow-sm overflow-hidden">
+          <button
+            onClick={() => setSetterUnlocked(v => !v)}
+            className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-secondary/40 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                <ClipboardList className="w-4 h-4 text-muted-foreground" />
+              </div>
+              <span className="text-sm font-medium text-foreground">Appointment Setter Access</span>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${setterUnlocked ? "rotate-180" : ""}`} />
+          </button>
+
+          {setterUnlocked ? (
+            <div className="border-t border-border px-6 py-5 space-y-4">
+              <p className="text-xs text-muted-foreground">All reference codes where a loan officer has been assigned.</p>
+              {setterRecords.length === 0 ? (
+                <div className="flex flex-col items-center py-8 gap-3 text-center">
+                  <Users className="w-8 h-8 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">No loan officer assignments found on this device.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {setterRecords.map((rec) => (
+                    <div key={rec.code} className="flex items-center justify-between gap-4 bg-secondary/50 rounded-xl px-4 py-3">
+                      <div className="min-w-0">
+                        <p className="font-mono text-xs font-bold text-primary truncate">{rec.code}</p>
+                        {rec.borrowerName && (
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{rec.borrowerName}</p>
+                        )}
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-xs font-semibold text-foreground">{rec.loName}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {new Date(rec.assignedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="border-t border-border px-6 py-5 space-y-3">
+              <label className="block text-xs font-medium text-muted-foreground">Enter setter key to view assigned files</label>
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  value={setterKeyInput}
+                  onChange={(e) => { setSetterKeyInput(e.target.value); setSetterError(""); }}
+                  onKeyDown={(e) => e.key === "Enter" && handleSetterUnlock()}
+                  placeholder="Setter key"
+                  className="flex-1 h-10 rounded-xl border border-border bg-secondary/50 px-4 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <button
+                  onClick={handleSetterUnlock}
+                  disabled={!setterKeyInput.trim()}
+                  className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-40"
+                >
+                  Unlock
+                </button>
+              </div>
+              {setterError && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" /> {setterError}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
 
         <p className="text-center text-xs text-muted-foreground pb-8">
           Client briefs are stored locally on the device where the session was completed.
