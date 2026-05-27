@@ -115,7 +115,7 @@ export function Footer() {
           </button>
           {licensingOpen && (
             <div className="text-xs text-muted-foreground leading-relaxed space-y-3 pl-6">
-              <p>Loansbetter.com, Inc. is licensed as a mortgage broker/lender in the state of California under the California Department of Financial Protection and Innovation (DFPI) and the California Department of Real Estate (DRE).</p>
+              <p>Loansbetter.com, Inc. is licensed as a mortgage broker/lender in the state of California under the California Department of Financial Protection and Innovation (DFPI) as well as the California Department of Real Estate (DRE).</p>
               <p>
                 <span className="font-semibold text-foreground">NMLS ID:</span> 2641696 &mdash; Verify our license at{" "}
                 <a href="https://www.nmlsconsumeraccess.org/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
