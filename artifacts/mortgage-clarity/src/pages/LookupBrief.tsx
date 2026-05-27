@@ -1216,8 +1216,8 @@ export default function LookupBrief() {
                             ) : (
                               <div className="space-y-2">
                                 {setterRecords.map((rec) => (
-                                  <div key={rec.code} className="flex items-center justify-between gap-4 bg-secondary/50 rounded-xl px-4 py-3">
-                                    <div className="min-w-0">
+                                  <div key={rec.code} className="flex items-center gap-3 bg-secondary/50 rounded-xl px-4 py-3">
+                                    <div className="min-w-0 flex-1">
                                       <p className="font-mono text-xs font-bold text-primary truncate">{rec.code}</p>
                                       {rec.borrowerName && (
                                         <p className="text-xs text-muted-foreground mt-0.5 truncate">{rec.borrowerName}</p>
@@ -1229,6 +1229,12 @@ export default function LookupBrief() {
                                         {new Date(rec.assignedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                                       </p>
                                     </div>
+                                    <Link
+                                      href={`/lookup?code=${encodeURIComponent(rec.code)}`}
+                                      className="shrink-0 h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1 hover:bg-primary/90 transition-colors"
+                                    >
+                                      <ArrowRight className="w-3 h-3" /> Open File
+                                    </Link>
                                   </div>
                                 ))}
                               </div>
