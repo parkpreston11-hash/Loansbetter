@@ -1,12 +1,28 @@
-import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { useMortgage, MortgageType } from "@/context/MortgageContext";
-import { Home, TrendingDown, HandCoins, Building2, Phone, Layers } from "lucide-react";
+import { Home, TrendingDown, HandCoins, Building2, Phone, Layers, ArrowRight } from "lucide-react";
 import { ContactDialog } from "@/components/ContactDialog";
+
+const BRIEF_KEY_PREFIX = "lb_brief_";
 
 export default function Start() {
   const [, setLocation] = useLocation();
   const { setSelectedMortgageType } = useMortgage();
+  const [savedCode, setSavedCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(BRIEF_KEY_PREFIX)) {
+        try {
+          const brief = JSON.parse(localStorage.getItem(key) ?? "{}");
+          if (brief.code) { setSavedCode(brief.code as string); break; }
+        } catch {}
+      }
+    }
+  }, []);
 
   const handleSelect = (type: MortgageType) => {
     setSelectedMortgageType(type);
@@ -33,6 +49,27 @@ export default function Start() {
             Select a path to get personalized clarity.
           </motion.p>
         </div>
+
+        {/* Continue banner — shown if user has a saved brief */}
+        {savedCode && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-8 flex items-center justify-between gap-4 bg-primary/8 border border-primary/25 rounded-2xl px-5 py-4"
+          >
+            <div>
+              <p className="text-sm font-semibold text-foreground">You have a saved profile</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Pick up where you left off — your estimate and details are ready.</p>
+            </div>
+            <Link
+              href={`/lookup?code=${encodeURIComponent(savedCode)}`}
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold px-4 h-9 hover:bg-primary/90 transition-colors"
+            >
+              Continue <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </motion.div>
+        )}
 
         {/* Instant Value Preview */}
         <motion.div

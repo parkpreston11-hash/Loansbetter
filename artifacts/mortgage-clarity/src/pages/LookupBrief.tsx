@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -113,6 +113,38 @@ export default function LookupBrief() {
   const [searched, setSearched] = useState(false);
   const [activeTab, setActiveTab] = useState<"officer" | "progress" | "client">("officer");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-lookup when a ?code= query param is present (e.g. from the "Continue" banner)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const codeParam = params.get("code");
+    if (!codeParam) return;
+    const clean = codeParam.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 12);
+    if (clean.length < 12) return;
+    let formatted = "";
+    for (let i = 0; i < clean.length; i++) {
+      if (i === 0) formatted += "-";
+      formatted += clean[i];
+      if (i === 3 || i === 7) formatted += "-";
+    }
+    setInput(formatted);
+    const stored = localStorage.getItem(BRIEF_KEY_PREFIX + formatted);
+    setSearched(true);
+    if (!stored) {
+      setError("No brief found for that code. Double-check the code and try again.");
+    } else {
+      try {
+        const brief = JSON.parse(stored) as StoredBrief;
+        setResult(brief);
+        const contactRaw = localStorage.getItem(CONTACT_KEY_PREFIX + formatted);
+        if (contactRaw) setContact(JSON.parse(contactRaw) as StoredContact);
+        setStageData(loadStageData(formatted));
+        setDocsStatus(checkDocs(brief.code, brief.goal ?? "buy", brief.creditScore ?? "", brief.employmentType ?? ""));
+      } catch {
+        setError("The brief data appears to be corrupted. Ask the client to generate a new code.");
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Always re-read localStorage when switching to Progress so partial uploads
   // made in the same or a previous session are reflected immediately.
