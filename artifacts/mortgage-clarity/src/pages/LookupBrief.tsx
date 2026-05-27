@@ -443,7 +443,9 @@ export default function LookupBrief() {
     };
     try {
       localStorage.setItem(STAGE_KEY_PREFIX + result.code, JSON.stringify(updated));
+      localStorage.removeItem(LO_ASSIGN_PREFIX + result.code);
       setStageData(updated);
+      setLoAssignedName("");
       setArchiveSaved(true);
       setShowArchivePanel(false);
       setArchiveConfirming(false);
