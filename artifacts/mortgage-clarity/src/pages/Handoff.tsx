@@ -278,7 +278,7 @@ export default function Handoff() {
             <div>
               <p className="font-semibold text-foreground text-sm">How can we contact you?</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Leave your contact info so we can follow up. At least one of email or phone is required — both is recommended.
+                Provide your email or phone number so we can follow up.
               </p>
             </div>
           </div>
@@ -304,13 +304,6 @@ export default function Handoff() {
                 className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
               />
             </div>
-            {clientEmail.trim() && clientPhone.trim() ? null : (
-              <p className="text-xs text-muted-foreground">
-                {!clientEmail.trim() && !clientPhone.trim()
-                  ? "At least one is required — providing both is recommended so your loan officer can reach you your way."
-                  : "Adding both email and phone is recommended so your loan officer can reach you your way."}
-              </p>
-            )}
           </div>
 
           <AnimatePresence mode="wait">
