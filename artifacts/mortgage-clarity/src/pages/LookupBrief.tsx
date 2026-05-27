@@ -352,13 +352,32 @@ export default function LookupBrief() {
     }
   };
 
-  // ── LO unlock ─────────────────────────────────────────────────────────────
+  // ── LO / setter unlock ────────────────────────────────────────────────────
   const handleLoUnlock = () => {
-    if (loCodeInput.trim().toUpperCase().replace(/[-\s]/g, "") === LO_OVERRIDE_CODE) {
+    const code = loCodeInput.trim().toUpperCase().replace(/[-\s]/g, "");
+    if (code === LO_OVERRIDE_CODE) {
       setLoUnlocked(true);
+      setSetterUnlocked(false);
       setLoError("");
       if (stageData.currentStage > 0) setPendingStage(stageData.currentStage);
       else setPendingStage(1);
+    } else if (code === SETTER_CODE) {
+      const records: SetterRecord[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith(LO_ASSIGN_PREFIX)) {
+          try {
+            const lo = JSON.parse(localStorage.getItem(key) ?? "{}") as LoAssignment;
+            const ref = key.slice(LO_ASSIGN_PREFIX.length);
+            records.push({ code: ref, loName: lo.loName, assignedAt: lo.assignedAt, borrowerName: lo.borrowerName });
+          } catch {}
+        }
+      }
+      records.sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
+      setSetterRecords(records);
+      setSetterUnlocked(true);
+      setLoUnlocked(false);
+      setLoError("");
     } else {
       setLoError("Incorrect override code. Please try again.");
     }
@@ -1128,7 +1147,7 @@ export default function LookupBrief() {
                     <div className="border-t border-border pt-8 space-y-5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                          {loUnlocked
+                          {(loUnlocked || setterUnlocked)
                             ? <Unlock className="w-4 h-4 text-amber-700" />
                             : <Lock className="w-4 h-4 text-amber-700" />}
                         </div>
@@ -1137,13 +1156,15 @@ export default function LookupBrief() {
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {loUnlocked
                               ? "Override verified — select a stage, add an optional note, and save."
+                              : setterUnlocked
+                              ? "Setter view — all reference codes with an assigned loan officer."
                               : "Enter your override code to update this client's loan stage."}
                           </p>
                         </div>
                       </div>
 
                       <AnimatePresence mode="wait">
-                        {!loUnlocked ? (
+                        {!loUnlocked && !setterUnlocked ? (
                           <motion.div key="locked" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
                             <div className="flex gap-2">
                               <input
@@ -1166,6 +1187,48 @@ export default function LookupBrief() {
                               <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-destructive flex items-center gap-1.5">
                                 <AlertCircle className="w-3.5 h-3.5" /> {loError}
                               </motion.p>
+                            )}
+                          </motion.div>
+                        ) : setterUnlocked ? (
+                          /* ── Setter dashboard ──────────────────────── */
+                          <motion.div key="setter" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Users className="w-4 h-4 text-primary" />
+                                <p className="text-sm font-semibold text-foreground">Assigned Files</p>
+                                <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5 font-bold">{setterRecords.length}</span>
+                              </div>
+                              <button
+                                onClick={() => { setSetterUnlocked(false); setLoCodeInput(""); }}
+                                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                Lock
+                              </button>
+                            </div>
+                            {setterRecords.length === 0 ? (
+                              <div className="flex flex-col items-center py-8 gap-3 text-center bg-secondary/40 rounded-2xl">
+                                <ClipboardList className="w-7 h-7 text-muted-foreground/40" />
+                                <p className="text-sm text-muted-foreground">No loan officer assignments found on this device yet.</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {setterRecords.map((rec) => (
+                                  <div key={rec.code} className="flex items-center justify-between gap-4 bg-secondary/50 rounded-xl px-4 py-3">
+                                    <div className="min-w-0">
+                                      <p className="font-mono text-xs font-bold text-primary truncate">{rec.code}</p>
+                                      {rec.borrowerName && (
+                                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{rec.borrowerName}</p>
+                                      )}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-xs font-semibold text-foreground">{rec.loName}</p>
+                                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                                        {new Date(rec.assignedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </motion.div>
                         ) : (
@@ -1688,79 +1751,6 @@ export default function LookupBrief() {
         {searched && !result && !error && (
           <p className="text-center text-muted-foreground text-sm">Searching…</p>
         )}
-
-        {/* ── Appointment Setter Access ─────────────────────────────────── */}
-        <div className="bg-card border border-border rounded-3xl shadow-sm overflow-hidden">
-          <button
-            onClick={() => setSetterUnlocked(v => !v)}
-            className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-secondary/40 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-                <ClipboardList className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <span className="text-sm font-medium text-foreground">Appointment Setter Access</span>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${setterUnlocked ? "rotate-180" : ""}`} />
-          </button>
-
-          {setterUnlocked ? (
-            <div className="border-t border-border px-6 py-5 space-y-4">
-              <p className="text-xs text-muted-foreground">All reference codes where a loan officer has been assigned.</p>
-              {setterRecords.length === 0 ? (
-                <div className="flex flex-col items-center py-8 gap-3 text-center">
-                  <Users className="w-8 h-8 text-muted-foreground/40" />
-                  <p className="text-sm text-muted-foreground">No loan officer assignments found on this device.</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {setterRecords.map((rec) => (
-                    <div key={rec.code} className="flex items-center justify-between gap-4 bg-secondary/50 rounded-xl px-4 py-3">
-                      <div className="min-w-0">
-                        <p className="font-mono text-xs font-bold text-primary truncate">{rec.code}</p>
-                        {rec.borrowerName && (
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{rec.borrowerName}</p>
-                        )}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-xs font-semibold text-foreground">{rec.loName}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          {new Date(rec.assignedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="border-t border-border px-6 py-5 space-y-3">
-              <label className="block text-xs font-medium text-muted-foreground">Enter setter key to view assigned files</label>
-              <div className="flex gap-2">
-                <input
-                  type="password"
-                  value={setterKeyInput}
-                  onChange={(e) => { setSetterKeyInput(e.target.value); setSetterError(""); }}
-                  onKeyDown={(e) => e.key === "Enter" && handleSetterUnlock()}
-                  placeholder="Setter key"
-                  className="flex-1 h-10 rounded-xl border border-border bg-secondary/50 px-4 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40"
-                />
-                <button
-                  onClick={handleSetterUnlock}
-                  disabled={!setterKeyInput.trim()}
-                  className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-40"
-                >
-                  Unlock
-                </button>
-              </div>
-              {setterError && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" /> {setterError}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
 
         <p className="text-center text-xs text-muted-foreground pb-8">
           Client briefs are stored locally on the device where the session was completed.
