@@ -1,0 +1,108 @@
+Add a cross-platform integration between the Loan Lookup website (borrower-facing site) and the Lead CRM system (internal loan officer system).
+
+--------------------------------------------------
+CORE SYSTEM OVERVIEW
+--------------------------------------------------
+
+The “Your Loan Officer” section in the Loan Lookup site must connect directly to the external Lead CRM website/database.
+
+When a loan officer is selected or changed, the system must automatically create or update a lead inside the Lead CRM system and assign it to that loan officer.
+
+--------------------------------------------------
+1. LOAN LOOKUP SITE (BORROWER SIDE)
+--------------------------------------------------
+
+Under Loan Lookup, add section:
+
+“Your Loan Officer”
+
+Features:
+- displays assigned loan officer
+- allows borrower or officer to change assignment
+- dropdown list of all active loan officers pulled from CRM system
+
+When a loan officer is selected:
+- trigger CRM sync request
+
+--------------------------------------------------
+2. CRM SYSTEM INTEGRATION (EXTERNAL SITE)
+--------------------------------------------------
+
+Connect to Lead CRM system via API or database link:
+
+CRM must receive:
+- borrower name
+- contact info
+- loan type / request type
+- loan lookup input data
+- selected loan officer ID
+- timestamp
+- source = "Loan Lookup Website"
+
+--------------------------------------------------
+3. AUTO LEAD CREATION LOGIC
+--------------------------------------------------
+
+When a loan officer is assigned or changed:
+
+IF lead does not exist:
+- create new lead in CRM
+
+IF lead already exists:
+- update existing lead record
+
+--------------------------------------------------
+4. LEAD ASSIGNMENT RULE
+--------------------------------------------------
+
+Immediately assign lead to:
+- selected loan officer
+
+Lead must appear in:
+- that loan officer’s CRM dashboard under “My Assigned Leads”
+
+--------------------------------------------------
+5. AI LEAD SUMMARY GENERATION
+--------------------------------------------------
+
+System must generate a structured AI summary:
+
+Example:
+"Borrower is actively exploring mortgage options. Interest in refinance or purchase depending on qualification. Moderate urgency. Requires loan officer follow-up."
+
+Store summary in CRM lead notes.
+
+--------------------------------------------------
+6. REAL-TIME SYNC REQUIREMENT
+--------------------------------------------------
+
+Any change in loan officer selection must:
+- instantly update CRM assignment
+- reflect in loan officer dashboard
+- maintain consistency across both websites
+
+--------------------------------------------------
+7. AUDIT + TRACKING SYSTEM
+--------------------------------------------------
+
+Log every event:
+- loan officer selection
+- reassignment
+- lead creation
+- timestamp
+- source system (Loan Lookup site)
+
+--------------------------------------------------
+8. DATA CONSISTENCY RULE
+--------------------------------------------------
+
+Ensure:
+- no duplicate leads are created
+- each borrower maps to one active CRM lead record
+- all updates overwrite or append to the same lead entry
+
+--------------------------------------------------
+FINAL GOAL
+--------------------------------------------------
+
+Create a fully connected system where the borrower-facing Loan Lookup website directly generates and updates leads inside the separate Lead CRM platform, and automatically assigns those leads to the selected loan officer in real time.
