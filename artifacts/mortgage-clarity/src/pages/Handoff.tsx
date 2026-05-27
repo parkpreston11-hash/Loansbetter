@@ -2,14 +2,14 @@ import { useState, useEffect, useMemo } from "react";
 import { useMortgage } from "@/context/MortgageContext";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound, Mail, Send, PartyPopper, User, Search } from "lucide-react";
+import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound, Mail, Send, PartyPopper, User, Search, UserCheck, Save, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DocumentChecklist } from "@/components/DocumentChecklist";
 import { sendNotification } from "@/lib/notify";
 
 const CONTACT_KEY_PREFIX = "lb_contact_";
-
-const BRIEF_KEY_PREFIX = "lb_brief_";
+const BRIEF_KEY_PREFIX   = "lb_brief_";
+const LO_ASSIGN_PREFIX   = "lb_lo_";
 
 // ── Deterministic code generation ─────────────────────────────────────────
 // Same answers + loan type + scenario = same code every time.
@@ -73,6 +73,23 @@ export default function Handoff() {
     } catch { return ""; }
   });
   const [summarySubmitted, setSummarySubmitted] = useState(false);
+
+  // LO name gate
+  const [loName, setLoName]         = useState(() => {
+    try { return JSON.parse(localStorage.getItem(LO_ASSIGN_PREFIX + code) ?? "{}").loName ?? ""; } catch { return ""; }
+  });
+  const [loNameInput, setLoNameInput] = useState("");
+  const [loNameSaved, setLoNameSaved] = useState(false);
+
+  const handleSaveLoName = () => {
+    if (!loNameInput.trim()) return;
+    const assignment = { loName: loNameInput.trim(), assignedAt: new Date().toISOString(), borrowerName: clientName.trim() || answers.fullName || undefined };
+    try {
+      localStorage.setItem(LO_ASSIGN_PREFIX + code, JSON.stringify(assignment));
+      setLoName(loNameInput.trim());
+      setLoNameSaved(true);
+    } catch {}
+  };
 
   if (!selectedMortgageType || !estimateResult) {
     setLocation("/start");
@@ -401,12 +418,56 @@ export default function Handoff() {
                       <p className="text-xs text-green-700 mt-0.5">We'll be in touch. Use Loan Lookup anytime to track your file.</p>
                     </div>
                   </div>
-                  <Link href={`/lookup?code=${encodeURIComponent(code)}`}>
-                    <button className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                      <Search className="w-4 h-4" />
-                      Loan Lookup
-                    </button>
-                  </Link>
+
+                  {loName ? (
+                    /* LO name already saved — show Loan Lookup */
+                    <Link href={`/lookup?code=${encodeURIComponent(code)}`}>
+                      <button className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        <Search className="w-4 h-4" />
+                        Loan Lookup
+                      </button>
+                    </Link>
+                  ) : (
+                    /* LO name not yet set — gate Loan Lookup behind it */
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+                      <p className="text-sm font-semibold text-amber-900 flex items-center gap-2">
+                        <UserCheck className="w-4 h-4" />
+                        Who's your loan officer?
+                      </p>
+                      <p className="text-xs text-amber-800">Enter their name to unlock Loan Lookup and track your file.</p>
+                      {loNameSaved ? (
+                        <div className="space-y-2">
+                          <p className="text-xs text-green-700 flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Saved — {loName}
+                          </p>
+                          <Link href={`/lookup?code=${encodeURIComponent(code)}`}>
+                            <button className="w-full h-11 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all">
+                              <Search className="w-4 h-4" />
+                              Loan Lookup
+                            </button>
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={loNameInput}
+                            onChange={(e) => setLoNameInput(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleSaveLoName()}
+                            placeholder="e.g. John Smith"
+                            className="flex-1 h-10 rounded-lg border border-amber-300 bg-white px-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                          />
+                          <button
+                            onClick={handleSaveLoName}
+                            disabled={!loNameInput.trim()}
+                            className="h-10 px-4 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+                          >
+                            <Save className="w-3.5 h-3.5" /> Save
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
               ) : (
                 <motion.button
