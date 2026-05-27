@@ -353,14 +353,34 @@ export default function LookupBrief() {
     }
   };
 
-  // ── LO unlock ────────────────────────────────────────────────────────────
+  // ── LO unlock (handles both LO and setter codes) ─────────────────────────
   const handleLoUnlock = () => {
-    if (loCodeInput.trim().toUpperCase().replace(/[-\s]/g, "") === LO_OVERRIDE_CODE) {
+    const code = loCodeInput.trim().toUpperCase().replace(/[-\s]/g, "");
+    if (code === LO_OVERRIDE_CODE) {
       setLoUnlocked(true);
       setSetterUnlocked(false);
       setLoError("");
+      setSetterError("");
       if (stageData.currentStage > 0) setPendingStage(stageData.currentStage);
       else setPendingStage(1);
+    } else if (code === SETTER_CODE) {
+      const records: SetterRecord[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith(LO_ASSIGN_PREFIX)) {
+          try {
+            const lo = JSON.parse(localStorage.getItem(key) ?? "{}") as LoAssignment;
+            const ref = key.slice(LO_ASSIGN_PREFIX.length);
+            records.push({ code: ref, loName: lo.loName, assignedAt: lo.assignedAt, borrowerName: lo.borrowerName });
+          } catch {}
+        }
+      }
+      records.sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
+      setSetterRecords(records);
+      setSetterUnlocked(true);
+      setLoUnlocked(false);
+      setLoError("");
+      setSetterError("");
     } else {
       setLoError("Incorrect override code. Please try again.");
     }
@@ -1148,64 +1168,29 @@ export default function LookupBrief() {
 
                       <AnimatePresence mode="wait">
                         {!loUnlocked && !setterUnlocked ? (
-                          <motion.div key="locked" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-                            {/* Loan Officer key */}
-                            <div className="space-y-1.5">
-                              <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                                <Unlock className="w-3 h-3" /> Loan Officer Key
-                              </label>
-                              <div className="flex gap-2">
-                                <input
-                                  type="password"
-                                  value={loCodeInput}
-                                  onChange={(e) => { setLoCodeInput(e.target.value); setLoError(""); }}
-                                  onKeyDown={(e) => e.key === "Enter" && handleLoUnlock()}
-                                  placeholder="LO override code"
-                                  className="flex-1 h-11 rounded-xl border border-border bg-secondary/50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition-all"
-                                />
-                                <Button
-                                  onClick={handleLoUnlock}
-                                  disabled={!loCodeInput.trim()}
-                                  className="h-11 px-5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
-                                >
-                                  Unlock
-                                </Button>
-                              </div>
-                              {loError && (
-                                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-destructive flex items-center gap-1.5">
-                                  <AlertCircle className="w-3.5 h-3.5" /> {loError}
-                                </motion.p>
-                              )}
+                          <motion.div key="locked" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
+                            <div className="flex gap-2">
+                              <input
+                                type="password"
+                                value={loCodeInput}
+                                onChange={(e) => { setLoCodeInput(e.target.value); setLoError(""); setSetterError(""); }}
+                                onKeyDown={(e) => e.key === "Enter" && handleLoUnlock()}
+                                placeholder="Override code"
+                                className="flex-1 h-11 rounded-xl border border-border bg-secondary/50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 transition-all"
+                              />
+                              <Button
+                                onClick={handleLoUnlock}
+                                disabled={!loCodeInput.trim()}
+                                className="h-11 px-5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
+                              >
+                                Unlock
+                              </Button>
                             </div>
-
-                            {/* Appointment Setter key */}
-                            <div className="space-y-1.5">
-                              <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                                <ClipboardList className="w-3 h-3" /> Appointment Setter Key
-                              </label>
-                              <div className="flex gap-2">
-                                <input
-                                  type="password"
-                                  value={setterKeyInput}
-                                  onChange={(e) => { setSetterKeyInput(e.target.value); setSetterError(""); }}
-                                  onKeyDown={(e) => e.key === "Enter" && handleSetterUnlock()}
-                                  placeholder="Setter code"
-                                  className="flex-1 h-11 rounded-xl border border-border bg-secondary/50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                                />
-                                <Button
-                                  onClick={handleSetterUnlock}
-                                  disabled={!setterKeyInput.trim()}
-                                  className="h-11 px-5 rounded-xl"
-                                >
-                                  Unlock
-                                </Button>
-                              </div>
-                              {setterError && (
-                                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-destructive flex items-center gap-1.5">
-                                  <AlertCircle className="w-3.5 h-3.5" /> {setterError}
-                                </motion.p>
-                              )}
-                            </div>
+                            {(loError || setterError) && (
+                              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-destructive flex items-center gap-1.5">
+                                <AlertCircle className="w-3.5 h-3.5" /> {loError || setterError}
+                              </motion.p>
+                            )}
                           </motion.div>
                         ) : setterUnlocked ? (
                           /* ── Setter dashboard ──────────────────────── */
