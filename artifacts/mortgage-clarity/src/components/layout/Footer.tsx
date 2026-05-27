@@ -123,10 +123,10 @@ export function Footer() {
                 </a>
               </p>
               <p>
-                <span className="font-semibold text-foreground">California Department of Real Estate Corporation License:</span> 01527840
+                <span className="font-semibold text-foreground">California Department of Financial Protection and Innovation:</span> 60DBO-209796
               </p>
               <p>
-                <span className="font-semibold text-foreground">California Department of Financial Protection and Innovation:</span> 60DBO-209796
+                <span className="font-semibold text-foreground">California Department of Real Estate Corporation License:</span> 01527840
               </p>
               <p>Licensing requirements vary by state. Not all products are available in all states. This is not a commitment to lend. All loans are subject to credit approval, underwriting guidelines, and applicable state and federal regulations.</p>
             </div>
