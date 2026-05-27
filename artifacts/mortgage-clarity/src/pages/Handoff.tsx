@@ -269,6 +269,144 @@ export default function Handoff() {
           </a>
         </div>
 
+        {/* ── Contact form ──────────────────────────────────────────────── */}
+        <div className="bg-card border border-border shadow-md rounded-3xl p-8 space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <Send className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground text-sm">How can we contact you?</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Leave your contact info so we can follow up. At least one of email or phone is required — both is recommended.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                placeholder="Your name (required)"
+                className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+              />
+            </div>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <input
+                type="email"
+                value={clientEmail}
+                onChange={(e) => setClientEmail(e.target.value)}
+                placeholder="Email address"
+                className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+              />
+            </div>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <input
+                type="tel"
+                value={clientPhone}
+                onChange={(e) => setClientPhone(e.target.value)}
+                placeholder="Phone number"
+                className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+              />
+            </div>
+            {clientEmail.trim() && clientPhone.trim() ? null : (
+              <p className="text-xs text-muted-foreground">
+                {!clientEmail.trim() && !clientPhone.trim()
+                  ? "At least one is required — providing both is recommended so your loan officer can reach you your way."
+                  : "Adding both email and phone is recommended so your loan officer can reach you your way."}
+              </p>
+            )}
+          </div>
+
+          <AnimatePresence mode="wait">
+            {summarySubmitted ? (
+              <motion.div
+                key="done"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="space-y-3"
+              >
+                <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
+                  <PartyPopper className="w-5 h-5 text-green-600 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-green-800">Contact info saved!</p>
+                    <p className="text-xs text-green-700 mt-0.5">We'll be in touch. Use Loan Lookup anytime to track your file.</p>
+                  </div>
+                </div>
+
+                {loName ? (
+                  <Link href={`/lookup?code=${encodeURIComponent(code)}`}>
+                    <button className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                      <Search className="w-4 h-4" />
+                      Loan Lookup
+                    </button>
+                  </Link>
+                ) : (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+                    <p className="text-sm font-semibold text-amber-900 flex items-center gap-2">
+                      <UserCheck className="w-4 h-4" />
+                      Who's your loan officer?
+                    </p>
+                    <p className="text-xs text-amber-800">Enter their name to unlock Loan Lookup and track your file.</p>
+                    {loNameSaved ? (
+                      <div className="space-y-2">
+                        <p className="text-xs text-green-700 flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Saved — {loName}
+                        </p>
+                        <Link href={`/lookup?code=${encodeURIComponent(code)}`}>
+                          <button className="w-full h-11 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all">
+                            <Search className="w-4 h-4" />
+                            Loan Lookup
+                          </button>
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={loNameInput}
+                          onChange={(e) => setLoNameInput(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && handleSaveLoName()}
+                          placeholder="e.g. John Smith"
+                          className="flex-1 h-10 rounded-lg border border-amber-300 bg-white px-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                        />
+                        <button
+                          onClick={handleSaveLoName}
+                          disabled={!loNameInput.trim()}
+                          className="h-10 px-4 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+                        >
+                          <Save className="w-3.5 h-3.5" /> Save
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            ) : (
+              <motion.button
+                key="btn"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onClick={handleSummarySubmit}
+                disabled={!clientName.trim() || (!clientEmail.trim() && !clientPhone.trim())}
+                className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                <Send className="w-4 h-4" />
+                {!clientName.trim()
+                  ? "Enter your name to continue"
+                  : (!clientEmail.trim() && !clientPhone.trim())
+                    ? "Add email or phone to submit"
+                    : "Save Contact Info"}
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+
         {/* Summary Ticket */}
         <div className="bg-card border border-border shadow-md rounded-3xl p-8 md:p-12 space-y-10">
           <div className="flex items-center justify-between border-b border-border pb-6">
@@ -348,145 +486,6 @@ export default function Handoff() {
             )}
           </section>
 
-          {/* ── Send Summary ─────────────────────────────────────────── */}
-          <div className="border-t border-border pt-8 space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <Send className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground text-sm">How can we contact you?</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Leave your contact info so we can follow up. At least one of email or phone is required — both is recommended.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                <input
-                  type="text"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Your name (required)"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                />
-              </div>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                <input
-                  type="email"
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  placeholder="Email address"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                />
-              </div>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                <input
-                  type="tel"
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  placeholder="Phone number"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                />
-              </div>
-              {clientEmail.trim() && clientPhone.trim() ? null : (
-                <p className="text-xs text-muted-foreground">
-                  {!clientEmail.trim() && !clientPhone.trim()
-                    ? "At least one is required — providing both is recommended so your loan officer can reach you your way."
-                    : "Adding both email and phone is recommended so your loan officer can reach you your way."}
-                </p>
-              )}
-            </div>
-
-            <AnimatePresence mode="wait">
-              {summarySubmitted ? (
-                <motion.div
-                  key="done"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
-                    <PartyPopper className="w-5 h-5 text-green-600 shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-green-800">Contact info saved!</p>
-                      <p className="text-xs text-green-700 mt-0.5">We'll be in touch. Use Loan Lookup anytime to track your file.</p>
-                    </div>
-                  </div>
-
-                  {loName ? (
-                    /* LO name already saved — show Loan Lookup */
-                    <Link href={`/lookup?code=${encodeURIComponent(code)}`}>
-                      <button className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                        <Search className="w-4 h-4" />
-                        Loan Lookup
-                      </button>
-                    </Link>
-                  ) : (
-                    /* LO name not yet set — gate Loan Lookup behind it */
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
-                      <p className="text-sm font-semibold text-amber-900 flex items-center gap-2">
-                        <UserCheck className="w-4 h-4" />
-                        Who's your loan officer?
-                      </p>
-                      <p className="text-xs text-amber-800">Enter their name to unlock Loan Lookup and track your file.</p>
-                      {loNameSaved ? (
-                        <div className="space-y-2">
-                          <p className="text-xs text-green-700 flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Saved — {loName}
-                          </p>
-                          <Link href={`/lookup?code=${encodeURIComponent(code)}`}>
-                            <button className="w-full h-11 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all">
-                              <Search className="w-4 h-4" />
-                              Loan Lookup
-                            </button>
-                          </Link>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={loNameInput}
-                            onChange={(e) => setLoNameInput(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSaveLoName()}
-                            placeholder="e.g. John Smith"
-                            className="flex-1 h-10 rounded-lg border border-amber-300 bg-white px-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
-                          />
-                          <button
-                            onClick={handleSaveLoName}
-                            disabled={!loNameInput.trim()}
-                            className="h-10 px-4 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 transition-colors disabled:opacity-40 flex items-center gap-1.5"
-                          >
-                            <Save className="w-3.5 h-3.5" /> Save
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </motion.div>
-              ) : (
-                <motion.button
-                  key="btn"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  onClick={handleSummarySubmit}
-                  disabled={!clientName.trim() || (!clientEmail.trim() && !clientPhone.trim())}
-                  className="w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  <Send className="w-4 h-4" />
-                  {!clientName.trim()
-                    ? "Enter your name to continue"
-                    : (!clientEmail.trim() && !clientPhone.trim())
-                      ? "Add email or phone to submit"
-                      : "Save Contact Info"}
-                </motion.button>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground pb-8">
