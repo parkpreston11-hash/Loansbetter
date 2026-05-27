@@ -4,7 +4,6 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Phone, ShieldCheck, Copy, Check, BookOpen, KeyRound, Mail, Send, PartyPopper, User, Search, UserCheck, Save, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DocumentChecklist } from "@/components/DocumentChecklist";
 import { sendNotification } from "@/lib/notify";
 
 const CONTACT_KEY_PREFIX = "lb_contact_";
@@ -489,15 +488,6 @@ export default function Handoff() {
             </AnimatePresence>
           </div>
         </div>
-
-        {/* Document Checklist */}
-        <DocumentChecklist
-          mortgageType={selectedMortgageType}
-          creditScore={answers.creditScore}
-          employmentType={answers.employmentType}
-          code={code}
-          fullName={answers.fullName}
-        />
 
         <p className="text-center text-xs text-muted-foreground pb-8">
           This summary is generated for your convenience and is not a loan application or financial commitment.
