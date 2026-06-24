@@ -1,0 +1,14 @@
+[build]
+  command = "pnpm --filter @workspace/mortgage-clarity run build"
+  publish = "artifacts/mortgage-clarity/dist/public"
+
+[build.environment]
+  NODE_VERSION  = "20"
+  PNPM_VERSION  = "9"
+  BASE_PATH     = "/"
+
+# SPA fallback — all routes serve index.html so wouter handles routing client-side
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
