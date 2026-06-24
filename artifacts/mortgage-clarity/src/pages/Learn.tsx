@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, BookOpen, Sparkles, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSEO } from "@/hooks/useSEO";
 
 // ─── Topic category chips ────────────────────────────────────────────────────
 
@@ -58,6 +59,12 @@ function renderMarkdown(text: string) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Learn() {
+  useSEO({
+    title: "Mortgage Learning Center",
+    description: "Ask any mortgage question in plain English — rates, loan types, qualifying, closing costs, and more. Free AI-powered mortgage Q&A by LoansBetter.",
+    canonical: "https://loansbetter.com/learn",
+  });
+
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "ai",

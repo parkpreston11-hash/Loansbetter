@@ -1,2 +1,10 @@
 User-agent: *
 Allow: /
+
+# Block internal flow pages from indexing
+Disallow: /questions
+Disallow: /results
+Disallow: /chat
+Disallow: /handoff
+
+Sitemap: https://loansbetter.com/sitemap.xml

@@ -5,6 +5,7 @@ import {
   Lightbulb, BookOpen, CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSEO } from "@/hooks/useSEO";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -14,6 +15,12 @@ const fadeUp = (delay = 0) => ({
 });
 
 export default function WhoWeAre() {
+  useSEO({
+    title: "About Us",
+    description: "LoansBetter is an independent mortgage clarity platform built to help people understand their loan options — no pressure, no jargon. Fountain Valley, CA. NMLS# 2641696.",
+    canonical: "https://loansbetter.com/about",
+  });
+
   return (
     <div className="bg-background text-foreground overflow-x-hidden">
 

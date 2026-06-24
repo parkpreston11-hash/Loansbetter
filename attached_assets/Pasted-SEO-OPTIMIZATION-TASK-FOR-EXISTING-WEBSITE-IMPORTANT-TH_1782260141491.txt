@@ -1,0 +1,102 @@
+SEO OPTIMIZATION TASK FOR EXISTING WEBSITE
+
+IMPORTANT: THIS WEBSITE IS ALREADY COMPLETE.
+
+DO NOT:
+
+* Change the design
+* Change colors
+* Change fonts
+* Change spacing
+* Change layout
+* Change animations
+* Change branding
+* Change pricing
+* Change page structure
+* Change navigation
+* Change forms
+* Change Stripe integration
+* Change tracking code functionality
+* Change admin dashboard functionality
+* Change upload functionality
+* Remove any content
+* Add new visible sections
+* Replace images
+* Rearrange components
+
+The website must look EXACTLY the same before and after this task.
+
+Only perform SEO improvements that are invisible to visitors.
+
+SEO TASKS:
+
+TECHNICAL SEO
+
+* Add optimized title tags to every page
+* Add optimized meta descriptions to every page
+* Add canonical URLs
+* Add Open Graph tags for social sharing
+* Add Twitter Card tags
+* Generate sitemap.xml
+* Generate robots.txt
+* Add favicon metadata if missing
+* Add structured data/schema markup
+
+HOSTING COMPANY SEO
+Target keywords such as:
+
+* Website Hosting
+* Small Business Website Hosting
+* Managed Website Hosting
+* Website Deployment Services
+* Affordable Website Hosting
+* Business Website Management
+* Website Maintenance Services
+
+SCHEMA MARKUP
+Add:
+
+* Organization Schema
+* Local Business Schema
+* Website Schema
+* FAQ Schema (only if FAQ already exists)
+* Service Schema
+
+PERFORMANCE SEO
+
+* Improve image loading without changing images
+* Improve page load speed
+* Remove unnecessary blocking resources
+* Improve Core Web Vitals
+* Improve mobile performance
+
+ACCESSIBILITY SEO
+
+* Add missing image alt text
+* Improve semantic HTML
+* Add ARIA labels where appropriate
+
+NETLIFY COMPATIBILITY
+
+* Verify all SEO features work correctly on Netlify
+* Verify sitemap.xml is accessible
+* Verify robots.txt is accessible
+* Verify metadata renders correctly after deployment
+* Verify no SEO feature relies on Replit-only services
+
+FINAL VALIDATION
+
+Before finishing:
+
+1. Compare the website before and after.
+2. Confirm there are ZERO visual differences.
+3. Confirm there are ZERO functional differences.
+4. Confirm all forms still work.
+5. Confirm admin dashboard still works.
+6. Confirm tracking system still works.
+7. Confirm Stripe functionality remains untouched.
+8. Confirm Netlify deployment compatibility.
+
+If any SEO change would alter the appearance or functionality of the website, DO NOT apply that change.
+
+The goal is SEO improvement only while preserving the website 100% exactly as it currently exists.

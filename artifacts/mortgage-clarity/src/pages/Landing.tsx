@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2, Shield, HeartHandshake, RotateCcw, ChevronRig
 import { useMortgage } from "@/context/MortgageContext";
 import { ContactDialog } from "@/components/ContactDialog";
 import { QUESTION_COUNT } from "@/lib/constants";
+import { useSEO } from "@/hooks/useSEO";
 
 function getTypeLabel(type: string) {
   if (type === "buy") return "Buy a Home";
@@ -14,6 +15,12 @@ function getTypeLabel(type: string) {
 }
 
 export default function Landing() {
+  useSEO({
+    title: "Overview",
+    description: "Get a full overview of LoansBetter — free mortgage clarity tools for buying, refinancing, and more. No credit check, no pressure. NMLS# 2641696.",
+    canonical: "https://loansbetter.com/overview",
+  });
+
   const { hasSavedProgress, selectedMortgageType, estimateResult, clearSavedProgress } = useMortgage();
   const [, setLocation] = useLocation();
 

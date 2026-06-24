@@ -7,6 +7,7 @@ import {
   MessageCircle, HeartHandshake, Layers, Lightbulb,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSEO } from "@/hooks/useSEO";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -64,6 +65,12 @@ const LOAN_TYPES = [
 ];
 
 export default function NewHome() {
+  useSEO({
+    title: "Mortgage Clarity",
+    description: "Explore home loans, refinancing, cash-out, reverse mortgages, and HELOCs — free, no credit check, no obligation. LoansBetter, Fountain Valley CA. NMLS# 2641696.",
+    canonical: "https://loansbetter.com/",
+  });
+
   return (
     <div className="bg-background text-foreground overflow-x-hidden">
 

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactDialog } from "@/components/ContactDialog";
+import { useSEO } from "@/hooks/useSEO";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -16,6 +17,12 @@ const fadeUp = (delay = 0) => ({
 });
 
 export default function Home() {
+  useSEO({
+    title: "How It Works",
+    description: "See exactly how LoansBetter works — enter your basics, get real numbers, and talk to a loan officer when you're ready. No pressure, no credit check.",
+    canonical: "https://loansbetter.com/how-it-works",
+  });
+
   return (
     <div className="bg-background text-foreground overflow-x-hidden">
 

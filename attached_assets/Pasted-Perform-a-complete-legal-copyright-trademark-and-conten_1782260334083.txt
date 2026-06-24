@@ -1,0 +1,86 @@
+Perform a complete legal, copyright, trademark, and content compliance audit of this entire website.
+
+DO NOT change the design, layout, styling, branding, functionality, SEO structure, animations, forms, database connections, or user experience unless required to resolve a compliance issue.
+
+Audit every page, component, image, icon, logo, testimonial, statistic, claim, and text element.
+
+CHECK FOR:
+
+1. COPYRIGHT ISSUES
+
+* Images copied from Google Images.
+* Images from competitor websites.
+* Watermarked images.
+* Unlicensed stock photos.
+* Copyrighted graphics or illustrations.
+* Copyrighted text copied from other websites.
+
+2. TRADEMARK ISSUES
+
+* Logos belonging to companies that do not own or authorize their use.
+* Third-party trademarks used without permission.
+* Brand names, graphics, or visual assets that may create infringement risk.
+
+3. FALSE OR UNVERIFIED CLAIMS
+
+* Customer counts.
+* Websites sold.
+* Revenue claims.
+* Ratings.
+* Awards.
+* Rankings.
+* Testimonials.
+* Success rates.
+* Guarantees.
+* Performance statistics.
+* Any statement that cannot be reasonably verified.
+
+4. TESTIMONIAL COMPLIANCE
+
+* Identify testimonials that appear fictional, unverified, or misleading.
+* Flag any reviews that may require client approval.
+* Do not invent new testimonials.
+
+5. REAL ESTATE COMPLIANCE
+
+* Property photos that may not have usage rights.
+* Listing information that may be inaccurate.
+* Misleading real estate claims.
+
+6. BUSINESS COMPLIANCE
+
+* Missing contact information.
+* Missing privacy policy if forms collect personal information.
+* Misleading marketing language.
+* Unsupported guarantees or promises.
+
+REQUIRED ACTIONS:
+
+A. Generate a detailed report listing:
+
+* Every potential issue found.
+* Exact page location.
+* Exact text or image involved.
+* Reason it may create legal, copyright, trademark, licensing, or advertising risk.
+
+B. For IMAGES ONLY:
+
+* If an image appears to be unsafe, copyrighted, scraped, or unlicensed:
+    * Replace it automatically with a commercially usable alternative from approved sources.
+    * Use only royalty-free, commercially licensed, or AI-generated images suitable for commercial use.
+    * Preserve the same design quality and visual intent.
+
+C. For TEXT:
+
+* DO NOT automatically rewrite content.
+* Instead, list each issue in the audit report and explain why it may be problematic.
+* Provide a recommended replacement but wait for approval before changing text.
+
+D. Create a final summary showing:
+
+* Number of image issues found.
+* Number of text issues found.
+* Number of compliance risks found.
+* Overall website risk level (Low, Moderate, High).
+
+The goal is to make the website as safe as reasonably possible for commercial use while preserving the existing design and functionality.
