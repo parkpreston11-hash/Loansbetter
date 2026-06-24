@@ -267,9 +267,9 @@ export default function Landing() {
               className="space-y-4"
             >
               {[
-                { quote: "For the first time, I actually understood how my student loans affected my homebuying budget.", author: "Sarah M.", role: "First-time buyer" },
-                { quote: "The scenario sliders are brilliant. I saw exactly what paying off my car would do to my mortgage options.", author: "James T.", role: "Refinancing" },
-                { quote: "I called the loan officer already knowing what to ask. Made the whole process so much smoother.", author: "Patricia R.", role: "Cash-out refinance" },
+                { quote: "For the first time, I actually understood how my student loans affected my homebuying budget.", author: "Casandra Torres", role: "First-time buyer" },
+                { quote: "The scenario sliders are brilliant. I saw exactly what paying off my car would do to my mortgage options.", author: "John Williams", role: "Refinancing" },
+                { quote: "I called the loan officer already knowing what to ask. Made the whole process so much smoother.", author: "Johnny Rodriguez", role: "Cash-out refinance" },
               ].map((test, i) => (
                 <motion.div
                   key={i}
